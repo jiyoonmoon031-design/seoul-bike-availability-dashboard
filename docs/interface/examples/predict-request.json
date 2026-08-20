@@ -1,0 +1,13 @@
+{
+  "request_id": "uuid-v4",
+  "base_time": "2026-10-15T08:30:00+09:00",
+  "station_ids": [
+    "ST-0001",
+    "ST-0002"
+  ],
+  "horizons": [
+    15,
+    30,
+    60
+  ]
+}
