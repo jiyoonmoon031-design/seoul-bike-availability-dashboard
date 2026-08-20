@@ -1,0 +1,14 @@
+# ============================================================
+# Project Runtime Dependencies
+# ============================================================
+#
+# Python version: 3.11
+#
+# Runtime dependencies will be pinned here after the Week 1
+# backend/model technology stack is finalized.
+#
+# Production dependencies must be version-pinned.
+#
+# Example:
+#
+# package-name==X.Y.Z
