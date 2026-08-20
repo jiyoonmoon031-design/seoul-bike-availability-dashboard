@@ -603,8 +603,8 @@ Issue
 
 본 인터페이스 작업은 다음이 완료되어야 종료한다.
 
-- [ ] 문지윤 초안 작성 완료
-- [ ] 예측 Request/Response JSON 예제 저장
+- [x] 문지윤 초안 작성 완료
+- [x] 예측 Request/Response JSON 예제 저장
 - [ ] 조성은 Backend 관점 Review 완료
 - [ ] Review comment 반영
 - [ ] null 정책 확정
