@@ -248,3 +248,27 @@ Project period:
 ```text
 2026-09-01 ~ 2026-12-11
 ```
+
+## Team Workflow
+
+팀 개발 규칙과 작업 위치는 다음 문서를 기준으로 합니다.
+
+- [Team Work Guide](docs/team-work-guide.md)
+- [Contributing](CONTRIBUTING.md)
+- [Interface Documentation](docs/interface/README.md)
+- [Weekly Technical Deliverables](docs/weekly/README.md)
+
+일반 개발 흐름:
+
+```text
+Issue
+→ Task Branch
+→ Pull Request to develop
+→ Cross Review
+→ Merge to develop
+→ Weekly develop-to-main PR
+→ Internal Review
+→ Merge to main
+```
+
+장기 유지 브랜치는 `main`, `develop` 두 개만 사용합니다.
