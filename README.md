@@ -9,7 +9,7 @@
 - 운영자: 부족·포화 위험 대여소 탐지 및 재배치 우선순위·이동 매칭 제공
 - 이용자: 출발·도착 예상 시점의 가용성을 고려한 대여소 Top-3 추천
 
-서비스 제공 대상은 광진구·성동구이며, 모델 학습에는 광진·성동구 및 확정된 인접 권역의 대여소 데이터를 활용합니다.
+서비스 제공 대상과 모델 학습 대상은 모두 광진구·성동구 대여소로 한정합니다.
 
 ## Core Prediction
 
@@ -77,7 +77,6 @@ LLM은 예측이나 점수 계산에 사용하지 않으며, 기존 로직이 �
 
 - Gwangjin-gu
 - Seongdong-gu
-- Adjacent districts to be finalized during Week 1
 
 ### Prediction Horizons
 
