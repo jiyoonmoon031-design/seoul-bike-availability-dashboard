@@ -73,3 +73,16 @@ STATION_MASTER_POLICY:
 LLM:
   temperature: 0.2
   timeout_sec: 3
+
+# Inventory freshness policy
+INVENTORY_FRESH_MAX_MIN: 5
+INVENTORY_CACHE_MAX_STALE_MIN: 30
+
+# Project geographic scope
+PROJECT_AREA:
+  service_districts:
+    - "광진구"
+    - "성동구"
+  model_training_districts:
+    - "광진구"
+    - "성동구"

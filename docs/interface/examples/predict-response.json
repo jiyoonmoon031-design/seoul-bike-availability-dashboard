@@ -2,27 +2,31 @@
   "request_id": "uuid-v4",
   "base_time": "2026-10-15T08:30:00+09:00",
   "model_version": "lgbm-v1.2.0",
-  "source": "model",
   "predictions": [
     {
       "station_id": "ST-0001",
       "capacity": 20,
       "bikes_now": 12,
+      "inventory_collected_at": "2026-10-15T08:28:00+09:00",
+      "inventory_source": "recent_snapshot",
       "horizon_results": [
         {
           "horizon_min": 15,
+          "prediction_source": "model",
           "delta_net": -3.2,
           "bikes_expected": 8.8,
           "docks_expected": 11.2
         },
         {
           "horizon_min": 30,
+          "prediction_source": "model",
           "delta_net": -6.5,
           "bikes_expected": 5.5,
           "docks_expected": 14.5
         },
         {
           "horizon_min": 60,
+          "prediction_source": "model",
           "delta_net": -9.1,
           "bikes_expected": 2.9,
           "docks_expected": 17.1
