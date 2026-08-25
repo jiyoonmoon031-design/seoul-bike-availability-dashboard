@@ -60,8 +60,8 @@ RECOMMENDATION_WEIGHT:
   distance: 0.5
   availability: 0.5
 
-# 1주차 직접 확인 후 확정
-WEATHER_STATION: null
+# KMA AWS Seongdong (verified in Week 1; see docs/weekly/week-01-weather-station-selection.md)
+WEATHER_STATION: 421
 
 ACTIVE_STATION:
   percentile: null
