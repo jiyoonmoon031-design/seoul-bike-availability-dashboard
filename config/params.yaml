@@ -68,6 +68,8 @@ ACTIVE_STATION:
   percentile: 0.75
 
 EVALUATION:
+  # Engineering targets fixed before test evaluation; not yet empirical release gates
+  target_status: provisional
   test_days: 28
   validation_days: 14
   minimum_history_days: 90
@@ -77,6 +79,7 @@ EVALUATION:
   availability_f1_min: 0.80
   top3_availability_hit_rate_min: 0.90
   rebalancing_shortage_reduction_min: 0.10
+  rebalancing_overflow_reduction_min: 0.10
 
 STATION_MASTER_POLICY:
   refresh_interval_days: 7
