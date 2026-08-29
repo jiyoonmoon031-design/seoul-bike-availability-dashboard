@@ -2,8 +2,9 @@ package com.example.ddareungi.domain.snapshot;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.io.Serializable;
 
-public class StationSnapshotId {
+public class StationSnapshotId implements Serializable{
 
     private String stationId;
     private Instant collectedAt;

@@ -19,7 +19,7 @@ public class StationInfoResponse {
         private String list_total_count;
         private List<StationInfo> row;
 
-        public String getList_total_count(){
+        public String getListTotalCount(){
             return list_total_count;
         }
 
