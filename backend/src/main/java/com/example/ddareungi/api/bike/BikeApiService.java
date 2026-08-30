@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class BikeApiService {
 
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
     private final StationSnapshotRepository stationSnapshotRepository;
     private final StationRepository stationRepository;
     private final String apiKey;
@@ -33,11 +33,13 @@ public class BikeApiService {
     public BikeApiService(
             StationSnapshotRepository stationSnapshotRepository,
             StationRepository stationRepository,
-            @Value("${seoul.api.key}") String apiKey
+            @Value("${seoul.api.key}") String apiKey,
+            RestClient restClient
     ) {
         this.stationSnapshotRepository = stationSnapshotRepository;
         this.stationRepository = stationRepository;
         this.apiKey = apiKey;
+        this.restClient = restClient;
     }
 
 
@@ -64,6 +66,7 @@ public class BikeApiService {
         ){
             throw new IllegalStateException("대여소 현황 API 응답 없음");
         }
+        System.out.println("실행중");
 
         int totalCount=countResponse.getRentBikeStatus().getList_total_count();
 
