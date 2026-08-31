@@ -54,44 +54,41 @@ public class BikeApiService {
         Instant collectedAt = Instant.now();
 
         String url="http://openapi.seoul.go.kr:8088/"+ apiKey+ "/json/bikeList/";
-        String listTotalCountUrl= url+"1/1/";
-        BikeApiResponse countResponse=restClient.get()
-                .uri(listTotalCountUrl)
-                .retrieve()
-                .body(BikeApiResponse.class);
 
-        if(countResponse==null
-                ||countResponse.getRentBikeStatus()==null
-                ||countResponse.getRentBikeStatus().getRow()==null
-        ){
-            throw new IllegalStateException("대여소 현황 API 응답 없음");
-        }
         System.out.println("실행중");
-
-        int totalCount=countResponse.getRentBikeStatus().getList_total_count();
 
         List<StationSnapshot> snapshotList = new ArrayList<>();
 
-        for(int start=1;start<=totalCount;start+=1000){
-            int end=Math.min(start+999,totalCount);
-            String urlPage=url+start+"/"+end+"/";
+        int start=1;
+        int pageSize=1000;
+
+        while(true){
+            int end=start+pageSize-1;
+            String urlPage = url + start + "/" + end + "/";
 
             BikeApiResponse response = restClient.get()
                     .uri(urlPage)
                     .retrieve()
                     .body(BikeApiResponse.class);
 
-            if(response==null
-                    || response.getRentBikeStatus() == null
-                    || response.getRentBikeStatus().getRow() ==null
+            if(response == null
+                    || response.getRentBikeStatus()==null
+                    || response.getRentBikeStatus().getRow() == null
             ){
                 throw new IllegalStateException(
                         "따릉이 API 응답 데이터 없음. 조회 범위: "
-                        +start + "~" + end
+                        + start + "~" +end
                 );
             }
 
             var stations = response.getRentBikeStatus().getRow();
+            log.info(
+                    "따릉이 API 호출 성공. 조회 범위: {} ~ {}, 응답 건수: {}",
+                    start,
+                    end,
+                    stations.size()
+            );
+
             for (BikeStation station : stations){
                 if(targetStationIds.contains(station.getStationId())){
                     StationSnapshot snapshot = new StationSnapshot(
@@ -102,14 +99,58 @@ public class BikeApiService {
                     );
                     snapshotList.add(snapshot);
                 }
+
             }
+            if(stations.size()<pageSize){
+                break;
+            }
+            start+=pageSize;
         }
-        if(snapshotList.isEmpty()){
+        if (snapshotList.isEmpty()){
             throw new IllegalStateException("수집된 대여소 데이터가 없습니다");
         }
         stationSnapshotRepository.saveAll(snapshotList);
-        log.info("스냅샷 저장 완료. 수집 시각: {}, 저장 건수: {}",
-                collectedAt, snapshotList.size());
+        log.info("스냅샷 저장 완료. 수집 시각: {}, 저장 건수: {}", collectedAt, snapshotList.size());
+//                collectedAt, snapshotList.size());
+//        for(int start=1;start<=totalCount;start+=1000){
+//            int end=Math.min(start+999,totalCount);
+//            String urlPage=url+start+"/"+end+"/";
+//
+//            BikeApiResponse response = restClient.get()
+//                    .uri(urlPage)
+//                    .retrieve()
+//                    .body(BikeApiResponse.class);
+//
+//            if(response==null
+//                    || response.getRentBikeStatus() == null
+//                    || response.getRentBikeStatus().getRow() ==null
+//            ){
+//                throw new IllegalStateException(
+//                        "따릉이 API 응답 데이터 없음. 조회 범위: "
+//                        +start + "~" + end
+//                );
+//            }
+//
+//            var stations = response.getRentBikeStatus().getRow();
+
+//            for (BikeStation station : stations){
+//                if(targetStationIds.contains(station.getStationId())){
+//                    StationSnapshot snapshot = new StationSnapshot(
+//                            station.getStationId(),
+//                            collectedAt,
+//                            Integer.parseInt(station.getParkingBikeTotCnt()),
+//                            Integer.parseInt(station.getRackTotCnt())
+//                    );
+//                    snapshotList.add(snapshot);
+//                }
+//            }
+//        }
+//        if(snapshotList.isEmpty()){
+//            throw new IllegalStateException("수집된 대여소 데이터가 없습니다");
+//        }
+//        stationSnapshotRepository.saveAll(snapshotList);
+//        log.info("스냅샷 저장 완료. 수집 시각: {}, 저장 건수: {}",
+//                collectedAt, snapshotList.size());
 
 
 //        int start = 1;

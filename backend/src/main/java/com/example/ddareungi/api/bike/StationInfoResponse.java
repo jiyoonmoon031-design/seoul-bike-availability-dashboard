@@ -1,9 +1,9 @@
 package com.example.ddareungi.api.bike;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class StationInfoResponse {
-
 
     private StationInfoData stationInfo;
 
@@ -15,12 +15,19 @@ public class StationInfoResponse {
         this.stationInfo = stationInfo;
     }
 
+
     public static class StationInfoData{
-        private String list_total_count;
+        @JsonProperty("list_total_count")
+        private String listTotalCount;
+
         private List<StationInfo> row;
 
         public String getListTotalCount(){
-            return list_total_count;
+            return listTotalCount;
+        }
+
+        public void setListTotalCount(String listTotalCount) {
+            this.listTotalCount = listTotalCount;
         }
 
         public List<StationInfo> getRow(){
