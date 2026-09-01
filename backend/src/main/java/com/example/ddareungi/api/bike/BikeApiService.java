@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.time.Instant;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.example.ddareungi.domain.snapshot.StationSnapshotRepository;
 import com.example.ddareungi.domain.snapshot.StationSnapshot;
@@ -243,6 +245,8 @@ public class BikeApiService {
 
     public void saveTargetStations() {
 
+        Map<String, Integer> capacityMap = getStationCapacityMap();
+
         String url= "http://openapi.seoul.go.kr:8088/"+ apiKey+ "/json/tbCycleStationInfo/";
 
         String listTotalCountUrl=url+"1/1/";
@@ -296,7 +300,9 @@ public class BikeApiService {
                             stationInfo.getSTA_LOC(),
                             Double.parseDouble(stationInfo.getSTA_LAT()),
                             Double.parseDouble(stationInfo.getSTA_LONG()),
-                            stationInfo.getSTA_ADD1()
+                            stationInfo.getSTA_ADD1(),
+                            capacityMap.get(stationInfo.getRENT_ID())
+
                     );
 
                     stationList.add(station);
@@ -308,5 +314,45 @@ public class BikeApiService {
         }
         stationRepository.saveAll(stationList);
         System.out.println("광진·성동 대여소 기본정보 저장 완료");
+    }
+
+    private Map<String, Integer> getStationCapacityMap(){
+        Map<String, Integer> capacityMap = new HashMap<>();
+
+        String url="http://openapi.seoul.go.kr:8088/"+ apiKey+ "/json/bikeList/";
+
+        int start = 1;
+        int pageSize = 1000;
+
+        while (true){
+            int end = start + pageSize -1;
+            String urlPage = url + start + "/" + end + "/";
+
+            BikeApiResponse response = restClient.get()
+                    .uri(urlPage)
+                    .retrieve()
+                    .body(BikeApiResponse.class);
+
+            if(response==null
+                    ||response.getRentBikeStatus()==null
+                    ||response.getRentBikeStatus().getRow()==null
+            ){ throw new IllegalStateException(
+                    "따릉이 API 응답 데이터 없음. 조회 범위: "
+                            + start + "~" +end
+                );
+            }
+            var stations = response.getRentBikeStatus().getRow();
+            for(BikeStation station:stations){
+                capacityMap.put(station.getStationId(), Integer.parseInt(station.getRackTotCnt()));
+
+            }
+            if(stations.size()<pageSize){
+                break;
+            }
+            start+=pageSize;
+        }
+
+
+        return capacityMap;
     }
 }

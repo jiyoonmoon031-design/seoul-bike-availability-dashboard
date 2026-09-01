@@ -24,6 +24,9 @@ public class Station {
     @Column(name = "address")
     private String address;
 
+    @Column(name = "capacity")
+    private Integer capacity;
+
     protected Station(){
     }
 
@@ -33,7 +36,8 @@ public class Station {
             String district,
             Double latitude,
             Double longitude,
-            String address
+            String address,
+            Integer capacity
     ){
         this.stationId = stationId;
         this.stationName = stationName;
@@ -41,8 +45,15 @@ public class Station {
         this.latitude = latitude;
         this.longitude = longitude;
         this.address = address;
+        this.capacity = capacity;
     }
     public String getStationId() {
         return stationId;
+    }
+    public Integer getCapacity(){
+        return capacity;
+    }
+    public void setCapacity(Integer capacity){
+        this.capacity = capacity;
     }
 }
