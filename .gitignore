@@ -113,3 +113,14 @@ frontend/**/build/
 *.pth
 *.ckpt
 *.onnx
+
+# ============================================================
+# Java / Gradle
+# ============================================================
+
+.gradle/
+**/build/
+*.class
+*.jar
+!backend/gradle/wrapper/gradle-wrapper.jar
+*.iml
