@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 DATE_COL = "기준_날짜"
 TIME_COL = "기준_시간대"
 MODE_COL = "집계_기준"
@@ -19,11 +18,7 @@ EXPECTED_END = pd.Timestamp("2026-07-31")
 
 
 def normalize_station_id(series: pd.Series) -> pd.Series:
-    return (
-        series.astype("string")
-        .str.strip()
-        .str.replace(r"\.0$", "", regex=True)
-    )
+    return series.astype("string").str.strip().str.replace(r"\.0$", "", regex=True)
 
 
 def normalize_hhmm(value) -> str | None:
@@ -64,10 +59,7 @@ def normalize_hhmm(value) -> str | None:
 
 def build_timestamp(df: pd.DataFrame) -> pd.Series:
     date_str = (
-        df[DATE_COL]
-        .astype("string")
-        .str.strip()
-        .str.replace(r"\.0$", "", regex=True)
+        df[DATE_COL].astype("string").str.strip().str.replace(r"\.0$", "", regex=True)
     )
 
     time_str = df[TIME_COL].map(normalize_hhmm)
@@ -109,13 +101,7 @@ def process_file(path: Path, mode: str):
         low_memory=False,
     )
 
-    modes = set(
-        df[MODE_COL]
-        .dropna()
-        .astype(str)
-        .str.strip()
-        .unique()
-    )
+    modes = set(df[MODE_COL].dropna().astype(str).str.strip().unique())
 
     if modes != {expected_mode}:
         raise ValueError(
@@ -138,9 +124,7 @@ def process_file(path: Path, mode: str):
     )
 
     if invalid.any():
-        raise ValueError(
-            f"{path.name}: invalid rows={int(invalid.sum())}"
-        )
+        raise ValueError(f"{path.name}: invalid rows={int(invalid.sum())}")
 
     # Source coverage is determined at date level.
     source_dates = set(df["timestamp"].dt.normalize().unique())
@@ -148,14 +132,11 @@ def process_file(path: Path, mode: str):
     # [t, t+15) base aggregation.
     df["base_time"] = df["timestamp"].dt.floor("15min")
 
-    agg = (
-        df.groupby(
-            ["station_id", "base_time"],
-            observed=True,
-            as_index=False,
-        )[value_col]
-        .sum()
-    )
+    agg = df.groupby(
+        ["station_id", "base_time"],
+        observed=True,
+        as_index=False,
+    )[value_col].sum()
 
     return agg, source_dates
 
@@ -172,9 +153,7 @@ def load_target_stations(path: Path) -> pd.DataFrame:
     missing = required - set(df.columns)
 
     if missing:
-        raise ValueError(
-            f"target station file missing columns: {sorted(missing)}"
-        )
+        raise ValueError(f"target station file missing columns: {sorted(missing)}")
 
     df["station_id"] = normalize_station_id(df["station_id"])
 
@@ -185,8 +164,7 @@ def load_target_stations(path: Path) -> pd.DataFrame:
 
     if invalid_district.any():
         raise ValueError(
-            "target_stations.csv contains districts outside "
-            "Gwangjin/Seongdong"
+            "target_stations.csv contains districts outside " "Gwangjin/Seongdong"
         )
 
     return df
@@ -208,9 +186,7 @@ def load_calendar(path: Path) -> pd.DataFrame:
     missing = required - set(df.columns)
 
     if missing:
-        raise ValueError(
-            f"calendar missing columns: {sorted(missing)}"
-        )
+        raise ValueError(f"calendar missing columns: {sorted(missing)}")
 
     df["date"] = pd.to_datetime(
         df["date"],
@@ -234,13 +210,10 @@ def build_station_coverage(
         ignore_index=True,
     )
 
-    coverage = (
-        seen.groupby("station_id", as_index=False)
-        .agg(
-            first_seen=("base_time", "min"),
-            last_seen=("base_time", "max"),
-            observed_bins=("base_time", "nunique"),
-        )
+    coverage = seen.groupby("station_id", as_index=False).agg(
+        first_seen=("base_time", "min"),
+        last_seen=("base_time", "max"),
+        observed_bins=("base_time", "nunique"),
     )
 
     coverage = target.merge(
@@ -266,15 +239,11 @@ def build_panel(
     rent_idx = rent.set_index(["station_id", "base_time"])["rent_count"]
     return_idx = returns.set_index(["station_id", "base_time"])["return_count"]
 
-    target_lookup = target.set_index("station_id")[
-        ["station_name", "district"]
-    ]
+    target_lookup = target.set_index("station_id")[["station_name", "district"]]
 
     pieces = []
 
-    history_stations = coverage.loc[
-        coverage["has_history"]
-    ].copy()
+    history_stations = coverage.loc[coverage["has_history"]].copy()
 
     all_dates = pd.date_range(
         EXPECTED_START,
@@ -304,9 +273,7 @@ def build_panel(
 
         day = pd.DataFrame(index=idx).reset_index()
 
-        bounds = active[
-            ["station_id", "first_seen", "last_seen"]
-        ]
+        bounds = active[["station_id", "first_seen", "last_seen"]]
 
         day = day.merge(
             bounds,
@@ -320,37 +287,25 @@ def build_panel(
             & (day["base_time"] <= day["last_seen"])
         ].copy()
 
-        day = day.drop(
-            columns=["first_seen", "last_seen"]
-        )
+        day = day.drop(columns=["first_seen", "last_seen"])
 
         source_day_observed = date.normalize() in complete_source_dates
 
         day["source_day_observed"] = source_day_observed
 
         if source_day_observed:
-            keys = pd.MultiIndex.from_frame(
-                day[["station_id", "base_time"]]
-            )
+            keys = pd.MultiIndex.from_frame(day[["station_id", "base_time"]])
 
-            day["rent_count"] = (
-                rent_idx.reindex(keys)
-                .fillna(0)
-                .to_numpy()
-            )
+            day["rent_count"] = rent_idx.reindex(keys).fillna(0).to_numpy()
 
-            day["return_count"] = (
-                return_idx.reindex(keys)
-                .fillna(0)
-                .to_numpy()
-            )
+            day["return_count"] = return_idx.reindex(keys).fillna(0).to_numpy()
 
             day["rent_count"] = day["rent_count"].astype("int32")
             day["return_count"] = day["return_count"].astype("int32")
 
-            day["delta_hist"] = (
-                day["return_count"] - day["rent_count"]
-            ).astype("int32")
+            day["delta_hist"] = (day["return_count"] - day["rent_count"]).astype(
+                "int32"
+            )
 
             day["is_observed"] = True
 
@@ -386,22 +341,13 @@ def build_panel(
     panel["hour"] = panel["base_time"].dt.hour.astype("int8")
     panel["minute"] = panel["base_time"].dt.minute.astype("int8")
 
-    minutes_from_midnight = (
-        panel["hour"].astype("int16") * 60
-        + panel["minute"].astype("int16")
+    minutes_from_midnight = panel["hour"].astype("int16") * 60 + panel["minute"].astype(
+        "int16"
     )
 
     panel["is_peak"] = (
-        (
-            (minutes_from_midnight >= 7 * 60)
-            & (minutes_from_midnight < 9 * 60)
-        )
-        |
-        (
-            (minutes_from_midnight >= 18 * 60)
-            & (minutes_from_midnight < 20 * 60)
-        )
-    )
+        (minutes_from_midnight >= 7 * 60) & (minutes_from_midnight < 9 * 60)
+    ) | ((minutes_from_midnight >= 18 * 60) & (minutes_from_midnight < 20 * 60))
 
     panel = panel[
         [
@@ -477,21 +423,15 @@ def main():
     returns = pd.concat(return_parts, ignore_index=True)
 
     # Guard against accidental overlap or repeated input files.
-    rent = (
-        rent.groupby(
-            ["station_id", "base_time"],
-            as_index=False,
-        )["rent_count"]
-        .sum()
-    )
+    rent = rent.groupby(
+        ["station_id", "base_time"],
+        as_index=False,
+    )["rent_count"].sum()
 
-    returns = (
-        returns.groupby(
-            ["station_id", "base_time"],
-            as_index=False,
-        )["return_count"]
-        .sum()
-    )
+    returns = returns.groupby(
+        ["station_id", "base_time"],
+        as_index=False,
+    )["return_count"].sum()
 
     print()
     print("Rent aggregated rows:", f"{len(rent):,}")
@@ -501,8 +441,7 @@ def main():
     calendar = load_calendar(calendar_path)
 
     complete_source_dates = {
-        pd.Timestamp(x).normalize()
-        for x in rent_dates.intersection(return_dates)
+        pd.Timestamp(x).normalize() for x in rent_dates.intersection(return_dates)
     }
 
     expected_dates = set(
@@ -513,9 +452,7 @@ def main():
         )
     )
 
-    missing_source_dates = sorted(
-        expected_dates - complete_source_dates
-    )
+    missing_source_dates = sorted(expected_dates - complete_source_dates)
 
     print()
     print("=" * 80)
@@ -548,10 +485,7 @@ def main():
 
     print()
     print("History by district:")
-    print(
-        coverage.groupby("district")["has_history"]
-        .agg(["count", "sum"])
-    )
+    print(coverage.groupby("district")["has_history"].agg(["count", "sum"]))
 
     print()
     print("=" * 80)
@@ -593,9 +527,7 @@ def main():
         encoding="utf-8-sig",
     )
 
-    pd.DataFrame(
-        {"date": missing_source_dates}
-    ).to_csv(
+    pd.DataFrame({"date": missing_source_dates}).to_csv(
         missing_path,
         index=False,
         encoding="utf-8-sig",

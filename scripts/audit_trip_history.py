@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
 import re
+from pathlib import Path
 
 import pandas as pd
-
 
 DATA_ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 TRIP_DIR = DATA_ROOT / "interim" / "trip"
@@ -19,11 +18,7 @@ COUNT_COL = "전체_건수"
 
 
 def norm_station(s: pd.Series) -> pd.Series:
-    return (
-        s.astype("string")
-        .str.strip()
-        .str.replace(r"\.0$", "", regex=True)
-    )
+    return s.astype("string").str.strip().str.replace(r"\.0$", "", regex=True)
 
 
 def normalize_hhmm(value):
@@ -101,10 +96,7 @@ for path in sorted(TRIP_DIR.glob("*.csv")):
 
     invalid_time = parsed_time.isna().sum()
 
-    non_5min = sum(
-        x is not None and x[1] % 5 != 0
-        for x in parsed_time
-    )
+    non_5min = sum(x is not None and x[1] % 5 != 0 for x in parsed_time)
 
     count_numeric = pd.to_numeric(
         df[COUNT_COL],
@@ -115,12 +107,7 @@ for path in sorted(TRIP_DIR.glob("*.csv")):
     negative_count = (count_numeric < 0).sum()
 
     mode_values = sorted(
-        df[MODE_COL]
-        .dropna()
-        .astype(str)
-        .str.strip()
-        .unique()
-        .tolist()
+        df[MODE_COL].dropna().astype(str).str.strip().unique().tolist()
     )
 
     station_ids = set(df[station_col].dropna())
@@ -153,10 +140,7 @@ for path in sorted(TRIP_DIR.glob("*.csv")):
     print("missing calendar dates:", len(missing_dates))
 
     if len(missing_dates):
-        print(
-            "MISSING:",
-            ", ".join(d.strftime("%Y-%m-%d") for d in missing_dates)
-        )
+        print("MISSING:", ", ".join(d.strftime("%Y-%m-%d") for d in missing_dates))
 
     print("unique target-side stations:", len(station_ids))
     print("outside target station IDs:", len(outside_target))
@@ -172,10 +156,7 @@ for path in sorted(TRIP_DIR.glob("*.csv")):
     print("exact duplicate rows:", exact_dupes)
 
     if mode_values != [expected_mode]:
-        print(
-            f"WARNING: expected mode={expected_mode}, "
-            f"actual={mode_values}"
-        )
+        print(f"WARNING: expected mode={expected_mode}, " f"actual={mode_values}")
 
     results.append(
         {
@@ -187,8 +168,7 @@ for path in sorted(TRIP_DIR.glob("*.csv")):
             "unique_dates": len(observed_dates),
             "missing_dates": len(missing_dates),
             "missing_date_list": ",".join(
-                d.strftime("%Y-%m-%d")
-                for d in missing_dates
+                d.strftime("%Y-%m-%d") for d in missing_dates
             ),
             "unique_stations": len(station_ids),
             "outside_target_stations": len(outside_target),

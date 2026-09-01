@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 ENCODINGS = ("utf-8-sig", "utf-8", "cp949", "euc-kr")
 
 
@@ -34,10 +33,7 @@ def inspect_dir(label: str, path: Path):
         print("MISSING")
         return
 
-    files = sorted(
-        p for p in path.rglob("*")
-        if p.is_file()
-    )
+    files = sorted(p for p in path.rglob("*") if p.is_file())
 
     print("FILE COUNT:", len(files))
 

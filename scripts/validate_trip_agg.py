@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 DATA_ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 PATH = DATA_ROOT / "processed" / "trip" / "trip_agg_15m.parquet"
 
@@ -34,8 +33,7 @@ print(df["is_observed"].value_counts())
 # ------------------------------------------------------------------
 
 bad_alignment = (
-    (df["base_time"].dt.minute % 15 != 0)
-    | (df["base_time"].dt.second != 0)
+    (df["base_time"].dt.minute % 15 != 0) | (df["base_time"].dt.second != 0)
 ).sum()
 
 print()
@@ -48,15 +46,25 @@ print("bad 15-min alignment:", int(bad_alignment))
 obs = df["is_observed"]
 unobs = ~obs
 
-observed_nulls = df.loc[
-    obs,
-    ["rent_count", "return_count", "delta_hist"],
-].isna().any(axis=1).sum()
+observed_nulls = (
+    df.loc[
+        obs,
+        ["rent_count", "return_count", "delta_hist"],
+    ]
+    .isna()
+    .any(axis=1)
+    .sum()
+)
 
-unobserved_nonnull = df.loc[
-    unobs,
-    ["rent_count", "return_count", "delta_hist"],
-].notna().any(axis=1).sum()
+unobserved_nonnull = (
+    df.loc[
+        unobs,
+        ["rent_count", "return_count", "delta_hist"],
+    ]
+    .notna()
+    .any(axis=1)
+    .sum()
+)
 
 print("observed rows with null counts:", int(observed_nulls))
 print(
@@ -68,15 +76,11 @@ print(
 # Delta identity
 # ------------------------------------------------------------------
 
-calc_delta = (
-    df.loc[obs, "return_count"].astype("int64")
-    - df.loc[obs, "rent_count"].astype("int64")
-)
+calc_delta = df.loc[obs, "return_count"].astype("int64") - df.loc[
+    obs, "rent_count"
+].astype("int64")
 
-delta_errors = (
-    calc_delta
-    != df.loc[obs, "delta_hist"].astype("int64")
-).sum()
+delta_errors = (calc_delta != df.loc[obs, "delta_hist"].astype("int64")).sum()
 
 print("delta_hist identity errors:", int(delta_errors))
 
@@ -84,13 +88,9 @@ print("delta_hist identity errors:", int(delta_errors))
 # Negative counts
 # ------------------------------------------------------------------
 
-negative_rent = (
-    df.loc[obs, "rent_count"] < 0
-).sum()
+negative_rent = (df.loc[obs, "rent_count"] < 0).sum()
 
-negative_return = (
-    df.loc[obs, "return_count"] < 0
-).sum()
+negative_return = (df.loc[obs, "return_count"] < 0).sum()
 
 print("negative rent counts:", int(negative_rent))
 print("negative return counts:", int(negative_return))
@@ -99,9 +99,7 @@ print("negative return counts:", int(negative_return))
 # Duplicate unit
 # ------------------------------------------------------------------
 
-duplicates = df.duplicated(
-    subset=["station_id", "base_time"]
-).sum()
+duplicates = df.duplicated(subset=["station_id", "base_time"]).sum()
 
 print("duplicate station_id/base_time:", int(duplicates))
 
@@ -110,9 +108,7 @@ print("duplicate station_id/base_time:", int(duplicates))
 # ------------------------------------------------------------------
 
 missing_dates = (
-    df.loc[~df["source_day_observed"], "date"]
-    .drop_duplicates()
-    .sort_values()
+    df.loc[~df["source_day_observed"], "date"].drop_duplicates().sort_values()
 )
 
 print()

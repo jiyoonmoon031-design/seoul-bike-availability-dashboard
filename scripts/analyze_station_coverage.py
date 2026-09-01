@@ -2,15 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 
-
 DATA_ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 
-coverage_path = (
-    DATA_ROOT
-    / "processed"
-    / "trip"
-    / "station_history_coverage.csv"
-)
+coverage_path = DATA_ROOT / "processed" / "trip" / "station_history_coverage.csv"
 
 out_dir = Path("reports/week02")
 out_dir.mkdir(parents=True, exist_ok=True)
@@ -39,22 +33,15 @@ seen.to_csv(
     encoding="utf-8-sig",
 )
 
-summary = (
-    df.groupby("district")
-    .agg(
-        target_stations=("station_id", "count"),
-        historical_stations=("has_history", "sum"),
-    )
+summary = df.groupby("district").agg(
+    target_stations=("station_id", "count"),
+    historical_stations=("has_history", "sum"),
 )
 
-summary["never_seen"] = (
-    summary["target_stations"]
-    - summary["historical_stations"]
-)
+summary["never_seen"] = summary["target_stations"] - summary["historical_stations"]
 
 summary["history_coverage_rate"] = (
-    summary["historical_stations"]
-    / summary["target_stations"]
+    summary["historical_stations"] / summary["target_stations"]
 )
 
 print("=" * 80)
@@ -67,9 +54,7 @@ print()
 print("Never seen:", len(never_seen))
 
 print(
-    never_seen[
-        ["station_id", "station_name", "district"]
-    ]
+    never_seen[["station_id", "station_name", "district"]]
     .sort_values(["district", "station_id"])
     .to_string(index=False)
 )

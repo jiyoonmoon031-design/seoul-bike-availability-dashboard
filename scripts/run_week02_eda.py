@@ -3,7 +3,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-
 DATA_ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 TRIP = DATA_ROOT / "processed" / "trip" / "trip_agg_15m.parquet"
 
@@ -217,15 +216,9 @@ station = (
     .reset_index()
 )
 
-station["total_activity"] = (
-    station["rent_total"]
-    + station["return_total"]
-)
+station["total_activity"] = station["rent_total"] + station["return_total"]
 
-station["nonzero_delta_rate"] = (
-    station["nonzero_delta_bins"]
-    / station["observed_bins"]
-)
+station["nonzero_delta_rate"] = station["nonzero_delta_bins"] / station["observed_bins"]
 
 station = station.sort_values(
     "total_activity",
@@ -266,10 +259,7 @@ delta_counts = (
     .reset_index(name="count")
 )
 
-delta_counts["proportion"] = (
-    delta_counts["count"]
-    / delta_counts["count"].sum()
-)
+delta_counts["proportion"] = delta_counts["count"] / delta_counts["count"].sum()
 
 delta_counts.to_csv(
     REPORT_DIR / "eda_delta_hist_distribution.csv",

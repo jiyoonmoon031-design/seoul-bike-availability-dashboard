@@ -3,17 +3,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+DATA_ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 
-DATA_ROOT = Path(
-    "/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data"
-)
-
-INPUT = (
-    DATA_ROOT
-    / "processed"
-    / "trip"
-    / "trip_targets_15_30_60.parquet"
-)
+INPUT = DATA_ROOT / "processed" / "trip" / "trip_targets_15_30_60.parquet"
 
 REPORT_DIR = Path("reports/week02")
 FIG_DIR = Path("reports/figures")

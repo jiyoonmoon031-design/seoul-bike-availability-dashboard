@@ -2,31 +2,16 @@ from pathlib import Path
 
 import pandas as pd
 
+DATA_ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 
-DATA_ROOT = Path(
-    "/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data"
-)
+INPUT = DATA_ROOT / "processed" / "trip" / "trip_agg_15m.parquet"
 
-INPUT = (
-    DATA_ROOT
-    / "processed"
-    / "trip"
-    / "trip_agg_15m.parquet"
-)
-
-OUTPUT = (
-    DATA_ROOT
-    / "processed"
-    / "trip"
-    / "trip_targets_15_30_60.parquet"
-)
+OUTPUT = DATA_ROOT / "processed" / "trip" / "trip_targets_15_30_60.parquet"
 
 
 df = pd.read_parquet(INPUT)
 
-df = df.sort_values(
-    ["station_id", "base_time"]
-).reset_index(drop=True)
+df = df.sort_values(["station_id", "base_time"]).reset_index(drop=True)
 
 g = df.groupby(
     "station_id",
@@ -49,32 +34,20 @@ for k in range(4):
 # Continuity checks
 # ----------------------------------------------------------
 
-continuous_15 = (
-    df["time_t0"].notna()
-    & df["obs_t0"].fillna(False)
-)
+continuous_15 = df["time_t0"].notna() & df["obs_t0"].fillna(False)
 
 continuous_30 = (
     continuous_15
     & df["obs_t1"].fillna(False)
-    & (
-        df["time_t1"] - df["time_t0"]
-        == pd.Timedelta(minutes=15)
-    )
+    & (df["time_t1"] - df["time_t0"] == pd.Timedelta(minutes=15))
 )
 
 continuous_60 = (
     continuous_30
     & df["obs_t2"].fillna(False)
     & df["obs_t3"].fillna(False)
-    & (
-        df["time_t2"] - df["time_t1"]
-        == pd.Timedelta(minutes=15)
-    )
-    & (
-        df["time_t3"] - df["time_t2"]
-        == pd.Timedelta(minutes=15)
-    )
+    & (df["time_t2"] - df["time_t1"] == pd.Timedelta(minutes=15))
+    & (df["time_t3"] - df["time_t2"] == pd.Timedelta(minutes=15))
 )
 
 
@@ -82,20 +55,12 @@ continuous_60 = (
 # Targets
 # ----------------------------------------------------------
 
-df["delta_hist_h15"] = (
-    df["delta_t0"]
-    .where(continuous_15)
-)
+df["delta_hist_h15"] = df["delta_t0"].where(continuous_15)
 
-df["delta_hist_h30"] = (
-    df["delta_t0"] + df["delta_t1"]
-).where(continuous_30)
+df["delta_hist_h30"] = (df["delta_t0"] + df["delta_t1"]).where(continuous_30)
 
 df["delta_hist_h60"] = (
-    df["delta_t0"]
-    + df["delta_t1"]
-    + df["delta_t2"]
-    + df["delta_t3"]
+    df["delta_t0"] + df["delta_t1"] + df["delta_t2"] + df["delta_t3"]
 ).where(continuous_60)
 
 
