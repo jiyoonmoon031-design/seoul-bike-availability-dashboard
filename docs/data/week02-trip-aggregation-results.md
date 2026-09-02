@@ -153,3 +153,67 @@ The initially delivered weather dataset is ASOS Seoul station 108.
 It is excluded from the current modeling pipeline because Week 01 selected KMA AWS Seongdong station 421.
 
 Weather integration remains pending until the corrected AWS 421 dataset is delivered.
+
+## Weather and calendar EDA
+
+KMA AWS Seongdong station 421 was validated and integrated with the historical station-time dataset.
+
+The weather source provides hourly:
+
+- temperature
+- precipitation
+- humidity
+- wind speed
+
+### Seasonal activity
+
+| Season | Mean total activity / 15 min |
+|---|---:|
+| Spring | 209.37 |
+| Summer | 203.06 |
+| Autumn | 202.85 |
+| Winter | 102.30 |
+
+Winter activity was substantially lower than the other seasons.
+
+### Holiday comparison
+
+| Day type | Mean total activity / 15 min |
+|---|---:|
+| Non-holiday | 181.36 |
+| Holiday | 147.76 |
+
+Observed activity was lower on holidays.
+
+### Temperature
+
+Activity increased across the empirical temperature quartiles:
+
+| Temperature group | Mean activity |
+|---|---:|
+| Lowest | 96.76 |
+| Q2 | 167.66 |
+| Q3 | 212.17 |
+| Highest | 241.73 |
+
+### Precipitation
+
+| Condition | Mean activity |
+|---|---:|
+| Dry | 186.67 |
+| Rain observed | 42.99 |
+
+Rain-observed intervals showed substantially lower activity.
+
+### Spearman correlations
+
+| Variable | Correlation with activity |
+|---|---:|
+| Temperature | +0.397 |
+| Precipitation | -0.309 |
+| Humidity | -0.319 |
+| Wind speed | +0.178 |
+
+These relationships are descriptive EDA results and are not interpreted as causal effects.
+
+Weather, calendar, temporal, district, station activity, and target-sparsity analyses are now included in the Week 02 model-side EDA.
