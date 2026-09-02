@@ -2,50 +2,26 @@ from pathlib import Path
 
 import pandas as pd
 
+ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 
-ROOT = Path(
-    "/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data"
-)
+TRIP = ROOT / "processed/trip/trip_targets_15_30_60.parquet"
 
-TRIP = (
-    ROOT
-    / "processed/trip/trip_targets_15_30_60.parquet"
-)
+WEATHER = ROOT / "processed/weather/weather_421_normalized.parquet"
 
-WEATHER = (
-    ROOT
-    / "processed/weather/weather_421_normalized.parquet"
-)
+OUTPUT = ROOT / "processed/trip/" "trip_targets_weather_15_30_60.parquet"
 
-OUTPUT = (
-    ROOT
-    / "processed/trip/"
-    "trip_targets_weather_15_30_60.parquet"
-)
-
-REPORT = Path(
-    "reports/week02/weather_join_summary.csv"
-)
+REPORT = Path("reports/week02/weather_join_summary.csv")
 
 
 trip = pd.read_parquet(TRIP)
 weather = pd.read_parquet(WEATHER)
 
-trip["base_time_kst"] = (
-    pd.to_datetime(trip["base_time"])
-    .dt.tz_localize("Asia/Seoul")
-)
+trip["base_time_kst"] = pd.to_datetime(trip["base_time"]).dt.tz_localize("Asia/Seoul")
 
 # Weather mapping only once per timestamp, not once per station.
-base_times = (
-    trip[["base_time_kst"]]
-    .drop_duplicates()
-    .sort_values("base_time_kst")
-)
+base_times = trip[["base_time_kst"]].drop_duplicates().sort_values("base_time_kst")
 
-weather = weather.sort_values(
-    "weather_obs_time"
-)
+weather = weather.sort_values("weather_obs_time")
 
 mapping = pd.merge_asof(
     base_times,
@@ -57,17 +33,10 @@ mapping = pd.merge_asof(
 )
 
 mapping["weather_age_min"] = (
-    (
-        mapping["base_time_kst"]
-        - mapping["weather_obs_time"]
-    )
-    .dt.total_seconds()
-    / 60
-)
+    mapping["base_time_kst"] - mapping["weather_obs_time"]
+).dt.total_seconds() / 60
 
-mapping["weather_available"] = (
-    mapping["weather_obs_time"].notna()
-)
+mapping["weather_available"] = mapping["weather_obs_time"].notna()
 
 trip = trip.merge(
     mapping,

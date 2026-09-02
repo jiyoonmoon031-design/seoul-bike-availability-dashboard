@@ -3,16 +3,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data")
 
-ROOT = Path(
-    "/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data"
-)
-
-INPUT = (
-    ROOT
-    / "processed/trip/"
-    "trip_targets_weather_15_30_60.parquet"
-)
+INPUT = ROOT / "processed/trip/" "trip_targets_weather_15_30_60.parquet"
 
 REPORT = Path("reports/week02")
 FIG = Path("reports/figures")
@@ -27,28 +20,22 @@ df = df.loc[df["is_observed"]].copy()
 
 # Aggregate across stations before weather analysis so each
 # timestamp is not artificially weighted by station count.
-system = (
-    df.groupby(
-        "base_time_kst",
-        as_index=False,
-    )
-    .agg(
-        rent_total=("rent_count", "sum"),
-        return_total=("return_count", "sum"),
-        temp_c=("temp_c", "first"),
-        precip_mm=("precip_mm", "first"),
-        humidity_pct=("humidity_pct", "first"),
-        wind_ms=("wind_ms", "first"),
-        season=("season", "first"),
-        is_holiday=("is_holiday", "first"),
-        weather_available=("weather_available", "first"),
-    )
+system = df.groupby(
+    "base_time_kst",
+    as_index=False,
+).agg(
+    rent_total=("rent_count", "sum"),
+    return_total=("return_count", "sum"),
+    temp_c=("temp_c", "first"),
+    precip_mm=("precip_mm", "first"),
+    humidity_pct=("humidity_pct", "first"),
+    wind_ms=("wind_ms", "first"),
+    season=("season", "first"),
+    is_holiday=("is_holiday", "first"),
+    weather_available=("weather_available", "first"),
 )
 
-system["total_activity"] = (
-    system["rent_total"]
-    + system["return_total"]
-)
+system["total_activity"] = system["rent_total"] + system["return_total"]
 
 
 season = (
@@ -85,9 +72,7 @@ holiday.to_csv(
 )
 
 
-temp_df = system.loc[
-    system["temp_c"].notna()
-].copy()
+temp_df = system.loc[system["temp_c"].notna()].copy()
 
 temp_df["temp_bin"] = pd.qcut(
     temp_df["temp_c"],
@@ -116,9 +101,7 @@ temp.to_csv(
 )
 
 
-rain = system.loc[
-    system["precip_mm"].notna()
-].copy()
+rain = system.loc[system["precip_mm"].notna()].copy()
 
 rain["rain_flag"] = rain["precip_mm"] > 0
 
@@ -148,9 +131,7 @@ corr = system[
     ]
 ].corr(method="spearman")
 
-corr.to_csv(
-    REPORT / "eda_weather_spearman.csv"
-)
+corr.to_csv(REPORT / "eda_weather_spearman.csv")
 
 
 # Figures

@@ -1,6 +1,6 @@
 from pathlib import Path
-import pandas as pd
 
+import pandas as pd
 
 ROOT = Path("/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data 2")
 
@@ -21,10 +21,7 @@ def choose_column(columns, preferred, keyword):
     if preferred in columns:
         return preferred
 
-    candidates = [
-        c for c in columns
-        if keyword in str(c) and "QC" not in str(c)
-    ]
+    candidates = [c for c in columns if keyword in str(c) and "QC" not in str(c)]
 
     return candidates[0] if candidates else None
 
@@ -87,20 +84,11 @@ for path in files:
     print("end  :", ts.max())
     print("invalid timestamps:", int(ts.isna().sum()))
 
-    unique_ts = (
-        ts.dropna()
-        .drop_duplicates()
-        .sort_values()
-    )
+    unique_ts = ts.dropna().drop_duplicates().sort_values()
 
     if len(unique_ts) > 1:
         cadence = (
-            unique_ts.diff()
-            .dropna()
-            .dt.total_seconds()
-            .div(60)
-            .value_counts()
-            .head(10)
+            unique_ts.diff().dropna().dt.total_seconds().div(60).value_counts().head(10)
         )
 
         print()
@@ -110,26 +98,18 @@ for path in files:
     print()
     print("missing values:")
 
-    selected = [
-        c for c in
-        [temp_col, rain_col, wind_col, humid_col]
-        if c is not None
-    ]
+    selected = [c for c in [temp_col, rain_col, wind_col, humid_col] if c is not None]
 
     if selected:
         print(df[selected].isna().sum().to_string())
 
     station_ok = stations == [421] or set(stations) == {421}
 
-    period_ok = (
-        ts.min() <= pd.Timestamp("2025-08-01")
-        and ts.max() >= pd.Timestamp("2026-07-31")
+    period_ok = ts.min() <= pd.Timestamp("2025-08-01") and ts.max() >= pd.Timestamp(
+        "2026-07-31"
     )
 
-    vars_ok = all(
-        c is not None
-        for c in [temp_col, rain_col, wind_col, humid_col]
-    )
+    vars_ok = all(c is not None for c in [temp_col, rain_col, wind_col, humid_col])
 
     print()
     print("station 421:", "PASS" if station_ok else "FAIL")
@@ -151,9 +131,7 @@ if len(valid_files) != 1:
     for p in valid_files:
         print(p)
 
-    raise SystemExit(
-        "Need exactly one validated AWS 421 source file."
-    )
+    raise SystemExit("Need exactly one validated AWS 421 source file.")
 
 print("PASS: AWS 421 source validated")
 print("FILE:", valid_files[0])

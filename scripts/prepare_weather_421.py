@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 INPUT = Path(
     "/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data/"
     "raw/weather/aws421/aws421_202508_202607.csv"
@@ -44,36 +43,20 @@ required = {
 missing_cols = required - set(df.columns)
 
 if missing_cols:
-    raise ValueError(
-        f"Missing required columns: {sorted(missing_cols)}"
-    )
+    raise ValueError(f"Missing required columns: {sorted(missing_cols)}")
 
 weather = pd.DataFrame(
     {
-        "weather_station_id": pd.to_numeric(
-            df["지점"], errors="coerce"
-        ),
-        "weather_obs_time": pd.to_datetime(
-            df["일시"], errors="coerce"
-        ),
-        "temp_c": pd.to_numeric(
-            df["기온(°C)"], errors="coerce"
-        ),
-        "precip_mm": pd.to_numeric(
-            df["강수량(mm)"], errors="coerce"
-        ),
-        "wind_ms": pd.to_numeric(
-            df["풍속(m/s)"], errors="coerce"
-        ),
-        "humidity_pct": pd.to_numeric(
-            df["습도(%)"], errors="coerce"
-        ),
+        "weather_station_id": pd.to_numeric(df["지점"], errors="coerce"),
+        "weather_obs_time": pd.to_datetime(df["일시"], errors="coerce"),
+        "temp_c": pd.to_numeric(df["기온(°C)"], errors="coerce"),
+        "precip_mm": pd.to_numeric(df["강수량(mm)"], errors="coerce"),
+        "wind_ms": pd.to_numeric(df["풍속(m/s)"], errors="coerce"),
+        "humidity_pct": pd.to_numeric(df["습도(%)"], errors="coerce"),
     }
 )
 
-weather = weather.loc[
-    weather["weather_station_id"].eq(421)
-].copy()
+weather = weather.loc[weather["weather_station_id"].eq(421)].copy()
 
 weather = weather.loc[
     weather["weather_obs_time"].between(
@@ -82,21 +65,14 @@ weather = weather.loc[
     )
 ].copy()
 
-weather = weather.dropna(
-    subset=["weather_obs_time"]
-)
+weather = weather.dropna(subset=["weather_obs_time"])
 
-weather = weather.sort_values(
-    "weather_obs_time"
-).drop_duplicates(
+weather = weather.sort_values("weather_obs_time").drop_duplicates(
     subset=["weather_obs_time"],
     keep="last",
 )
 
-weather["weather_obs_time"] = (
-    weather["weather_obs_time"]
-    .dt.tz_localize("Asia/Seoul")
-)
+weather["weather_obs_time"] = weather["weather_obs_time"].dt.tz_localize("Asia/Seoul")
 
 # Preserve missingness explicitly.
 for col in (
@@ -132,9 +108,7 @@ report = pd.DataFrame(
     }
 )
 
-report["missing_rate"] = (
-    report["missing_count"] / len(weather)
-)
+report["missing_rate"] = report["missing_count"] / len(weather)
 
 report.to_csv(
     REPORT,
@@ -148,9 +122,7 @@ print("=" * 80)
 print("rows:", f"{len(weather):,}")
 print("start:", weather["weather_obs_time"].min())
 print("end:", weather["weather_obs_time"].max())
-print("duplicates:", int(
-    weather["weather_obs_time"].duplicated().sum()
-))
+print("duplicates:", int(weather["weather_obs_time"].duplicated().sum()))
 
 print()
 print(report.to_string(index=False))
