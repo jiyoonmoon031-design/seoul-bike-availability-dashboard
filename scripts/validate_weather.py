@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 # 1. AWS 원본 데이터 불러오기
 file_path = "D:/ddareungi_data/raw/weather/OBS_AWS_TIM_20260902035520.csv"
 
@@ -10,8 +9,7 @@ df["일시"] = pd.to_datetime(df["일시"])
 
 # 2. 학습 대상 기간 필터링
 target_df = df[
-    (df["일시"] >= "2025-08-01 00:00") &
-    (df["일시"] < "2026-08-01 00:00")
+    (df["일시"] >= "2025-08-01 00:00") & (df["일시"] < "2026-08-01 00:00")
 ].copy()
 
 
@@ -35,10 +33,7 @@ print("중복 timestamp:", target_df["일시"].duplicated().sum())
 # 6. 시간 간격 및 누락 확인
 time_diff = target_df["일시"].diff()
 
-invalid_time_diff = target_df[
-    time_diff.notna() &
-    (time_diff != pd.Timedelta(hours=1))
-]
+invalid_time_diff = target_df[time_diff.notna() & (time_diff != pd.Timedelta(hours=1))]
 
 print("\n=== 시간 간격 ===")
 print(time_diff.value_counts())
@@ -51,15 +46,11 @@ print(invalid_time_diff)
 missing_rain = target_df[target_df["강수량(mm)"].isnull()].copy()
 
 missing_rain["time_diff"] = missing_rain["일시"].diff()
-missing_rain["new_group"] = (
-    missing_rain["time_diff"] != pd.Timedelta(hours=1)
-)
+missing_rain["new_group"] = missing_rain["time_diff"] != pd.Timedelta(hours=1)
 missing_rain["group"] = missing_rain["new_group"].cumsum()
 
 rain_missing_summary = missing_rain.groupby("group")["일시"].agg(
-    start="min",
-    end="max",
-    count="size"
+    start="min", end="max", count="size"
 )
 
 print("\n=== 강수량 연속 결측 구간 ===")

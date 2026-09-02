@@ -1,7 +1,7 @@
-import requests
 import xml.etree.ElementTree as ET
-import pandas as pd
 
+import pandas as pd
+import requests
 
 # 한국천문연구원 특일 정보 API
 # API Key는 코드에 직접 작성하지 않고 환경변수 등을 통해 관리한다.
@@ -9,8 +9,7 @@ api_key = ""
 
 url = (
     "https://apis.data.go.kr/B090041/openapi/service/"
-    "SpcdeInfoService/getRestDeInfo?serviceKey="
-    + api_key
+    "SpcdeInfoService/getRestDeInfo?serviceKey=" + api_key
 )
 
 
@@ -25,13 +24,7 @@ for year in ["2025", "2026"]:
         months = ["01", "02", "03", "04", "05", "06", "07"]
 
     for month in months:
-        date_url = (
-            url
-            + "&solYear="
-            + year
-            + "&solMonth="
-            + month
-        )
+        date_url = url + "&solYear=" + year + "&solMonth=" + month
 
         response = requests.get(date_url)
         root = ET.fromstring(response.text)
@@ -52,9 +45,7 @@ dates = pd.date_range(
     freq="D",
 )
 
-calendar_df = pd.DataFrame({
-    "date": dates
-})
+calendar_df = pd.DataFrame({"date": dates})
 
 
 # 요일 정보 생성
@@ -62,17 +53,11 @@ calendar_df["weekday"] = calendar_df["date"].dt.day_name()
 
 
 # 주말 여부 생성
-calendar_df["is_weekend"] = (
-    calendar_df["date"].dt.weekday >= 5
-)
+calendar_df["is_weekend"] = calendar_df["date"].dt.weekday >= 5
 
 
 # 공휴일 여부 생성
-calendar_df["is_holiday"] = (
-    calendar_df["date"]
-    .dt.strftime("%Y%m%d")
-    .isin(holidays)
-)
+calendar_df["is_holiday"] = calendar_df["date"].dt.strftime("%Y%m%d").isin(holidays)
 
 
 # Calendar 데이터 저장
