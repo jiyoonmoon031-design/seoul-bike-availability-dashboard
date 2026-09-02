@@ -69,10 +69,13 @@ logs/
 data/raw/*
 data/interim/*
 data/processed/*
+data/reference/*
 
-!data/raw/.gitkeep
-!data/interim/.gitkeep
-!data/processed/.gitkeep
+# Keep directory documentation
+!data/raw/README.md
+!data/interim/README.md
+!data/processed/README.md
+!data/reference/README.md
 
 # sample data may be committed
 !data/sample/
