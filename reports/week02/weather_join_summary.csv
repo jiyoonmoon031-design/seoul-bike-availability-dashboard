@@ -1,0 +1,8 @@
+metric,value
+rows,6377643.0
+weather_available_rows,6377643.0
+weather_unavailable_rows,0.0
+temp_missing_rate,0.00011414875370101462
+precip_missing_rate,0.009352671512030385
+wind_missing_rate,0.00022829750740202925
+humidity_missing_rate,0.00011414875370101462
