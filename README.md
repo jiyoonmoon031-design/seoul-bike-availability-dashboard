@@ -256,6 +256,7 @@ Project period:
 - [Contributing](CONTRIBUTING.md)
 - [Interface Documentation](docs/interface/README.md)
 - [Weekly Technical Deliverables](docs/weekly/README.md)
+- [Week 03 Feature Engineering and Naive Baseline](docs/model/week03-feature-baseline.md)
 
 일반 개발 흐름:
 
