@@ -11,8 +11,8 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from src.modeling.naive_baseline import (  # noqa: E402
-    add_naive_predictions,
+from src.modeling.naive_baseline import add_naive_predictions  # noqa: E402
+from src.modeling.naive_baseline import (
     assign_chronological_splits,
     evaluate_naive_baselines,
 )

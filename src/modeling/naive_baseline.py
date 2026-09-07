@@ -27,9 +27,7 @@ def add_naive_predictions(
 
     required = {"station_id", "base_time"}
     for horizon in horizons:
-        required.update(
-            {f"delta_hist_h{horizon}", f"target_h{horizon}_valid"}
-        )
+        required.update({f"delta_hist_h{horizon}", f"target_h{horizon}_valid"})
     missing = required - set(frame.columns)
     if missing:
         raise FeatureContractError(f"missing baseline columns: {sorted(missing)}")
@@ -152,9 +150,7 @@ def _active_stations(
     required = {"rent_count", "return_count", "is_observed", "split"}
     missing = required - set(frame.columns)
     if missing:
-        raise FeatureContractError(
-            f"missing ACTIVE segment columns: {sorted(missing)}"
-        )
+        raise FeatureContractError(f"missing ACTIVE segment columns: {sorted(missing)}")
 
     train = frame.loc[frame["split"].eq("train") & frame["is_observed"].astype(bool)]
     if train.empty:
@@ -184,7 +180,9 @@ def _metric_row(
     horizon: int | None,
     active_threshold: float,
 ) -> dict[str, object]:
-    evaluated = candidates.loc[eligible, [target_column, prediction_column, "base_time"]]
+    evaluated = candidates.loc[
+        eligible, [target_column, prediction_column, "base_time"]
+    ]
     if evaluated.empty:
         mae = np.nan
         rmse = np.nan
@@ -192,10 +190,9 @@ def _metric_row(
         date_start = pd.NaT
         date_end = pd.NaT
     else:
-        error = (
-            evaluated[prediction_column].astype(float)
-            - evaluated[target_column].astype(float)
-        )
+        error = evaluated[prediction_column].astype(float) - evaluated[
+            target_column
+        ].astype(float)
         mae = float(error.abs().mean())
         rmse = float(np.sqrt(np.square(error).mean()))
         zero_rate = float(evaluated[target_column].eq(0).mean())
