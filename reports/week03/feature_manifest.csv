@@ -1,0 +1,66 @@
+column,role,available_at
+station_id,feature,at or before base_time
+station_name,audit_only,not allowed as model input
+district,feature,at or before base_time
+base_time,identity,at base_time
+date,audit_only,not allowed as model input
+hour,feature,at or before base_time
+minute,feature,at or before base_time
+weekday,audit_only,not allowed as model input
+is_weekend,feature,at or before base_time
+is_holiday,feature,at or before base_time
+is_peak,feature,at or before base_time
+rent_count,audit_only,not allowed as model input
+return_count,audit_only,not allowed as model input
+delta_hist,audit_only,not allowed as model input
+source_day_observed,audit_only,not allowed as model input
+is_observed,audit_only,not allowed as model input
+delta_hist_h15,target,after target window
+delta_hist_h30,target,after target window
+delta_hist_h60,target,after target window
+target_h15_valid,target,after target window
+target_h30_valid,target,after target window
+target_h60_valid,target,after target window
+base_time_kst,passthrough,review before model use
+weather_station_id,audit_only,not allowed as model input
+weather_obs_time,audit_only,not allowed as model input
+temp_c,feature,at or before base_time
+precip_mm,feature,at or before base_time
+wind_ms,feature,at or before base_time
+humidity_pct,feature,at or before base_time
+temp_c_missing,feature,at or before base_time
+precip_mm_missing,feature,at or before base_time
+wind_ms_missing,feature,at or before base_time
+humidity_pct_missing,feature,at or before base_time
+weather_age_min,feature,at or before base_time
+weather_available,feature,at or before base_time
+season,audit_only,not allowed as model input
+weekday_index,feature,at or before base_time
+month,feature,at or before base_time
+day_of_year,feature,at or before base_time
+is_holiday_or_weekend,feature,at or before base_time
+time_of_day_sin,feature,at or before base_time
+time_of_day_cos,feature,at or before base_time
+weekday_sin,feature,at or before base_time
+weekday_cos,feature,at or before base_time
+rent_prev_15m,feature,at or before base_time
+return_prev_15m,feature,at or before base_time
+delta_prev_15m,feature,at or before base_time
+history_15m_available,feature,at or before base_time
+rent_prev_30m,feature,at or before base_time
+return_prev_30m,feature,at or before base_time
+delta_prev_30m,feature,at or before base_time
+history_30m_available,feature,at or before base_time
+rent_prev_60m,feature,at or before base_time
+return_prev_60m,feature,at or before base_time
+delta_prev_60m,feature,at or before base_time
+history_60m_available,feature,at or before base_time
+rent_mean_prev_24h,feature,at or before base_time
+return_mean_prev_24h,feature,at or before base_time
+delta_mean_prev_24h,feature,at or before base_time
+history_24h_observations,feature,at or before base_time
+history_24h_available,feature,at or before base_time
+delta_lag_1d,feature,at or before base_time
+delta_lag_7d,feature,at or before base_time
+lag_1d_available,feature,at or before base_time
+lag_7d_available,feature,at or before base_time
