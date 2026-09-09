@@ -11,8 +11,8 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from src.modeling.feature_engineering import (  # noqa: E402
-    HORIZONS,
+from src.modeling.feature_engineering import HORIZONS  # noqa: E402
+from src.modeling.feature_engineering import (
     build_feature_manifest,
     build_week03_features,
     get_model_feature_columns,

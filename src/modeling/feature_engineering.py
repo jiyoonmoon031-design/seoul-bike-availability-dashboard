@@ -305,8 +305,7 @@ def _history_window(
         components.append(value)
         available &= observed.fillna(False).astype(bool)
         available &= timestamp.eq(
-            frame["base_time"]
-            - pd.Timedelta(minutes=offset * BASE_INTERVAL_MIN)
+            frame["base_time"] - pd.Timedelta(minutes=offset * BASE_INTERVAL_MIN)
         )
 
     total = pd.concat(components, axis=1).sum(axis=1, min_count=steps)
@@ -459,17 +458,20 @@ def build_feature_manifest(frame: pd.DataFrame) -> pd.DataFrame:
     targets = {
         column
         for column in frame.columns
-        if column.startswith("delta_hist_h")
-        or column.startswith("target_h")
+        if column.startswith("delta_hist_h") or column.startswith("target_h")
     }
-    audit = set(CURRENT_ACTIVITY_COLUMNS) | set(OBSERVATION_COLUMNS) | {
-        "weather_obs_time",
-        "weather_station_id",
-        "date",
-        "weekday",
-        "season",
-        "station_name",
-    }
+    audit = (
+        set(CURRENT_ACTIVITY_COLUMNS)
+        | set(OBSERVATION_COLUMNS)
+        | {
+            "weather_obs_time",
+            "weather_station_id",
+            "date",
+            "weekday",
+            "season",
+            "station_name",
+        }
+    )
 
     rows = []
     for column in frame.columns:

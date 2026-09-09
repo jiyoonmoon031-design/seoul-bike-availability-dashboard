@@ -67,9 +67,7 @@ def make_week02_panel(
             grouped["is_observed"].shift(-offset).fillna(False).astype(bool)
             for offset in range(steps)
         ]
-        timestamps = [
-            grouped["base_time"].shift(-offset) for offset in range(steps)
-        ]
+        timestamps = [grouped["base_time"].shift(-offset) for offset in range(steps)]
 
         valid = pd.Series(True, index=frame.index)
         for offset, (observed, timestamp) in enumerate(
