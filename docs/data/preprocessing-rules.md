@@ -26,11 +26,55 @@ Generated datasets must be reproducible from source data and scripts.
 
 `station_id` is treated as a string.
 
-Do not convert station identifiers to numeric values if that could alter
-the original representation.
+Do not convert station identifiers to numeric values if that could alter the original representation.
 
-Station filtering must be based on the approved Gwangjin/Seongdong
-station master or target station reference.
+The approved Gwangjin-gu/Seongdong-gu station master is used as the reference station list.
+
+Data sources are linked using the following station identifiers:
+
+- Station master: `station_id`
+- Historical rental data: `시작_대여소_ID` → `station_id`
+- Historical return data: `종료_대여소_ID` → `station_id`
+- Real-time bike API: `stationId` → `station_id`
+- Snapshot DB: `station_snapshot.station_id` → `station.station_id`
+
+Station IDs are matched using their original string values without arbitrary ID conversion.
+
+If a station exists in the station master but is not observed in a specific data source, it remains unmatched and is not mapped to another station.
+
+### Station coverage by data source
+
+The Gwangjin-gu/Seongdong-gu station master contains 221 stations.
+
+For the historical trip data from August 2025 to July 2026:
+
+- 185 stations have at least one rental record.
+- 185 stations have at least one return record.
+- The union of stations with rental or return records is 185.
+- 36 master stations have neither rental nor return records during the period.
+
+For the real-time bike data:
+
+- 177 of the 221 master stations were observed.
+- 44 master stations were not observed in the real-time data.
+- All 36 stations absent from the historical trip data are included among these 44 stations.
+- The remaining 8 stations have historical trip records but were not observed in the real-time data.
+
+Absence from a data source is treated as "not observed in the dataset" and is not interpreted as station closure or inactivity without additional evidence.
+
+### Station status and unmatched station handling
+
+Station status is distinguished from data matching status.
+
+- **Matched**: The `station_id` in a source matches a station in the target station master.
+- **Unmatched / not observed**: A station exists in the target master but does not appear in a specific source or observation period.
+- **Inactive**: A station is confirmed as non-operational only when supported by an official source or explicit operational-status information.
+- **New station**: A station is classified as newly established only when its opening or registration date can be verified.
+- **Closed station**: A station is classified as closed only when closure can be verified from an official source or operational-status information.
+
+A station is not classified as inactive, new, or closed solely because it is absent from historical trip data or real-time bike data.
+
+For the current Week 02 datasets, the 36 stations absent from historical trip data and the 44 stations absent from real-time data are therefore treated as **not observed**, unless additional evidence confirms their operational status.
 
 ## 4. Timestamp
 

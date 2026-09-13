@@ -87,4 +87,8 @@
   - latitude
   - longitude
   - capacity
-- Scope: 현재 bikeList에서 확인 가능한 광진구·성동구 대여소
+- Scope: `tbCycleStationInfo` 기준 광진구·성동구 대상 대여소 전체
+- Total target stations: 221
+- Observed in historical trip data: 185
+- Observed in realtime `bikeList`: 177
+- Note: 데이터에서 관측되지 않았다는 사실만으로 폐쇄·비운영 대여소로 판단하지 않는다.
