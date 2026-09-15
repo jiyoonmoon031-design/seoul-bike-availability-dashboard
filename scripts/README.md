@@ -16,6 +16,18 @@ python scripts/run_week03_naive_baseline.py \
 세부 feature, leakage, split, baseline 계약은
 `docs/model/week03-feature-baseline.md`를 따릅니다.
 
+## Week 04 model comparison
+
+```bash
+python scripts/run_week04_model_comparison.py \
+  --input /path/to/week03_features.parquet
+```
+
+Linear Model, Random Forest, LightGBM을 동일한 Week 03 feature와 purge가
+적용된 70/15/15 시간순 분할로 학습합니다. Week 04에서는 validation 결과만
+저장하며 최종 test 평가는 Week 05까지 보존합니다. 세부 재현 절차는
+`docs/model/week04-model-comparison.md`를 따릅니다.
+
 ## Real-time collection
 
 예정된 주요 운영 스크립트:

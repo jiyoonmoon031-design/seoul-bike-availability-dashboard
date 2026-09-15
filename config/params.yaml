@@ -81,6 +81,45 @@ EVALUATION:
   rebalancing_shortage_reduction_min: 0.10
   rebalancing_overflow_reduction_min: 0.10
 
+# Week 04 candidate comparison. Model selection uses validation only; the
+# labelled test period remains untouched until the Week 05 final evaluation.
+WEEK04_MODEL_COMPARISON:
+  seed: 42
+  split:
+    train_ratio: 0.70
+    validation_ratio: 0.15
+    test_ratio: 0.15
+    gap_minutes: 60
+  inference_timing_repeats: 5
+  models:
+    linear_model:
+      alpha: 1.0
+      fit_intercept: true
+      solver: lsqr
+      tol: 0.0001
+      max_iter: 100
+    random_forest:
+      n_estimators: 48
+      max_depth: 16
+      min_samples_leaf: 25
+      max_features: 0.75
+      bootstrap: true
+      max_samples: 0.20
+      n_jobs: -1
+    lightgbm:
+      objective: regression_l1
+      n_estimators: 200
+      learning_rate: 0.05
+      num_leaves: 31
+      min_child_samples: 50
+      subsample: 0.80
+      colsample_bytree: 0.80
+      reg_lambda: 0.10
+      deterministic: true
+      force_col_wise: true
+      verbosity: -1
+      n_jobs: -1
+
 STATION_MASTER_POLICY:
   refresh_interval_days: 7
   minimum_history_days_new_station: 14
