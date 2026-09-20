@@ -1,4 +1,4 @@
-package com.example.ddareungi.api.bike;
+package com.example.ddareungi.collector;
 
 public class StationInfo {
     private String STA_LOC;

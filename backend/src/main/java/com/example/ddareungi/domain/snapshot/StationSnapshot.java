@@ -44,4 +44,17 @@ public class StationSnapshot {
         this.bikesAvailable = bikesAvailable;
         this.capacity = capacity;
     }
+    public String getStationId(){
+        return stationId;
+    }
+    public Instant getCollectedAt(){
+        return collectedAt;
+    }
+    public Integer getBikesAvailable(){
+        return bikesAvailable;
+    }
+    public Integer getCapacity(){
+        return capacity;
+    }
+
 }

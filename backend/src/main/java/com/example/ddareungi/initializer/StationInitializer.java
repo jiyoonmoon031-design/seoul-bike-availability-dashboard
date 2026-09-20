@@ -6,7 +6,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ApplicationArguments;
 
 import com.example.ddareungi.domain.station.StationRepository;
-import com.example.ddareungi.api.bike.BikeApiService;
+import com.example.ddareungi.collector.BikeApiService;
 import org.springframework.web.client.ResourceAccessException;
 
 import org.slf4j.Logger;
