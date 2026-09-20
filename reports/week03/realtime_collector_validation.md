@@ -161,5 +161,5 @@ Capacity는 서울시 따릉이 실시간 `bikeList` API에서 제공되는 `rac
 
 따라서 모델에서 `capacity` feature를 사용할 때는 NULL 값을 그대로 정상 capacity로 간주하지 않고, 실제 학습 대상 대여소와의 일치 여부를 확인한 후 결측 처리 또는 학습 대상 제외 여부를 결정할 필요가 있다.
 
-> **검증 환경:** 로컬 MySQL DB  
+> **검증 환경:** 로컬 MySQL DB
 > **검증 결과:** 221개 중 177개 non-null, 44개 null
