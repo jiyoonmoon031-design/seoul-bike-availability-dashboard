@@ -38,3 +38,14 @@ check_snapshot_quality.py
 ```
 
 실시간 대여소 스냅샷 수집은 프로젝트 P0 작업으로 관리합니다.
+
+## Week 05 final-model inference
+
+```bash
+python scripts/run_week05_inference.py \
+  --request /path/to/prediction_request.json \
+  --feature-table /path/to/point_in_time_features.parquet \
+  --inventory /path/to/current_inventory.json
+The request JSON follows docs/interface/model-backend.md.
+The feature-table and inventory arguments are standalone Week 05 execution
+adapters and are not additional public API request fields.

@@ -1,0 +1,11 @@
+{
+  "status": "completed",
+  "accessed_at_utc": "2026-09-27T08:51:52.416045+00:00",
+  "model_id": "random_forest",
+  "model_version": "week05-random_forest-5b8406059363",
+  "selection_sha256": "c7bdb07e91e22327db99fb424f5e34e35abbbb215f700db4107bee534a905103",
+  "git_head": "5b8406059363b6c4ef41150a33ae4f93c8861223",
+  "policy": "one final test evaluation only",
+  "completed_at_utc": "2026-09-27T08:51:57.055477+00:00",
+  "metrics_sha256": "883bba29eb8f402fe3fbba6d5d93d159cce49682d6a0b5b3675697ea7bd54005"
+}
