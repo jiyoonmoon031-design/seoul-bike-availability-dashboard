@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-09-15T19:21:48.476843+00:00",
+  "week": 4,
+  "owner": "Moon Jiyoon",
+  "related_issue": 49,
+  "evaluation_policy": {
+    "evaluation_split": "validation",
+    "test_metrics_generated": false,
+    "test_targets_accessed": false,
+    "test_reserved_for_week05": true,
+    "active_station_percentile": 0.75,
+    "active_station_activity_threshold": 28428.0,
+    "active_station_count": 47,
+    "active_station_ids": [
+      "ST-105",
+      "ST-109",
+      "ST-112",
+      "ST-1194",
+      "ST-1195",
+      "ST-1198",
+      "ST-1263",
+      "ST-1660",
+      "ST-1661",
+      "ST-1663",
+      "ST-1722",
+      "ST-2308",
+      "ST-2309",
+      "ST-2310",
+      "ST-2314",
+      "ST-2318",
+      "ST-2320",
+      "ST-2321",
+      "ST-2330",
+      "ST-2420",
+      "ST-243",
+      "ST-253",
+      "ST-2546",
+      "ST-255",
+      "ST-258",
+      "ST-2865",
+      "ST-3002",
+      "ST-3003",
+      "ST-3043",
+      "ST-3044",
+      "ST-3188",
+      "ST-3390",
+      "ST-3403",
+      "ST-361",
+      "ST-366",
+      "ST-369",
+      "ST-376",
+      "ST-384",
+      "ST-387",
+      "ST-445",
+      "ST-446",
+      "ST-506",
+      "ST-97",
+      "ST-974",
+      "ST-983",
+      "ST-987",
+      "ST-99"
+    ],
+    "inference_timing": {
+      "sample_rows": 1000,
+      "repeats": 5,
+      "warmup_runs": 1,
+      "statistic": "median wall-clock; preprocessing plus all three horizons",
+      "milliseconds_per_1000_rows": {
+        "b1_persistence": 0.009082956239581108,
+        "b2_recent_mean": 0.19179098308086395,
+        "b3_dow_time_mean": 13.085667043924332,
+        "linear_model": 54.29920903407037,
+        "random_forest": 303.1695829704404,
+        "lightgbm": 180.95700000412762
+      }
+    }
+  },
+  "split": {
+    "strategy": "chronological_unique_timestamp_ratio_with_purge",
+    "requested_ratios": {
+      "train": 0.7,
+      "validation": 0.15,
+      "test": 0.15
+    },
+    "actual_retained_timestamp_ratios": {
+      "train": 0.6999885818680064,
+      "validation": 0.14997716373601278,
+      "test": 0.1500342543959808
+    },
+    "base_interval_minutes": 15,
+    "gap_minutes": 60,
+    "gap_timestamps_each_boundary": 4,
+    "data_period": {
+      "start": "2025-08-01T00:00:00",
+      "end": "2026-07-31T23:45:00",
+      "timestamps": 35040
+    },
+    "train": {
+      "start": "2025-08-01T00:00:00",
+      "end": "2026-04-13T10:15:00",
+      "timestamps": 24522
+    },
+    "train_validation_gap": {
+      "start": "2026-04-13T10:30:00",
+      "end": "2026-04-13T11:15:00",
+      "timestamps": 4
+    },
+    "validation": {
+      "start": "2026-04-13T11:30:00",
+      "end": "2026-06-07T04:45:00",
+      "timestamps": 5254
+    },
+    "validation_test_gap": {
+      "start": "2026-06-07T05:00:00",
+      "end": "2026-06-07T05:45:00",
+      "timestamps": 4
+    },
+    "test": {
+      "start": "2026-06-07T06:00:00",
+      "end": "2026-07-31T23:45:00",
+      "timestamps": 5256
+    },
+    "row_counts": {
+      "train": 4470108,
+      "validation": 955628,
+      "test": 950455,
+      "excluded_gap": 1452
+    }
+  },
+  "seed": 42,
+  "horizons_minutes": [
+    15,
+    30,
+    60
+  ],
+  "feature_contract": {
+    "source": "Week 03 get_model_feature_columns() and feature_manifest.csv",
+    "count": 46,
+    "ordered_columns": [
+      "station_id",
+      "district",
+      "hour",
+      "minute",
+      "weekday_index",
+      "month",
+      "day_of_year",
+      "is_weekend",
+      "is_holiday",
+      "is_peak",
+      "is_holiday_or_weekend",
+      "time_of_day_sin",
+      "time_of_day_cos",
+      "weekday_sin",
+      "weekday_cos",
+      "rent_prev_15m",
+      "return_prev_15m",
+      "delta_prev_15m",
+      "history_15m_available",
+      "rent_prev_30m",
+      "return_prev_30m",
+      "delta_prev_30m",
+      "history_30m_available",
+      "rent_prev_60m",
+      "return_prev_60m",
+      "delta_prev_60m",
+      "history_60m_available",
+      "rent_mean_prev_24h",
+      "return_mean_prev_24h",
+      "delta_mean_prev_24h",
+      "history_24h_observations",
+      "history_24h_available",
+      "delta_lag_1d",
+      "delta_lag_7d",
+      "lag_1d_available",
+      "lag_7d_available",
+      "temp_c",
+      "precip_mm",
+      "humidity_pct",
+      "wind_ms",
+      "weather_age_min",
+      "weather_available",
+      "temp_c_missing",
+      "precip_mm_missing",
+      "humidity_pct_missing",
+      "wind_ms_missing"
+    ]
+  },
+  "baseline_definitions": {
+    "b1_persistence": "zero future net change",
+    "b2_recent_mean": "complete previous 60-minute net change scaled to each horizon",
+    "b3_dow_time_mean": "train-only station × weekday × hour × minute target mean; train global-mean fallback"
+  },
+  "models": {
+    "linear_model": {
+      "display_name": "Linear Model",
+      "parameters": {
+        "alpha": 1.0,
+        "fit_intercept": true,
+        "solver": "lsqr",
+        "tol": 0.0001,
+        "max_iter": 100
+      },
+      "training_rows_by_horizon": {
+        "15": 4470108,
+        "30": 4470105,
+        "60": 4470099
+      },
+      "preprocessing_fit_split": "train only"
+    },
+    "random_forest": {
+      "display_name": "Random Forest",
+      "parameters": {
+        "n_estimators": 48,
+        "max_depth": 16,
+        "min_samples_leaf": 25,
+        "max_features": 0.75,
+        "bootstrap": true,
+        "max_samples": 0.2,
+        "n_jobs": -1
+      },
+      "training_rows_by_horizon": {
+        "15": 4470108,
+        "30": 4470105,
+        "60": 4470099
+      },
+      "preprocessing_fit_split": "train only"
+    },
+    "lightgbm": {
+      "display_name": "LightGBM",
+      "parameters": {
+        "objective": "regression_l1",
+        "n_estimators": 200,
+        "learning_rate": 0.05,
+        "num_leaves": 31,
+        "min_child_samples": 50,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 0.1,
+        "deterministic": true,
+        "force_col_wise": true,
+        "verbosity": -1,
+        "n_jobs": -1
+      },
+      "training_rows_by_horizon": {
+        "15": 4470108,
+        "30": 4470105,
+        "60": 4470099
+      },
+      "preprocessing_fit_split": "train only"
+    }
+  },
+  "input": {
+    "filename": "week03_features.parquet",
+    "sha256": "e1c94933347c27ef80bb4dc8a774960497ec6de94455cc195266aefd551e5202",
+    "rows": 6377643,
+    "stations": 185,
+    "period_start": "2025-08-01T00:00:00",
+    "period_end": "2026-07-31T23:45:00"
+  },
+  "runtime": {
+    "python": "3.11.16",
+    "platform": "macOS-15.5-arm64-arm-64bit",
+    "dependency_versions": {
+      "numpy": "2.4.4",
+      "pandas": "3.0.2",
+      "pyarrow": "25.0.1",
+      "scikit-learn": "1.8.0",
+      "lightgbm": "4.6.0",
+      "PyYAML": "6.0.3"
+    }
+  },
+  "repository": {
+    "head_at_run": "484c96a212c413b1c6572fb14645d3f9b1576363",
+    "implementation_files_dirty_at_run": false,
+    "implementation_file_sha256": {
+      "src/modeling/model_comparison.py": "21390450ddf7ce825b81b02bc912d95fd30b17f3c3e2ef55e537a0f064b9d65d",
+      "scripts/run_week04_model_comparison.py": "d926012007e505c678fa09818d627a39e3ede542151153d6e97429aa91ea21fa",
+      "config/params.yaml": "9224228b32e04b745b70736d31455fe12a52060e06ed7aa13659996b09366b17",
+      "requirements.txt": "8e7e910b291daee8e188e12a9f7a1cdce6e559d9787755e59fca5967b7028534"
+    }
+  },
+  "outputs": {
+    "long_metrics": {
+      "path": "reports/week04/model_comparison_metrics.csv",
+      "sha256": "ee3559f9cd32a1979349a82e149e51e01180fc8e0842d183e1f189d970fc19bd"
+    },
+    "comparison_table": {
+      "path": "reports/week04/model_comparison_table.csv",
+      "sha256": "d40d3ae0b18e098b4672c2cc109e61af1bc3587b640e12cb57c75f9a29c99e93"
+    }
+  },
+  "reproduction_tolerance": {
+    "metric": "MAE",
+    "decimal_places": 3,
+    "comparison_split": "validation"
+  }
+}
