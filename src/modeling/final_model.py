@@ -122,9 +122,7 @@ def evaluate_fitted_candidate(
         candidate.predict_all(sample)
         timings.append(time.perf_counter() - start)
 
-    inference_ms = float(
-        np.median(timings) * 1000 * (1000 / len(sample))
-    )
+    inference_ms = float(np.median(timings) * 1000 * (1000 / len(sample)))
 
     rows: list[dict[str, Any]] = []
 
@@ -151,11 +149,7 @@ def evaluate_fitted_candidate(
                 mae = float(np.mean(np.abs(error)))
                 rmse = float(np.sqrt(np.mean(np.square(error))))
                 b1_mae = float(np.mean(np.abs(target[eligible])))
-                improvement = (
-                    float((b1_mae - mae) / b1_mae)
-                    if b1_mae > 0
-                    else np.nan
-                )
+                improvement = float((b1_mae - mae) / b1_mae) if b1_mae > 0 else np.nan
             else:
                 mae = rmse = b1_mae = improvement = np.nan
 
@@ -184,8 +178,7 @@ def summarize_finalist(
     parameters: Mapping[str, Any],
 ) -> dict[str, Any]:
     primary = metrics.loc[
-        metrics["segment"].eq("ACTIVE_PEAK")
-        & metrics["horizon_min"].eq(30),
+        metrics["segment"].eq("ACTIVE_PEAK") & metrics["horizon_min"].eq(30),
         "mae",
     ]
 
@@ -230,12 +223,9 @@ def choose_final_model(
         )
 
     winner = min(finalists, key=key).copy()
-    winner["preferred_inference_max_ms_per_1k_rows"] = (
-        preferred_inference_max
-    )
+    winner["preferred_inference_max_ms_per_1k_rows"] = preferred_inference_max
     winner["inference_preference_met"] = (
-        winner["inference_time_ms_per_1k_rows"]
-        <= preferred_inference_max
+        winner["inference_time_ms_per_1k_rows"] <= preferred_inference_max
     )
     return winner
 
@@ -249,14 +239,9 @@ def native_feature_importance(
     for horizon in HORIZONS:
         estimator = candidate.estimators[horizon]
 
-        if (
-            candidate.model_id == "lightgbm"
-            and hasattr(estimator, "booster_")
-        ):
+        if candidate.model_id == "lightgbm" and hasattr(estimator, "booster_"):
             values = np.asarray(
-                estimator.booster_.feature_importance(
-                    importance_type="gain"
-                ),
+                estimator.booster_.feature_importance(importance_type="gain"),
                 dtype=np.float64,
             )
             method = "gain"
@@ -268,8 +253,7 @@ def native_feature_importance(
             method = "native_impurity"
         else:
             raise ValueError(
-                f"native feature importance unavailable for "
-                f"{candidate.model_id}"
+                f"native feature importance unavailable for " f"{candidate.model_id}"
             )
 
         total = values.sum()
@@ -331,9 +315,7 @@ def permutation_importance_raw(
 
     target = sample["delta_hist_h30"].to_numpy(dtype=np.float64)
     baseline_prediction = candidate.predict_all(sample)[30]
-    baseline_mae = float(
-        np.mean(np.abs(baseline_prediction - target))
-    )
+    baseline_mae = float(np.mean(np.abs(baseline_prediction - target)))
 
     rng = np.random.default_rng(seed)
     rows: list[dict[str, Any]] = []
@@ -354,9 +336,7 @@ def permutation_importance_raw(
         rows.append(
             {
                 "feature": feature,
-                "permutation_mae_increase": float(
-                    np.mean(increases)
-                ),
+                "permutation_mae_increase": float(np.mean(increases)),
                 "permutation_std": float(np.std(increases)),
                 "baseline_mae": baseline_mae,
                 "sample_rows": len(sample),
@@ -372,4 +352,85 @@ def permutation_importance_raw(
             ascending=False,
         )
         .reset_index(drop=True)
+    )
+
+
+def fit_final_candidate(
+    frame: pd.DataFrame,
+    *,
+    model_id: str,
+    feature_columns: list[str],
+    seed: int,
+    parameters: Mapping[str, Any],
+) -> FittedCandidate:
+    """Refit the frozen winner on train + validation, excluding purge gaps/test."""
+    from src.modeling.model_comparison import (
+        make_estimator,
+        make_preprocessor,
+    )
+
+    fit_frame = frame.loc[frame["split"].isin(["train", "validation"])].copy()
+
+    if fit_frame.empty:
+        raise ValueError("train + validation refit frame is empty")
+
+    preprocessor = make_preprocessor(
+        fit_frame,
+        feature_columns,
+        model_id,
+    )
+
+    transformed = preprocessor.fit_transform(fit_frame[feature_columns])
+
+    if model_id != "linear_model":
+        transformed = np.asarray(
+            transformed,
+            dtype=np.float32,
+        )
+
+    if model_id == "lightgbm":
+        transformed = pd.DataFrame(
+            transformed,
+            columns=preprocessor.get_feature_names_out(),
+        )
+
+    estimators: dict[int, Any] = {}
+    training_rows: dict[int, int] = {}
+
+    for horizon in HORIZONS:
+        valid_column = f"target_h{horizon}_valid"
+        target_column = f"delta_hist_h{horizon}"
+
+        mask = (
+            fit_frame[valid_column].astype(bool) & fit_frame[target_column].notna()
+        ).to_numpy()
+
+        if not mask.any():
+            raise ValueError(f"no valid refit targets for {horizon}m")
+
+        estimator = make_estimator(
+            model_id,
+            seed=seed,
+            parameters=parameters,
+        )
+
+        target = fit_frame.loc[
+            mask,
+            target_column,
+        ].to_numpy(dtype=np.float64)
+
+        estimator.fit(
+            transformed[mask],
+            target,
+        )
+
+        estimators[horizon] = estimator
+        training_rows[horizon] = int(mask.sum())
+
+    return FittedCandidate(
+        model_id=model_id,
+        feature_columns=list(feature_columns),
+        preprocessor=preprocessor,
+        estimators=estimators,
+        training_rows=training_rows,
     )

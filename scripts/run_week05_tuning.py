@@ -39,9 +39,7 @@ from src.modeling.model_comparison import (  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Week 05 validation-only model tuning"
-    )
+    parser = argparse.ArgumentParser(description="Week 05 validation-only model tuning")
     parser.add_argument("--input", required=True, type=Path)
     parser.add_argument(
         "--params",
@@ -73,14 +71,10 @@ def expected_features(path: Path) -> list[str]:
         .tolist()
     )
 
-    ordered = get_model_feature_columns(
-        pd.DataFrame(columns=features)
-    )
+    ordered = get_model_feature_columns(pd.DataFrame(columns=features))
 
     if set(ordered) != set(features):
-        raise ValueError(
-            "Week 03 feature manifest and allowlist disagree"
-        )
+        raise ValueError("Week 03 feature manifest and allowlist disagree")
 
     return ordered
 
@@ -109,9 +103,7 @@ def read_input(
     missing = required - names
 
     if missing:
-        raise ValueError(
-            f"input missing columns: {sorted(missing)}"
-        )
+        raise ValueError(f"input missing columns: {sorted(missing)}")
 
     return pd.read_parquet(
         path,
@@ -141,9 +133,7 @@ def main() -> None:
     split_result = assign_purged_ratio_splits(
         frame,
         train_ratio=float(split_cfg["train_ratio"]),
-        validation_ratio=float(
-            split_cfg["validation_ratio"]
-        ),
+        validation_ratio=float(split_cfg["validation_ratio"]),
         test_ratio=float(split_cfg["test_ratio"]),
         gap_minutes=int(split_cfg["gap_minutes"]),
     )
@@ -153,32 +143,22 @@ def main() -> None:
     # This is the only explicit safeguard needed during tuning:
     # no test rows are used below.
     train = frame.loc[frame["split"].eq("train")].copy()
-    validation = frame.loc[
-        frame["split"].eq("validation")
-    ].copy()
+    validation = frame.loc[frame["split"].eq("validation")].copy()
 
-    active_stations, active_threshold = (
-        active_station_definition(
-            frame,
-            percentile=float(
-                params["ACTIVE_STATION"]["percentile"]
-            ),
-        )
+    active_stations, active_threshold = active_station_definition(
+        frame,
+        percentile=float(params["ACTIVE_STATION"]["percentile"]),
     )
 
     active_peak = (
-        validation["station_id"]
-        .astype(str)
-        .isin(active_stations)
+        validation["station_id"].astype(str).isin(active_stations)
         & validation["is_peak"].astype(bool)
         & validation["target_h30_valid"].astype(bool)
         & validation["delta_hist_h30"].notna()
     )
 
     if not active_peak.any():
-        raise ValueError(
-            "ACTIVE_PEAK validation target is empty"
-        )
+        raise ValueError("ACTIVE_PEAK validation target is empty")
 
     # RF and LightGBM use the same tree preprocessor.
     preprocessor = make_preprocessor(
@@ -197,8 +177,7 @@ def main() -> None:
     )
 
     train_mask = (
-        train["target_h30_valid"].astype(bool)
-        & train["delta_hist_h30"].notna()
+        train["target_h30_valid"].astype(bool) & train["delta_hist_h30"].notna()
     ).to_numpy()
 
     y_train = train.loc[
@@ -215,17 +194,13 @@ def main() -> None:
     history: list[dict] = []
     best_params: dict[str, dict] = {}
 
-    for index, model_id in enumerate(
-        ("random_forest", "lightgbm")
-    ):
+    for index, model_id in enumerate(("random_forest", "lightgbm")):
         candidate_cfg = config["candidates"][model_id]
 
         trials = build_parameter_trials(
             fixed=candidate_cfg["fixed"],
             search_space=candidate_cfg["search_space"],
-            n_trials=int(
-                config["search"][f"{model_id}_trials"]
-            ),
+            n_trials=int(config["search"][f"{model_id}_trials"]),
             seed=seed + index,
             baseline_parameters=week04["models"][model_id],
         )
@@ -276,17 +251,10 @@ def main() -> None:
                 dtype=np.float64,
             )
 
-            error = (
-                prediction[validation_mask]
-                - y_validation
-            )
+            error = prediction[validation_mask] - y_validation
 
-            mae = float(
-                np.mean(np.abs(error))
-            )
-            rmse = float(
-                np.sqrt(np.mean(np.square(error)))
-            )
+            mae = float(np.mean(np.abs(error)))
+            rmse = float(np.sqrt(np.mean(np.square(error))))
 
             row = {
                 "model_id": model_id,
@@ -311,13 +279,9 @@ def main() -> None:
             ),
         )
 
-        best_params[model_id] = json.loads(
-            best["parameters_json"]
-        )
+        best_params[model_id] = json.loads(best["parameters_json"])
 
-    report_dir = Path(
-        config["artifacts"]["report_dir"]
-    )
+    report_dir = Path(config["artifacts"]["report_dir"])
     report_dir.mkdir(
         parents=True,
         exist_ok=True,
@@ -376,33 +340,21 @@ def main() -> None:
 
     winner = choose_final_model(
         summaries,
-        preferred_inference_max=float(
-            config["selection"]["tertiary"][
-                "preferred_max"
-            ]
-        ),
+        preferred_inference_max=float(config["selection"]["tertiary"]["preferred_max"]),
     )
 
     winner_id = winner["model_id"]
     winner_candidate = finalists[winner_id]
 
-    validation_only = frame.loc[
-        frame["split"].eq("validation")
-    ].copy()
+    validation_only = frame.loc[frame["split"].eq("validation")].copy()
 
-    native = native_feature_importance(
-        winner_candidate
-    )
+    native = native_feature_importance(winner_candidate)
 
     permutation = permutation_importance_raw(
         winner_candidate,
         validation_only,
         active_stations=active_stations,
-        repeats=int(
-            config["importance"][
-                "permutation_repeats"
-            ]
-        ),
+        repeats=int(config["importance"]["permutation_repeats"]),
         seed=seed,
     )
 
@@ -426,21 +378,15 @@ def main() -> None:
     )
 
     selection = {
-        "generated_at_utc": datetime.now(
-            UTC
-        ).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "winner": winner,
         "finalists": summaries,
         "best_parameters": best_params,
         "selection_policy": config["selection"],
         "split": split_result.metadata,
-        "active_station_percentile": float(
-            params["ACTIVE_STATION"]["percentile"]
-        ),
+        "active_station_percentile": float(params["ACTIVE_STATION"]["percentile"]),
         "active_station_threshold": active_threshold,
-        "active_station_count": len(
-            active_stations
-        ),
+        "active_station_count": len(active_stations),
         "feature_order": features,
         "input": {
             "path": str(input_path),
@@ -448,15 +394,10 @@ def main() -> None:
         },
         "test_targets_accessed": False,
         "test_metrics_generated": False,
-        "final_test_policy": (
-            "reserved for one final Week 05 evaluation"
-        ),
+        "final_test_policy": ("reserved for one final Week 05 evaluation"),
     }
 
-    (
-        report_dir
-        / "final_model_selection.json"
-    ).write_text(
+    (report_dir / "final_model_selection.json").write_text(
         json.dumps(
             selection,
             ensure_ascii=False,
@@ -470,39 +411,26 @@ def main() -> None:
     print("WEEK 05 VALIDATION TUNING COMPLETE")
     print("=" * 70)
 
-    print(
-        pd.DataFrame(summaries).drop(
-            columns=["parameters"]
-        ).to_string(index=False)
-    )
+    print(pd.DataFrame(summaries).drop(columns=["parameters"]).to_string(index=False))
 
     print()
     print("WINNER:", winner_id)
     print(
         "ACTIVE_PEAK 30m MAE:",
-        winner[
-            "primary_active_peak_30m_mae"
-        ],
+        winner["primary_active_peak_30m_mae"],
     )
     print(
         "ALL mean MAE:",
-        winner[
-            "secondary_all_horizon_mean_mae"
-        ],
+        winner["secondary_all_horizon_mean_mae"],
     )
     print(
         "Inference ms/1k:",
-        winner[
-            "inference_time_ms_per_1k_rows"
-        ],
+        winner["inference_time_ms_per_1k_rows"],
     )
 
     print()
     print("TEST ACCESSED: False")
-    print(
-        "Next step: review validation result, "
-        "then run the one-time final test."
-    )
+    print("Next step: review validation result, " "then run the one-time final test.")
 
 
 if __name__ == "__main__":
