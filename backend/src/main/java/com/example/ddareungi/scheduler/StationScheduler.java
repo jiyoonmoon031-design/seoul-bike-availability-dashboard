@@ -1,5 +1,5 @@
 package com.example.ddareungi.scheduler;
-import com.example.ddareungi.api.bike.BikeApiService;
+import com.example.ddareungi.collector.BikeApiService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

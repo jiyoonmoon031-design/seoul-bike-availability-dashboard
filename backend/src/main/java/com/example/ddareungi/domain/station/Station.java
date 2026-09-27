@@ -50,10 +50,33 @@ public class Station {
     public String getStationId() {
         return stationId;
     }
+
+    public String getStationName(){
+        return stationName;
+    }
+
+    public String getDistrict(){
+        return district;
+    }
+
+    public Double getLatitude(){
+        return latitude;
+    }
+
+    public Double getLongitude(){
+        return longitude;
+    }
+
+    public String getAddress(){
+        return address;
+    }
+
     public Integer getCapacity(){
         return capacity;
     }
     public void setCapacity(Integer capacity){
         this.capacity = capacity;
     }
+
+
 }

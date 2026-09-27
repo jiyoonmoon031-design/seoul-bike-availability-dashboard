@@ -1,4 +1,4 @@
-package com.example.ddareungi.api.bike;
+package com.example.ddareungi.collector;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

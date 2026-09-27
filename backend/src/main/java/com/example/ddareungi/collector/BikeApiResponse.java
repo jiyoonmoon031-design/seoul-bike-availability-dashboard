@@ -1,4 +1,4 @@
-package com.example.ddareungi.api.bike;
+package com.example.ddareungi.collector;
 
 import java.util.List;
 
@@ -11,7 +11,6 @@ public class BikeApiResponse {
     }
 
     public static class RentBikeStatus{
-
         private int list_total_count;
         private Result RESULT;
         private List<BikeStation> row;
