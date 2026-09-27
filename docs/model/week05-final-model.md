@@ -37,3 +37,37 @@ and LightGBM. Both remain eligible until validation-based tuning is complete.
 - serialized model metadata
 - inference contract
 - reproducibility metadata
+
+## Validation tuning result
+
+Week 05 tuning was performed on the validation split only.
+
+The pre-registered primary selection criterion is:
+
+1. ACTIVE ∩ PEAK 30-minute MAE
+2. ALL-horizon mean MAE
+3. inference time per 1,000 rows
+
+Validation finalists:
+
+| Model | ACTIVE∩PEAK 30m MAE | ALL mean MAE | Inference ms / 1k |
+|---|---:|---:|---:|
+| Random Forest | 2.308383 | 1.102666 | 47.709 |
+| LightGBM | 2.330840 | 1.083841 | 13.575 |
+
+Random Forest is selected because it has the lower value on the primary
+criterion. Its inference time also satisfies the preferred 200 ms / 1,000-row
+constraint.
+
+Selected Random Forest parameters:
+
+- n_estimators: 48
+- max_depth: null
+- min_samples_leaf: 25
+- max_features: 1.0
+- max_samples: 0.35
+- bootstrap: true
+- n_jobs: -1
+- random_seed: 42
+
+The final test split has not been evaluated at this stage.
