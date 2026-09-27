@@ -52,27 +52,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model",
         type=Path,
-        default=Path(
-            "models/week05/final_model.joblib"
-        ),
+        default=Path("models/week05/final_model.joblib"),
     )
 
     parser.add_argument(
         "--metadata",
         type=Path,
-        default=Path(
-            "reports/week05/"
-            "final_model_metadata.json"
-        ),
+        default=Path("reports/week05/" "final_model_metadata.json"),
     )
 
     parser.add_argument(
         "--feature-names",
         type=Path,
-        default=Path(
-            "reports/week05/"
-            "feature_names.json"
-        ),
+        default=Path("reports/week05/" "feature_names.json"),
     )
 
     parser.add_argument(
@@ -86,114 +78,55 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    request_path = (
-        args.request.expanduser().resolve()
-    )
-    feature_path = (
-        args.feature_table
-        .expanduser()
-        .resolve()
-    )
-    inventory_path = (
-        args.inventory
-        .expanduser()
-        .resolve()
-    )
-    model_path = (
-        args.model.expanduser().resolve()
-    )
-    metadata_path = (
-        args.metadata.expanduser().resolve()
-    )
-    feature_names_path = (
-        args.feature_names
-        .expanduser()
-        .resolve()
-    )
+    request_path = args.request.expanduser().resolve()
+    feature_path = args.feature_table.expanduser().resolve()
+    inventory_path = args.inventory.expanduser().resolve()
+    model_path = args.model.expanduser().resolve()
+    metadata_path = args.metadata.expanduser().resolve()
+    feature_names_path = args.feature_names.expanduser().resolve()
 
     request = validate_prediction_request(
-        json.loads(
-            request_path.read_text(
-                encoding="utf-8"
-            )
-        )
+        json.loads(request_path.read_text(encoding="utf-8"))
     )
 
-    metadata = json.loads(
-        metadata_path.read_text(
-            encoding="utf-8"
-        )
-    )
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
-    feature_names = json.loads(
-        feature_names_path.read_text(
-            encoding="utf-8"
-        )
-    )
+    feature_names = json.loads(feature_names_path.read_text(encoding="utf-8"))
 
-    expected_sha256 = metadata[
-        "model_artifact"
-    ]["sha256"]
+    expected_sha256 = metadata["model_artifact"]["sha256"]
 
-    actual_sha256 = sha256_file(
-        model_path
-    )
+    actual_sha256 = sha256_file(model_path)
 
     if actual_sha256 != expected_sha256:
+        raise RuntimeError("model artifact SHA256 does not " "match final metadata")
+
+    candidate = joblib.load(model_path)
+
+    if candidate.model_id != metadata["model_id"]:
+        raise RuntimeError("serialized model_id does not " "match metadata")
+
+    raw_feature_order = feature_names["raw_feature_order"]
+
+    if list(candidate.feature_columns) != list(raw_feature_order):
         raise RuntimeError(
-            "model artifact SHA256 does not "
-            "match final metadata"
-        )
-
-    candidate = joblib.load(
-        model_path
-    )
-
-    if (
-        candidate.model_id
-        != metadata["model_id"]
-    ):
-        raise RuntimeError(
-            "serialized model_id does not "
-            "match metadata"
-        )
-
-    raw_feature_order = feature_names[
-        "raw_feature_order"
-    ]
-
-    if (
-        list(candidate.feature_columns)
-        != list(raw_feature_order)
-    ):
-        raise RuntimeError(
-            "serialized model feature order "
-            "does not match feature_names.json"
+            "serialized model feature order " "does not match feature_names.json"
         )
 
     frame = load_point_in_time_features(
         feature_path,
         feature_columns=raw_feature_order,
-        station_ids=request[
-            "station_ids"
-        ],
-        base_time=request[
-            "base_time"
-        ],
+        station_ids=request["station_ids"],
+        base_time=request["base_time"],
     )
 
-    inventory = load_inventory(
-        inventory_path
-    )
+    inventory = load_inventory(inventory_path)
 
     response = build_prediction_response(
         candidate=candidate,
         request=request,
         feature_frame=frame,
         inventory=inventory,
-        model_version=metadata[
-            "model_version"
-        ],
+        model_version=metadata["model_version"],
     )
 
     rendered = json.dumps(
@@ -203,11 +136,7 @@ def main() -> None:
     )
 
     if args.output:
-        output_path = (
-            args.output
-            .expanduser()
-            .resolve()
-        )
+        output_path = args.output.expanduser().resolve()
 
         output_path.parent.mkdir(
             parents=True,

@@ -29,9 +29,7 @@ def validate_prediction_request(payload: Mapping[str, Any]) -> dict[str, Any]:
 
     missing = required - set(payload)
     if missing:
-        raise ValueError(
-            f"prediction request missing fields: {sorted(missing)}"
-        )
+        raise ValueError(f"prediction request missing fields: {sorted(missing)}")
 
     request_id = str(payload["request_id"])
 
@@ -49,71 +47,46 @@ def validate_prediction_request(payload: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("base_time must be a valid datetime") from exc
 
     if base_time.tzinfo is None:
-        raise ValueError(
-            "base_time must be timezone-aware KST"
-        )
+        raise ValueError("base_time must be timezone-aware KST")
 
     if base_time.utcoffset() != timedelta(hours=9):
-        raise ValueError(
-            "base_time must include the KST UTC+09:00 offset"
-        )
+        raise ValueError("base_time must include the KST UTC+09:00 offset")
 
     if (
         base_time.minute % 15 != 0
         or base_time.second != 0
         or base_time.microsecond != 0
     ):
-        raise ValueError(
-            "base_time must align to a 15-minute model bin"
-        )
+        raise ValueError("base_time must align to a 15-minute model bin")
 
     station_ids = payload["station_ids"]
 
     if not isinstance(station_ids, list) or not station_ids:
-        raise ValueError(
-            "station_ids must be a non-empty array"
-        )
+        raise ValueError("station_ids must be a non-empty array")
 
-    if any(
-        not isinstance(value, str) or not value.strip()
-        for value in station_ids
-    ):
-        raise ValueError(
-            "every station_id must be a non-empty string"
-        )
+    if any(not isinstance(value, str) or not value.strip() for value in station_ids):
+        raise ValueError("every station_id must be a non-empty string")
 
     if len(station_ids) != len(set(station_ids)):
-        raise ValueError(
-            "station_ids must not contain duplicates"
-        )
+        raise ValueError("station_ids must not contain duplicates")
 
     horizons = payload["horizons"]
 
     if not isinstance(horizons, list) or not horizons:
-        raise ValueError(
-            "horizons must be a non-empty array"
-        )
+        raise ValueError("horizons must be a non-empty array")
 
     try:
         horizons = [int(value) for value in horizons]
     except (TypeError, ValueError) as exc:
-        raise ValueError(
-            "horizons must contain integers"
-        ) from exc
+        raise ValueError("horizons must contain integers") from exc
 
-    unsupported = sorted(
-        set(horizons) - set(SUPPORTED_HORIZONS)
-    )
+    unsupported = sorted(set(horizons) - set(SUPPORTED_HORIZONS))
 
     if unsupported:
-        raise ValueError(
-            f"unsupported horizons: {unsupported}"
-        )
+        raise ValueError(f"unsupported horizons: {unsupported}")
 
     if len(horizons) != len(set(horizons)):
-        raise ValueError(
-            "horizons must not contain duplicates"
-        )
+        raise ValueError("horizons must not contain duplicates")
 
     return {
         "request_id": request_id,
@@ -145,82 +118,45 @@ def load_point_in_time_features(
         )
     )
 
-    missing = (
-        set(required_columns)
-        - set(dataset.schema.names)
-    )
+    missing = set(required_columns) - set(dataset.schema.names)
 
     if missing:
-        raise ValueError(
-            f"feature source missing columns: {sorted(missing)}"
-        )
+        raise ValueError(f"feature source missing columns: {sorted(missing)}")
 
     requested_time = pd.Timestamp(base_time)
 
-    base_field = dataset.schema.field(
-        "base_time"
-    )
+    base_field = dataset.schema.field("base_time")
 
-    if not pa.types.is_timestamp(
-        base_field.type
-    ):
-        raise ValueError(
-            "feature source base_time must be timestamp"
-        )
+    if not pa.types.is_timestamp(base_field.type):
+        raise ValueError("feature source base_time must be timestamp")
 
     if base_field.type.tz:
-        match_time = (
-            requested_time
-            .tz_convert(base_field.type.tz)
-            .to_pydatetime()
-        )
+        match_time = requested_time.tz_convert(base_field.type.tz).to_pydatetime()
     else:
-        match_time = (
-            requested_time
-            .tz_convert(KST)
-            .tz_localize(None)
-            .to_pydatetime()
-        )
+        match_time = requested_time.tz_convert(KST).tz_localize(None).to_pydatetime()
 
-    expression = (
-        ds.field("base_time")
-        == pa.scalar(
-            match_time,
-            type=base_field.type,
-        )
+    expression = ds.field("base_time") == pa.scalar(
+        match_time,
+        type=base_field.type,
     )
 
-    station_field = dataset.schema.field(
-        "station_id"
-    )
+    station_field = dataset.schema.field("station_id")
 
     station_filter_values = None
 
-    if (
-        pa.types.is_string(station_field.type)
-        or pa.types.is_large_string(
-            station_field.type
-        )
+    if pa.types.is_string(station_field.type) or pa.types.is_large_string(
+        station_field.type
     ):
         station_filter_values = station_ids
 
-    elif pa.types.is_integer(
-        station_field.type
-    ):
+    elif pa.types.is_integer(station_field.type):
         try:
-            station_filter_values = [
-                int(value)
-                for value in station_ids
-            ]
+            station_filter_values = [int(value) for value in station_ids]
         except ValueError:
             station_filter_values = None
 
     if station_filter_values is not None:
-        expression = expression & (
-            ds.field("station_id").isin(
-                station_filter_values
-            )
-        )
+        expression = expression & (ds.field("station_id").isin(station_filter_values))
 
     table = dataset.to_table(
         columns=required_columns,
@@ -232,16 +168,9 @@ def load_point_in_time_features(
     if frame.empty:
         return frame
 
-    frame["station_id"] = (
-        frame["station_id"]
-        .astype(str)
-    )
+    frame["station_id"] = frame["station_id"].astype(str)
 
-    frame = frame.loc[
-        frame["station_id"].isin(
-            station_ids
-        )
-    ].copy()
+    frame = frame.loc[frame["station_id"].isin(station_ids)].copy()
 
     return frame
 
@@ -249,9 +178,7 @@ def load_point_in_time_features(
 def load_inventory(
     path: Path,
 ) -> dict[str, dict[str, Any]]:
-    payload = json.loads(
-        path.read_text(encoding="utf-8")
-    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
 
     if isinstance(payload, dict):
         records = payload.get("stations")
@@ -259,18 +186,13 @@ def load_inventory(
         records = payload
 
     if not isinstance(records, list):
-        raise ValueError(
-            "inventory JSON must be an array or "
-            '{"stations": [...]}'
-        )
+        raise ValueError("inventory JSON must be an array or " '{"stations": [...]}')
 
     result: dict[str, dict[str, Any]] = {}
 
     for record in records:
         if not isinstance(record, dict):
-            raise ValueError(
-                "inventory record must be an object"
-            )
+            raise ValueError("inventory record must be an object")
 
         required = {
             "station_id",
@@ -280,21 +202,15 @@ def load_inventory(
 
         missing = required - set(record)
         if missing:
-            raise ValueError(
-                f"inventory record missing: {sorted(missing)}"
-            )
+            raise ValueError(f"inventory record missing: {sorted(missing)}")
 
         station_id = record["station_id"]
 
         if not isinstance(station_id, str):
-            raise ValueError(
-                "inventory station_id must be a string"
-            )
+            raise ValueError("inventory station_id must be a string")
 
         if station_id in result:
-            raise ValueError(
-                f"duplicate inventory station_id: {station_id}"
-            )
+            raise ValueError(f"duplicate inventory station_id: {station_id}")
 
         result[station_id] = {
             "capacity": record["capacity"],
@@ -326,32 +242,21 @@ def build_prediction_response(
     ],
     model_version: str,
 ) -> dict[str, Any]:
-    request = validate_prediction_request(
-        request
-    )
+    request = validate_prediction_request(request)
 
     frame = feature_frame.copy()
 
     if not frame.empty:
         if "station_id" not in frame:
-            raise ValueError(
-                "feature frame missing station_id"
-            )
+            raise ValueError("feature frame missing station_id")
 
-        frame["station_id"] = (
-            frame["station_id"]
-            .astype(str)
-        )
+        frame["station_id"] = frame["station_id"].astype(str)
 
-    missing_features = (
-        set(candidate.feature_columns)
-        - set(frame.columns)
-    )
+    missing_features = set(candidate.feature_columns) - set(frame.columns)
 
     if missing_features and not frame.empty:
         raise ValueError(
-            "feature frame missing model features: "
-            f"{sorted(missing_features)}"
+            "feature frame missing model features: " f"{sorted(missing_features)}"
         )
 
     station_rows: dict[
@@ -367,55 +272,36 @@ def build_prediction_response(
         tuple[float, float],
     ] = {}
 
-    for station_id in request[
-        "station_ids"
-    ]:
-        matching = frame.loc[
-            frame["station_id"].eq(
-                station_id
-            )
-        ]
+    for station_id in request["station_ids"]:
+        matching = frame.loc[frame["station_id"].eq(station_id)]
 
         station_rows[station_id] = matching
 
         if matching.empty:
-            warnings.append(
-                f"{station_id}: feature row not found "
-                "for base_time"
-            )
+            warnings.append(f"{station_id}: feature row not found " "for base_time")
             continue
 
         if len(matching) != 1:
             warnings.append(
-                f"{station_id}: expected exactly one "
-                "feature row for base_time"
+                f"{station_id}: expected exactly one " "feature row for base_time"
             )
             continue
 
         current = inventory.get(station_id)
 
         if current is None:
-            warnings.append(
-                f"{station_id}: current inventory "
-                "not available"
-            )
+            warnings.append(f"{station_id}: current inventory " "not available")
             continue
 
         try:
-            capacity = float(
-                current["capacity"]
-            )
-            bikes_now = float(
-                current["bikes_now"]
-            )
+            capacity = float(current["capacity"])
+            bikes_now = float(current["bikes_now"])
         except (
             KeyError,
             TypeError,
             ValueError,
         ):
-            warnings.append(
-                f"{station_id}: invalid current inventory"
-            )
+            warnings.append(f"{station_id}: invalid current inventory")
             continue
 
         if (
@@ -425,19 +311,12 @@ def build_prediction_response(
             or bikes_now < 0
             or bikes_now > capacity
         ):
-            warnings.append(
-                f"{station_id}: current inventory "
-                "outside valid range"
-            )
+            warnings.append(f"{station_id}: current inventory " "outside valid range")
             continue
 
-        valid_station_ids.append(
-            station_id
-        )
+        valid_station_ids.append(station_id)
 
-        valid_rows.append(
-            matching.iloc[[0]]
-        )
+        valid_rows.append(matching.iloc[[0]])
 
         valid_inventory[station_id] = (
             capacity,
@@ -455,40 +334,25 @@ def build_prediction_response(
             ignore_index=True,
         )
 
-        predicted = candidate.predict_all(
-            model_frame
-        )
+        predicted = candidate.predict_all(model_frame)
 
-        for position, station_id in enumerate(
-            valid_station_ids
-        ):
-            prediction_lookup[
-                station_id
-            ] = {}
+        for position, station_id in enumerate(valid_station_ids):
+            prediction_lookup[station_id] = {}
 
-            for horizon in request[
-                "horizons"
-            ]:
-                value = float(
-                    predicted[horizon][position]
-                )
+            for horizon in request["horizons"]:
+                value = float(predicted[horizon][position])
 
                 if not np.isfinite(value):
                     warnings.append(
-                        f"{station_id}: non-finite "
-                        f"{horizon}m prediction"
+                        f"{station_id}: non-finite " f"{horizon}m prediction"
                     )
                     continue
 
-                prediction_lookup[
-                    station_id
-                ][horizon] = value
+                prediction_lookup[station_id][horizon] = value
 
     response_predictions = []
 
-    for station_id in request[
-        "station_ids"
-    ]:
+    for station_id in request["station_ids"]:
         entry: dict[str, Any] = {
             "station_id": station_id,
             "horizon_results": [],
@@ -498,24 +362,8 @@ def build_prediction_response(
 
         if current is not None:
             try:
-                entry["capacity"] = (
-                    _display_number(
-                        float(
-                            current[
-                                "capacity"
-                            ]
-                        )
-                    )
-                )
-                entry["bikes_now"] = (
-                    _display_number(
-                        float(
-                            current[
-                                "bikes_now"
-                            ]
-                        )
-                    )
-                )
+                entry["capacity"] = _display_number(float(current["capacity"]))
+                entry["bikes_now"] = _display_number(float(current["bikes_now"]))
             except (
                 KeyError,
                 TypeError,
@@ -524,74 +372,44 @@ def build_prediction_response(
                 pass
 
         if station_id in prediction_lookup:
-            capacity, bikes_now = (
-                valid_inventory[
-                    station_id
-                ]
-            )
+            capacity, bikes_now = valid_inventory[station_id]
 
             results = []
 
-            for horizon in request[
-                "horizons"
-            ]:
-                if (
-                    horizon
-                    not in prediction_lookup[
-                        station_id
-                    ]
-                ):
+            for horizon in request["horizons"]:
+                if horizon not in prediction_lookup[station_id]:
                     continue
 
-                delta_net = (
-                    prediction_lookup[
-                        station_id
-                    ][horizon]
-                )
+                delta_net = prediction_lookup[station_id][horizon]
 
                 bikes_expected = float(
                     np.clip(
-                        bikes_now
-                        + delta_net,
+                        bikes_now + delta_net,
                         0.0,
                         capacity,
                     )
                 )
 
-                docks_expected = (
-                    capacity
-                    - bikes_expected
-                )
+                docks_expected = capacity - bikes_expected
 
                 results.append(
                     {
                         "horizon_min": horizon,
                         "delta_net": delta_net,
-                        "bikes_expected":
-                            bikes_expected,
-                        "docks_expected":
-                            docks_expected,
+                        "bikes_expected": bikes_expected,
+                        "docks_expected": docks_expected,
                     }
                 )
 
-            entry[
-                "horizon_results"
-            ] = results
+            entry["horizon_results"] = results
 
-        response_predictions.append(
-            entry
-        )
+        response_predictions.append(entry)
 
     return {
-        "request_id": request[
-            "request_id"
-        ],
-        "base_time": request[
-            "base_time"
-        ],
+        "request_id": request["request_id"],
+        "base_time": request["base_time"],
         "model_version": model_version,
         "source": "model",
-        "predictions":
-            response_predictions,
+        "predictions": response_predictions,
         "warnings": warnings,
     }
