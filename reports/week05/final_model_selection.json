@@ -1,0 +1,210 @@
+{
+  "generated_at_utc": "2026-09-27T08:34:41.948177+00:00",
+  "winner": {
+    "model_id": "random_forest",
+    "parameters": {
+      "bootstrap": true,
+      "max_depth": null,
+      "max_features": 1.0,
+      "max_samples": 0.35,
+      "min_samples_leaf": 25,
+      "n_estimators": 48,
+      "n_jobs": -1
+    },
+    "primary_active_peak_30m_mae": 2.308382794056522,
+    "secondary_all_horizon_mean_mae": 1.1026655936398557,
+    "inference_time_ms_per_1k_rows": 47.70941700007825,
+    "preferred_inference_max_ms_per_1k_rows": 200.0,
+    "inference_preference_met": true
+  },
+  "finalists": [
+    {
+      "model_id": "random_forest",
+      "parameters": {
+        "bootstrap": true,
+        "max_depth": null,
+        "max_features": 1.0,
+        "max_samples": 0.35,
+        "min_samples_leaf": 25,
+        "n_estimators": 48,
+        "n_jobs": -1
+      },
+      "primary_active_peak_30m_mae": 2.308382794056522,
+      "secondary_all_horizon_mean_mae": 1.1026655936398557,
+      "inference_time_ms_per_1k_rows": 47.70941700007825
+    },
+    {
+      "model_id": "lightgbm",
+      "parameters": {
+        "colsample_bytree": 0.7,
+        "deterministic": true,
+        "force_col_wise": true,
+        "learning_rate": 0.08,
+        "min_child_samples": 100,
+        "n_estimators": 400,
+        "n_jobs": -1,
+        "num_leaves": 31,
+        "objective": "regression_l1",
+        "reg_lambda": 0.0,
+        "subsample": 0.8,
+        "verbosity": -1
+      },
+      "primary_active_peak_30m_mae": 2.3308403341020774,
+      "secondary_all_horizon_mean_mae": 1.083840599587665,
+      "inference_time_ms_per_1k_rows": 13.575250000030792
+    }
+  ],
+  "best_parameters": {
+    "random_forest": {
+      "bootstrap": true,
+      "max_depth": null,
+      "max_features": 1.0,
+      "max_samples": 0.35,
+      "min_samples_leaf": 25,
+      "n_estimators": 48,
+      "n_jobs": -1
+    },
+    "lightgbm": {
+      "colsample_bytree": 0.7,
+      "deterministic": true,
+      "force_col_wise": true,
+      "learning_rate": 0.08,
+      "min_child_samples": 100,
+      "n_estimators": 400,
+      "n_jobs": -1,
+      "num_leaves": 31,
+      "objective": "regression_l1",
+      "reg_lambda": 0.0,
+      "subsample": 0.8,
+      "verbosity": -1
+    }
+  },
+  "selection_policy": {
+    "primary": {
+      "segment": "ACTIVE_PEAK",
+      "horizon_min": 30,
+      "metric": "mae",
+      "direction": "minimize"
+    },
+    "secondary": {
+      "metric": "mean_mae",
+      "direction": "minimize"
+    },
+    "tertiary": {
+      "metric": "inference_ms_per_1k_rows",
+      "direction": "minimize",
+      "preferred_max": 200
+    },
+    "tie_breaker": "simpler_model"
+  },
+  "split": {
+    "strategy": "chronological_unique_timestamp_ratio_with_purge",
+    "requested_ratios": {
+      "train": 0.7,
+      "validation": 0.15,
+      "test": 0.15
+    },
+    "actual_retained_timestamp_ratios": {
+      "train": 0.6999885818680064,
+      "validation": 0.14997716373601278,
+      "test": 0.1500342543959808
+    },
+    "base_interval_minutes": 15,
+    "gap_minutes": 60,
+    "gap_timestamps_each_boundary": 4,
+    "data_period": {
+      "start": "2025-08-01T00:00:00",
+      "end": "2026-07-31T23:45:00",
+      "timestamps": 35040
+    },
+    "train": {
+      "start": "2025-08-01T00:00:00",
+      "end": "2026-04-13T10:15:00",
+      "timestamps": 24522
+    },
+    "train_validation_gap": {
+      "start": "2026-04-13T10:30:00",
+      "end": "2026-04-13T11:15:00",
+      "timestamps": 4
+    },
+    "validation": {
+      "start": "2026-04-13T11:30:00",
+      "end": "2026-06-07T04:45:00",
+      "timestamps": 5254
+    },
+    "validation_test_gap": {
+      "start": "2026-06-07T05:00:00",
+      "end": "2026-06-07T05:45:00",
+      "timestamps": 4
+    },
+    "test": {
+      "start": "2026-06-07T06:00:00",
+      "end": "2026-07-31T23:45:00",
+      "timestamps": 5256
+    },
+    "row_counts": {
+      "train": 4470108,
+      "validation": 955628,
+      "test": 950455,
+      "excluded_gap": 1452
+    }
+  },
+  "active_station_percentile": 0.75,
+  "active_station_threshold": 28428.0,
+  "active_station_count": 47,
+  "feature_order": [
+    "station_id",
+    "district",
+    "hour",
+    "minute",
+    "weekday_index",
+    "month",
+    "day_of_year",
+    "is_weekend",
+    "is_holiday",
+    "is_peak",
+    "is_holiday_or_weekend",
+    "time_of_day_sin",
+    "time_of_day_cos",
+    "weekday_sin",
+    "weekday_cos",
+    "rent_prev_15m",
+    "return_prev_15m",
+    "delta_prev_15m",
+    "history_15m_available",
+    "rent_prev_30m",
+    "return_prev_30m",
+    "delta_prev_30m",
+    "history_30m_available",
+    "rent_prev_60m",
+    "return_prev_60m",
+    "delta_prev_60m",
+    "history_60m_available",
+    "rent_mean_prev_24h",
+    "return_mean_prev_24h",
+    "delta_mean_prev_24h",
+    "history_24h_observations",
+    "history_24h_available",
+    "delta_lag_1d",
+    "delta_lag_7d",
+    "lag_1d_available",
+    "lag_7d_available",
+    "temp_c",
+    "precip_mm",
+    "humidity_pct",
+    "wind_ms",
+    "weather_age_min",
+    "weather_available",
+    "temp_c_missing",
+    "precip_mm_missing",
+    "humidity_pct_missing",
+    "wind_ms_missing"
+  ],
+  "input": {
+    "path": "/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data/processed/model/week03_features.parquet",
+    "sha256": "e1c94933347c27ef80bb4dc8a774960497ec6de94455cc195266aefd551e5202"
+  },
+  "test_targets_accessed": false,
+  "test_metrics_generated": false,
+  "final_test_policy": "reserved for one final Week 05 evaluation"
+}

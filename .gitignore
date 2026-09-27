@@ -127,3 +127,4 @@ frontend/**/build/
 *.jar
 !backend/gradle/wrapper/gradle-wrapper.jar
 *.iml
+models/week05/*.joblib

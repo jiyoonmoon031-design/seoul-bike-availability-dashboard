@@ -1,0 +1,89 @@
+week: 5
+random_seed: 42
+evaluation:
+  tuning_split: validation
+  final_test_policy: once_after_model_selection
+search:
+  random_forest_trials: 6
+  lightgbm_trials: 8
+selection:
+  primary:
+    segment: ACTIVE_PEAK
+    horizon_min: 30
+    metric: mae
+    direction: minimize
+  secondary:
+    metric: mean_mae
+    direction: minimize
+  tertiary:
+    metric: inference_ms_per_1k_rows
+    direction: minimize
+    preferred_max: 200
+  tie_breaker: simpler_model
+candidates:
+  random_forest:
+    fixed:
+      bootstrap: true
+      n_jobs: -1
+    search_space:
+      n_estimators:
+      - 48
+      - 96
+      - 160
+      - 240
+      max_depth:
+      - 12
+      - 16
+      - 24
+      - null
+      min_samples_leaf:
+      - 10
+      - 25
+      - 50
+      max_features:
+      - 0.5
+      - 0.75
+      - 1.0
+      max_samples:
+      - 0.15
+      - 0.2
+      - 0.35
+  lightgbm:
+    fixed:
+      objective: regression_l1
+      deterministic: true
+      force_col_wise: true
+      verbosity: -1
+      n_jobs: -1
+      subsample: 0.8
+    search_space:
+      n_estimators:
+      - 200
+      - 400
+      - 800
+      learning_rate:
+      - 0.03
+      - 0.05
+      - 0.08
+      num_leaves:
+      - 15
+      - 31
+      - 63
+      min_child_samples:
+      - 25
+      - 50
+      - 100
+      colsample_bytree:
+      - 0.7
+      - 0.8
+      - 1.0
+      reg_lambda:
+      - 0.0
+      - 0.1
+      - 1.0
+importance:
+  top_n: 15
+  permutation_repeats: 5
+artifacts:
+  model_dir: models/week05
+  report_dir: reports/week05
