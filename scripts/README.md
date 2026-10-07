@@ -53,3 +53,21 @@ The request JSON follows `docs/interface/model-backend.md`.
 
 The feature-table and inventory arguments are standalone Week 05 execution
 adapters and are not additional public API request fields.
+
+## Week 06 operator rebalancing
+
+Execution:
+
+    python scripts/run_week06_rebalancing.py \
+      --prediction /path/to/prediction_response.json \
+      --station-context /path/to/station_context.json \
+      --horizon 30 \
+      --top-n 10 \
+      --output /path/to/rebalancing_response.json \
+      --diagnostics-output /path/to/rebalancing_diagnostics.json
+
+The public result contains shortage_top, surplus_top, and move_matches.
+
+The station-context file is a standalone Week 06 validation adapter.
+Backend integration replaces this file adapter with DB-derived station metadata
+and historical demand context without changing the operator response contract.
