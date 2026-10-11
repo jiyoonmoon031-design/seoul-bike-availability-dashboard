@@ -5,10 +5,7 @@ from src.rebalancing.logic import (
     build_rebalancing_plan,
 )
 
-
-BASE_TIME = (
-    "2026-10-08T08:00:00+09:00"
-)
+BASE_TIME = "2026-10-08T08:00:00+09:00"
 
 
 def params():
@@ -42,11 +39,7 @@ def params():
 
 
 def config():
-    return (
-        RebalancingConfig.from_params(
-            params()
-        )
-    )
+    return RebalancingConfig.from_params(params())
 
 
 def station_prediction(
@@ -57,23 +50,15 @@ def station_prediction(
     return {
         "station_id": station_id,
         "capacity": capacity,
-        "bikes_now": (
-            capacity / 2
-            if capacity
-            else 0
-        ),
+        "bikes_now": (capacity / 2 if capacity else 0),
         "horizon_results": [
             {
                 "horizon_min": horizon,
                 "delta_net": 0.0,
-                "bikes_expected":
-                    expected[horizon],
-                "docks_expected":
-                    capacity
-                    - expected[horizon],
+                "bikes_expected": expected[horizon],
+                "docks_expected": capacity - expected[horizon],
             }
-            for horizon
-            in (15, 30, 60)
+            for horizon in (15, 30, 60)
         ],
     }
 
@@ -84,9 +69,7 @@ def prediction_response(
     return {
         "request_id": "test-request",
         "base_time": BASE_TIME,
-        "model_version": (
-            "week05-random_forest-test"
-        ),
+        "model_version": ("week05-random_forest-test"),
         "source": "model",
         "predictions": stations,
         "warnings": [],
@@ -102,12 +85,10 @@ def context(
 ):
     return {
         "station_id": station_id,
-        "station_name":
-            f"Station {station_id}",
+        "station_name": f"Station {station_id}",
         "latitude": lat,
         "longitude": lon,
-        "same_dow_time_mean_rent":
-            demand,
+        "same_dow_time_mean_rent": demand,
     }
 
 
@@ -153,45 +134,23 @@ def test_priority_and_basic_greedy_match():
         horizon_min=30,
     )
 
-    shortage = (
-        result.response[
-            "shortage_top"
-        ][0]
-    )
+    shortage = result.response["shortage_top"][0]
 
-    assert shortage[
-        "station_id"
-    ] == "D"
+    assert shortage["station_id"] == "D"
 
-    assert shortage[
-        "s_min"
-    ] == 4
+    assert shortage["s_min"] == 4
 
-    assert shortage[
-        "shortage"
-    ] == pytest.approx(2.0)
+    assert shortage["shortage"] == pytest.approx(2.0)
 
-    assert shortage[
-        "urgency"
-    ] == pytest.approx(2.0)
+    assert shortage["urgency"] == pytest.approx(2.0)
 
-    assert shortage[
-        "demand_weight"
-    ] == pytest.approx(1.0)
+    assert shortage["demand_weight"] == pytest.approx(1.0)
 
-    assert shortage[
-        "priority_score"
-    ] == pytest.approx(4.0)
+    assert shortage["priority_score"] == pytest.approx(4.0)
 
-    assert shortage[
-        "risk_time"
-    ] == (
-        "2026-10-08T08:30:00+09:00"
-    )
+    assert shortage["risk_time"] == ("2026-10-08T08:30:00+09:00")
 
-    assert result.response[
-        "move_matches"
-    ][0]["move_qty"] == 2
+    assert result.response["move_matches"][0]["move_qty"] == 2
 
 
 def test_zero_capacity_is_skipped_with_warning():
@@ -222,18 +181,9 @@ def test_zero_capacity_is_skipped_with_warning():
         horizon_min=30,
     )
 
-    assert (
-        result.response[
-            "shortage_top"
-        ]
-        == []
-    )
+    assert result.response["shortage_top"] == []
 
-    assert any(
-        "capacity" in warning
-        for warning
-        in result.warnings
-    )
+    assert any("capacity" in warning for warning in result.warnings)
 
 
 def test_no_supplier_within_radius_returns_empty_matches():
@@ -278,12 +228,7 @@ def test_no_supplier_within_radius_returns_empty_matches():
         horizon_min=30,
     )
 
-    assert (
-        result.response[
-            "move_matches"
-        ]
-        == []
-    )
+    assert result.response["move_matches"] == []
 
 
 def test_supply_slack_below_one_is_not_matched():
@@ -336,25 +281,13 @@ def test_supply_slack_below_one_is_not_matched():
                 lon=127.051,
             ),
         ],
-        config=(
-            RebalancingConfig
-            .from_params(custom)
-        ),
+        config=(RebalancingConfig.from_params(custom)),
         horizon_min=30,
     )
 
-    assert result.response[
-        "surplus_top"
-    ][0]["supply_slack"] == (
-        pytest.approx(0.5)
-    )
+    assert result.response["surplus_top"][0]["supply_slack"] == (pytest.approx(0.5))
 
-    assert (
-        result.response[
-            "move_matches"
-        ]
-        == []
-    )
+    assert result.response["move_matches"] == []
 
 
 def test_vehicle_capacity_caps_total_move_at_twenty():
@@ -399,22 +332,13 @@ def test_vehicle_capacity_caps_total_move_at_twenty():
         horizon_min=30,
     )
 
-    moved = sum(
-        item["move_qty"]
-        for item in result.response[
-            "move_matches"
-        ]
-    )
+    moved = sum(item["move_qty"] for item in result.response["move_matches"])
 
     assert moved == 20
 
-    assert result.diagnostics[
-        "vehicle_capacity_remaining"
-    ] == 0
+    assert result.diagnostics["vehicle_capacity_remaining"] == 0
 
-    assert result.diagnostics[
-        "unmatched_shortage_count"
-    ] == 1
+    assert result.diagnostics["unmatched_shortage_count"] == 1
 
 
 def test_greedy_prefers_larger_supply_slack_before_distance():
@@ -473,11 +397,7 @@ def test_greedy_prefers_larger_supply_slack_before_distance():
         horizon_min=30,
     )
 
-    assert result.response[
-        "move_matches"
-    ][0]["from_station_id"] == (
-        "S_BIG"
-    )
+    assert result.response["move_matches"][0]["from_station_id"] == ("S_BIG")
 
 
 def test_incompatible_minimum_thresholds_are_skipped():
@@ -508,25 +428,11 @@ def test_incompatible_minimum_thresholds_are_skipped():
         horizon_min=30,
     )
 
-    assert (
-        result.response[
-            "shortage_top"
-        ]
-        == []
-    )
+    assert result.response["shortage_top"] == []
 
-    assert (
-        result.response[
-            "surplus_top"
-        ]
-        == []
-    )
+    assert result.response["surplus_top"] == []
 
-    assert any(
-        "S_min + E_min" in warning
-        for warning
-        in result.warnings
-    )
+    assert any("S_min + E_min" in warning for warning in result.warnings)
 
 
 def test_demand_weight_clipping_affects_priority_order():
@@ -588,26 +494,15 @@ def test_demand_weight_clipping_affects_priority_order():
         horizon_min=30,
     )
 
-    high = result.response[
-        "shortage_top"
-    ][0]
+    high = result.response["shortage_top"][0]
 
-    low = result.response[
-        "shortage_top"
-    ][1]
+    low = result.response["shortage_top"][1]
 
     assert high["station_id"] == "D_HIGH"
     assert low["station_id"] == "D_LOW"
 
-    assert high[
-        "demand_weight"
-    ] == pytest.approx(2.0)
+    assert high["demand_weight"] == pytest.approx(2.0)
 
-    assert low[
-        "demand_weight"
-    ] == pytest.approx(0.5)
+    assert low["demand_weight"] == pytest.approx(0.5)
 
-    assert (
-        high["priority_score"]
-        > low["priority_score"]
-    )
+    assert high["priority_score"] > low["priority_score"]

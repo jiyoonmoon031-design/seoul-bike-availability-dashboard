@@ -55,9 +55,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--params",
         type=Path,
-        default=Path(
-            "config/params.yaml"
-        ),
+        default=Path("config/params.yaml"),
     )
 
     parser.add_argument(
@@ -76,24 +74,15 @@ def parse_args() -> argparse.Namespace:
 def load_station_context(
     path: Path,
 ) -> list[dict]:
-    payload = json.loads(
-        path.read_text(
-            encoding="utf-8"
-        )
-    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
 
     if isinstance(payload, dict):
-        records = payload.get(
-            "stations"
-        )
+        records = payload.get("stations")
     else:
         records = payload
 
     if not isinstance(records, list):
-        raise ValueError(
-            "station context must be "
-            'an array or {"stations": [...]}'
-        )
+        raise ValueError("station context must be " 'an array or {"stations": [...]}')
 
     return records
 
@@ -121,29 +110,13 @@ def write_json(
 def main() -> None:
     args = parse_args()
 
-    params = yaml.safe_load(
-        args.params.read_text(
-            encoding="utf-8"
-        )
-    )
+    params = yaml.safe_load(args.params.read_text(encoding="utf-8"))
 
-    config = (
-        RebalancingConfig.from_params(
-            params
-        )
-    )
+    config = RebalancingConfig.from_params(params)
 
-    prediction = json.loads(
-        args.prediction.read_text(
-            encoding="utf-8"
-        )
-    )
+    prediction = json.loads(args.prediction.read_text(encoding="utf-8"))
 
-    station_contexts = (
-        load_station_context(
-            args.station_context
-        )
-    )
+    station_contexts = load_station_context(args.station_context)
 
     result = build_rebalancing_plan(
         prediction,
