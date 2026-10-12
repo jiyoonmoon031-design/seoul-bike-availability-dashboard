@@ -7,6 +7,7 @@ import com.example.ddareungi.mobility.TravelTimeService;
 import org.springframework.stereotype.Service;
 import com.example.ddareungi.mobility.dto.TravelTimeResponse;
 
+import java.util.AbstractMap;
 import java.util.Comparator;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class NearbyStationService {
 
     private final StationRepository stationRepository;
     private final TravelTimeService travelTimeService;
+    private static final int MAX_NEARBY_STATIONS = 20;
 
     public NearbyStationService(
             StationRepository stationRepository,
@@ -29,32 +31,41 @@ public class NearbyStationService {
             double longitude,
             double radiusM
     ) {
-
         return stationRepository.findAll().stream()
 
-                // 먼저 직선거리로 800m 이내인지 판단
-                .filter(station -> {
-                    double straightDistanceM =
-                            travelTimeService.calculateHaversineDistanceKm(
-                                    latitude,
-                                    longitude,
-                                    station.getLatitude(),
-                                    station.getLongitude()
-                            ) * 1000.0;
-
-                    return straightDistanceM <= radiusM;
-                })
-
-                // 통과한 대여소만 사용자용 이동거리/시간 계산
-                .map(station -> toNearbyStation(
+                // 대여소별 직선거리 계산
+                .map(station -> new AbstractMap.SimpleEntry<>(
                         station,
+                        travelTimeService.calculateHaversineDistanceKm(
+                                latitude,
+                                longitude,
+                                station.getLatitude(),
+                                station.getLongitude()
+                        ) * 1000.0
+                ))
+
+                // 직선거리 기준 반경 내 대여소 필터링
+                .filter(entry -> entry.getValue() <= radiusM)
+
+                // 직선거리 기준 가까운 순서로 정렬
+                .sorted(Comparator.comparingDouble(
+                        entry -> entry.getValue()
+                ))
+
+                // TMAP 호출 전 후보 최대 20개로 제한
+                .limit(MAX_NEARBY_STATIONS)
+
+                // 선정된 후보만 실제 도보 경로 계산
+                .map(entry -> toNearbyStation(
+                        entry.getKey(),
                         latitude,
                         longitude
                 ))
 
-                // 실제 보행 경로도 요청 반경 이내인 대여소만 반환
+                // 실제 보행거리 기준 반경 내 대여소 필터링
                 .filter(station -> station.getDistanceM() <= radiusM)
 
+                // 실제 보행거리 기준 가까운 순서로 정렬
                 .sorted(Comparator.comparing(NearbyStation::getDistanceM))
 
                 .toList();
