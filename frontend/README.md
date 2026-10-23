@@ -1,6 +1,6 @@
-# React + TypeScript + Vite
+# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
 
@@ -11,22 +11,44 @@ Currently, two official plugins are available:
 
 The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the Oxlint configuration
+## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## Week 07 Operator Dashboard
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The Week 07 operator dashboard adds:
+
+- base time control
+- 15 / 30 / 60 minute prediction horizon
+- Top N selection
+- shortage / surplus / normal station visualization
+- Kakao Map station markers
+- station detail popup
+- rebalancing movement lines and quantities
+- rebalancing priority table
+- TanStack Query API layer
+- MSW mock operator API
+- StationStatus backend DTO adapter
+- loading / error / retry states
+- baseline fallback indicator
+
+The map and route functionality previously merged into `develop`
+is retained. Shared frontend dependencies use the latest `develop`
+versions.
+
+### Operator API status
+
+Until the backend operator endpoints are available:
+
+    VITE_USE_MSW=true
+
+When backend integration is ready:
+
+    VITE_USE_MSW=false
+    VITE_API_BASE_URL=<backend URL>
+
+The frontend does not recompute shortage or surplus status from
+current inventory. Week 06 rebalancing output remains the
+authoritative source for shortage, surplus, priority, and movement
+matching.
