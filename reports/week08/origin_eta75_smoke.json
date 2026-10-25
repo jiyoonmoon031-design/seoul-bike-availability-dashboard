@@ -1,0 +1,63 @@
+{
+  "leg": "origin",
+  "eta_min": 75.0,
+  "effective_horizon": {
+    "method": "clamp",
+    "anchors": [
+      60,
+      60
+    ],
+    "value_at": 75.0
+  },
+  "recommendations": [
+    {
+      "station_id": "ST-002",
+      "station_name": "세종대학교 정문",
+      "distance_m": 420.0,
+      "walk_min": 6.0,
+      "bikes_now": 5.0,
+      "docks_now": 15.0,
+      "bikes_expected": 3.0,
+      "docks_expected": 17.0,
+      "score": 0.7375,
+      "score_breakdown": {
+        "distance": 0.2375,
+        "availability": 0.5
+      },
+      "rank": 1
+    },
+    {
+      "station_id": "ST-001",
+      "station_name": "건대입구역 2번출구",
+      "distance_m": 180.0,
+      "walk_min": 3.0,
+      "bikes_now": 8.0,
+      "docks_now": 12.0,
+      "bikes_expected": 2.0,
+      "docks_expected": 18.0,
+      "score": 0.720833,
+      "score_breakdown": {
+        "distance": 0.3875,
+        "availability": 0.333333
+      },
+      "rank": 2
+    },
+    {
+      "station_id": "ST-003",
+      "station_name": "어린이대공원역",
+      "distance_m": 650.0,
+      "walk_min": 10.0,
+      "bikes_now": 12.0,
+      "docks_now": 8.0,
+      "bikes_expected": 1.0,
+      "docks_expected": 19.0,
+      "score": 0.260417,
+      "score_breakdown": {
+        "distance": 0.09375,
+        "availability": 0.166667
+      },
+      "rank": 3
+    }
+  ],
+  "warnings": []
+}
