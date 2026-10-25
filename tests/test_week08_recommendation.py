@@ -107,11 +107,7 @@ def test_origin_uses_future_bikes_not_current_bikes():
     assert recs[0]["bikes_now"] == pytest.approx(4)
     assert recs[0]["bikes_expected"] == pytest.approx(4)
 
-    a = next(
-        item
-        for item in recs
-        if item["station_id"] == "A"
-    )
+    a = next(item for item in recs if item["station_id"] == "A")
 
     assert a["bikes_now"] == pytest.approx(10)
     assert a["bikes_expected"] == pytest.approx(1)
@@ -138,10 +134,7 @@ def test_destination_uses_future_docks():
         config=config(),
     )
 
-    assert (
-        result.response["recommendations"][0]["station_id"]
-        == "SPACE"
-    )
+    assert result.response["recommendations"][0]["station_id"] == "SPACE"
 
 
 def test_distance_score_zero_at_800m():
@@ -159,9 +152,7 @@ def test_distance_score_zero_at_800m():
         config=config(),
     )
 
-    breakdown = result.response[
-        "recommendations"
-    ][0]["score_breakdown"]
+    breakdown = result.response["recommendations"][0]["score_breakdown"]
 
     assert breakdown["distance"] == pytest.approx(0)
 
@@ -180,9 +171,7 @@ def test_availability_component_caps_at_weight():
         config=config(),
     )
 
-    breakdown = result.response[
-        "recommendations"
-    ][0]["score_breakdown"]
+    breakdown = result.response["recommendations"][0]["score_breakdown"]
 
     assert breakdown["availability"] == pytest.approx(0.5)
 

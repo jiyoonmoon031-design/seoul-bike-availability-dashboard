@@ -58,13 +58,9 @@ def parse_args():
 def main():
     args = parse_args()
 
-    params = yaml.safe_load(
-        args.params.read_text(encoding="utf-8")
-    )
+    params = yaml.safe_load(args.params.read_text(encoding="utf-8"))
 
-    payload = json.loads(
-        args.input.read_text(encoding="utf-8")
-    )
+    payload = json.loads(args.input.read_text(encoding="utf-8"))
 
     config = RecommendationConfig.from_params(params)
 

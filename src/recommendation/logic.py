@@ -76,11 +76,7 @@ def interpolate_delta(
 
     required = (15, 30, 60)
 
-    missing = [
-        horizon
-        for horizon in required
-        if horizon not in delta_by_horizon
-    ]
+    missing = [horizon for horizon in required if horizon not in delta_by_horizon]
 
     if missing:
         raise ValueError(
@@ -112,10 +108,7 @@ def interpolate_delta(
         if left_h <= eta <= right_h:
             ratio = (eta - left_h) / (right_h - left_h)
 
-            interpolated = (
-                left_delta
-                + ratio * (right_delta - left_delta)
-            )
+            interpolated = left_delta + ratio * (right_delta - left_delta)
 
             return (
                 interpolated,
@@ -163,10 +156,7 @@ def recommend_stations(
     if config.avail_stable_target <= 0:
         raise ValueError("avail_stable_target must be > 0")
 
-    total_weight = (
-        config.distance_weight
-        + config.availability_weight
-    )
+    total_weight = config.distance_weight + config.availability_weight
 
     if total_weight <= 0:
         raise ValueError("recommendation weights must sum to > 0")
@@ -198,17 +188,13 @@ def recommend_stations(
             or bikes_now < 0
             or bikes_now > capacity
         ):
-            warnings.append(
-                f"{station_id}: invalid distance/inventory context skipped"
-            )
+            warnings.append(f"{station_id}: invalid distance/inventory context skipped")
             continue
 
         horizon_results = candidate.get("horizon_results")
 
         if not isinstance(horizon_results, list):
-            warnings.append(
-                f"{station_id}: horizon_results missing"
-            )
+            warnings.append(f"{station_id}: horizon_results missing")
             continue
 
         try:
@@ -228,32 +214,19 @@ def recommend_stations(
         )
         docks_expected = capacity - bikes_expected
 
-        available = (
-            bikes_expected
-            if leg == "origin"
-            else docks_expected
+        available = bikes_expected if leg == "origin" else docks_expected
+
+        distance_component = config.distance_weight * _distance_score(
+            distance_m,
+            config.max_walk_m,
         )
 
-        distance_component = (
-            config.distance_weight
-            * _distance_score(
-                distance_m,
-                config.max_walk_m,
-            )
+        availability_component = config.availability_weight * _availability_score(
+            available,
+            config.avail_stable_target,
         )
 
-        availability_component = (
-            config.availability_weight
-            * _availability_score(
-                available,
-                config.avail_stable_target,
-            )
-        )
-
-        score = (
-            distance_component
-            + availability_component
-        )
+        score = distance_component + availability_component
 
         recommendations.append(
             {
@@ -276,11 +249,7 @@ def recommend_stations(
             }
         )
 
-    availability_field = (
-        "bikes_expected"
-        if leg == "origin"
-        else "docks_expected"
-    )
+    availability_field = "bikes_expected" if leg == "origin" else "docks_expected"
 
     recommendations.sort(
         key=lambda item: (
