@@ -130,3 +130,8 @@ frontend/test-results/
 !backend/gradle/wrapper/gradle-wrapper.jar
 *.iml
 models/week05/*.joblib
+
+!.env.ai.example
+
+# Runtime AI adapters
+runtime/
