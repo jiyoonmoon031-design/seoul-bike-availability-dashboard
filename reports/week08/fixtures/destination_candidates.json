@@ -1,0 +1,70 @@
+{
+  "candidates": [
+    {
+      "station_id": "ST-101",
+      "station_name": "성수역 3번출구",
+      "distance_m": 220,
+      "walk_min": 4,
+      "capacity": 20,
+      "bikes_now": 18,
+      "horizon_results": [
+        {
+          "horizon_min": 15,
+          "delta_net": 1
+        },
+        {
+          "horizon_min": 30,
+          "delta_net": 1
+        },
+        {
+          "horizon_min": 60,
+          "delta_net": 2
+        }
+      ]
+    },
+    {
+      "station_id": "ST-102",
+      "station_name": "서울숲역",
+      "distance_m": 380,
+      "walk_min": 6,
+      "capacity": 20,
+      "bikes_now": 12,
+      "horizon_results": [
+        {
+          "horizon_min": 15,
+          "delta_net": 1
+        },
+        {
+          "horizon_min": 30,
+          "delta_net": 2
+        },
+        {
+          "horizon_min": 60,
+          "delta_net": 3
+        }
+      ]
+    },
+    {
+      "station_id": "ST-103",
+      "station_name": "서울숲 남문",
+      "distance_m": 600,
+      "walk_min": 9,
+      "capacity": 20,
+      "bikes_now": 8,
+      "horizon_results": [
+        {
+          "horizon_min": 15,
+          "delta_net": 2
+        },
+        {
+          "horizon_min": 30,
+          "delta_net": 3
+        },
+        {
+          "horizon_min": 60,
+          "delta_net": 4
+        }
+      ]
+    }
+  ]
+}

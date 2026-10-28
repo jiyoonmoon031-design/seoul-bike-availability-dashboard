@@ -1,0 +1,63 @@
+{
+  "leg": "destination",
+  "eta_min": 38.0,
+  "effective_horizon": {
+    "method": "interpolation",
+    "anchors": [
+      30,
+      60
+    ],
+    "value_at": 38.0
+  },
+  "recommendations": [
+    {
+      "station_id": "ST-102",
+      "station_name": "서울숲역",
+      "distance_m": 380.0,
+      "walk_min": 6.0,
+      "bikes_now": 12.0,
+      "docks_now": 8.0,
+      "bikes_expected": 14.267,
+      "docks_expected": 5.733,
+      "score": 0.7625,
+      "score_breakdown": {
+        "distance": 0.2625,
+        "availability": 0.5
+      },
+      "rank": 1
+    },
+    {
+      "station_id": "ST-103",
+      "station_name": "서울숲 남문",
+      "distance_m": 600.0,
+      "walk_min": 9.0,
+      "bikes_now": 8.0,
+      "docks_now": 12.0,
+      "bikes_expected": 11.267,
+      "docks_expected": 8.733,
+      "score": 0.625,
+      "score_breakdown": {
+        "distance": 0.125,
+        "availability": 0.5
+      },
+      "rank": 2
+    },
+    {
+      "station_id": "ST-101",
+      "station_name": "성수역 3번출구",
+      "distance_m": 220.0,
+      "walk_min": 4.0,
+      "bikes_now": 18.0,
+      "docks_now": 2.0,
+      "bikes_expected": 19.267,
+      "docks_expected": 0.733,
+      "score": 0.484722,
+      "score_breakdown": {
+        "distance": 0.3625,
+        "availability": 0.122222
+      },
+      "rank": 3
+    }
+  ],
+  "warnings": []
+}

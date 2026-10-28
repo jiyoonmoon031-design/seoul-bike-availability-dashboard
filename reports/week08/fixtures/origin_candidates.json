@@ -1,0 +1,70 @@
+{
+  "candidates": [
+    {
+      "station_id": "ST-001",
+      "station_name": "건대입구역 2번출구",
+      "distance_m": 180,
+      "walk_min": 3,
+      "capacity": 20,
+      "bikes_now": 8,
+      "horizon_results": [
+        {
+          "horizon_min": 15,
+          "delta_net": -2
+        },
+        {
+          "horizon_min": 30,
+          "delta_net": -4
+        },
+        {
+          "horizon_min": 60,
+          "delta_net": -6
+        }
+      ]
+    },
+    {
+      "station_id": "ST-002",
+      "station_name": "세종대학교 정문",
+      "distance_m": 420,
+      "walk_min": 6,
+      "capacity": 20,
+      "bikes_now": 5,
+      "horizon_results": [
+        {
+          "horizon_min": 15,
+          "delta_net": 1
+        },
+        {
+          "horizon_min": 30,
+          "delta_net": 0
+        },
+        {
+          "horizon_min": 60,
+          "delta_net": -2
+        }
+      ]
+    },
+    {
+      "station_id": "ST-003",
+      "station_name": "어린이대공원역",
+      "distance_m": 650,
+      "walk_min": 10,
+      "capacity": 20,
+      "bikes_now": 12,
+      "horizon_results": [
+        {
+          "horizon_min": 15,
+          "delta_net": -8
+        },
+        {
+          "horizon_min": 30,
+          "delta_net": -10
+        },
+        {
+          "horizon_min": 60,
+          "delta_net": -11
+        }
+      ]
+    }
+  ]
+}
