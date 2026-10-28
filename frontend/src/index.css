@@ -874,3 +874,34 @@ td small {
   font-size: 10px;
   font-weight: 800;
 }
+
+/* Shared navigation between the existing user view and the operator view. */
+.app-view-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(247, 249, 252, 0.94);
+  border-bottom: 1px solid #dbe2ea;
+  backdrop-filter: blur(10px);
+}
+
+.app-view-tabs button {
+  padding: 0.55rem 1.15rem;
+  color: #475569;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+}
+
+.app-view-tabs button.active {
+  color: #fff;
+  background: #0f766e;
+  border-color: #0f766e;
+}

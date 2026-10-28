@@ -32,7 +32,7 @@ export type MoveMatch = {
 export type RebalancingResponse = {
   base_time: string
   horizon_min: number
-  source: PredictionSource
+  source?: PredictionSource
   shortage_top: ShortageStation[]
   surplus_top: SurplusStation[]
   move_matches: MoveMatch[]

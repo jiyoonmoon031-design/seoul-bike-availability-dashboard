@@ -242,9 +242,10 @@ export function OperatorPage() {
 
           <button
             type="button"
-            onClick={() =>
-              operatorQuery.refetch()
-            }
+            onClick={() => {
+              void operatorQuery.refetch()
+              void stationQuery.refetch()
+            }}
           >
             다시 시도
           </button>
@@ -336,9 +337,13 @@ export function OperatorPage() {
             {' · '}
             horizon:{' '}
             {data.horizon_min}분
-            {' · '}
-            source:{' '}
-            {data.source}
+            {data.source && (
+              <>
+                {' · '}
+                source:{' '}
+                {data.source}
+              </>
+            )}
           </footer>
         </>
       )}
