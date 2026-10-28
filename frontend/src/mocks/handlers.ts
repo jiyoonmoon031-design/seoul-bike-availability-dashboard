@@ -1,0 +1,73 @@
+import {
+  http,
+  HttpResponse,
+} from 'msw/http'
+import {
+  delay,
+} from 'msw/utils/delay'
+
+import {
+  getOperatorFixture,
+} from './operatorFixture'
+
+export const handlers = [
+  http.get(
+    '/api/v1/operator/rebalancing',
+    async ({ request }) => {
+      const url =
+        new URL(request.url)
+
+      const baseTime =
+        url.searchParams.get(
+          'base_time',
+        ) ??
+        '2026-10-08T08:00:00+09:00'
+
+      const horizon =
+        Number(
+          url.searchParams.get(
+            'horizon',
+          ) ?? 30,
+        )
+
+      const topN =
+        Number(
+          url.searchParams.get(
+            'top_n',
+          ) ?? 10,
+        )
+
+      await delay(450)
+
+      const fixture =
+        getOperatorFixture(
+          horizon,
+          baseTime,
+        )
+
+      return HttpResponse.json({
+        ...fixture,
+        shortage_top:
+          [...fixture.shortage_top]
+            .sort(
+              (a, b) =>
+                b.priority_score -
+                a.priority_score,
+            )
+            .slice(0, topN),
+
+        surplus_top:
+          fixture.surplus_top.slice(
+            0,
+            topN,
+          ),
+
+        move_matches:
+          fixture.move_matches.slice(
+            0,
+            topN,
+          ),
+      })
+    },
+  ),
+]
