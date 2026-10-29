@@ -1,0 +1,3 @@
+prediction_rows=955628
+active_station_threshold=28428.0
+active_station_count=47
