@@ -3,19 +3,13 @@ from fastapi.testclient import (
 )
 
 import ai_service.app as app_module
-
 from ai_service.schemas import (
     PredictionRequest,
 )
 
-
 VALID_REQUEST = {
-    "request_id": (
-        "550e8400-e29b-41d4-a716-446655440000"
-    ),
-    "base_time": (
-        "2026-10-15T08:30:00+09:00"
-    ),
+    "request_id": ("550e8400-e29b-41d4-a716-446655440000"),
+    "base_time": ("2026-10-15T08:30:00+09:00"),
     "station_ids": [
         "ST-0001",
         "ST-0002",
@@ -29,26 +23,16 @@ VALID_REQUEST = {
 
 
 def test_prediction_schema_has_only_public_fields():
-    schema = (
-        PredictionRequest
-        .model_json_schema()
-    )
+    schema = PredictionRequest.model_json_schema()
 
-    assert set(
-        schema["properties"]
-    ) == {
+    assert set(schema["properties"]) == {
         "request_id",
         "base_time",
         "station_ids",
         "horizons",
     }
 
-    assert (
-        schema.get(
-            "additionalProperties"
-        )
-        is False
-    )
+    assert schema.get("additionalProperties") is False
 
 
 def test_predict_accepts_original_contract(
@@ -60,8 +44,7 @@ def test_predict_accepts_original_contract(
         captured.update(payload)
 
         return {
-            "request_id":
-                payload["request_id"],
+            "request_id": payload["request_id"],
             "predictions": [],
             "warnings": [],
         }
@@ -72,9 +55,7 @@ def test_predict_accepts_original_contract(
         fake_predict,
     )
 
-    client = TestClient(
-        app_module.app
-    )
+    client = TestClient(app_module.app)
 
     response = client.post(
         "/predict",
@@ -83,18 +64,14 @@ def test_predict_accepts_original_contract(
 
     assert response.status_code == 200
 
-    assert set(
-        captured
-    ) == {
+    assert set(captured) == {
         "request_id",
         "base_time",
         "station_ids",
         "horizons",
     }
 
-    assert captured[
-        "horizons"
-    ] == [
+    assert captured["horizons"] == [
         15,
         30,
         60,
@@ -102,9 +79,7 @@ def test_predict_accepts_original_contract(
 
 
 def test_old_predict_envelope_is_rejected():
-    client = TestClient(
-        app_module.app
-    )
+    client = TestClient(app_module.app)
 
     response = client.post(
         "/predict",
@@ -118,17 +93,11 @@ def test_old_predict_envelope_is_rejected():
 
 
 def test_naive_base_time_is_rejected():
-    payload = dict(
-        VALID_REQUEST
-    )
+    payload = dict(VALID_REQUEST)
 
-    payload["base_time"] = (
-        "2026-10-15T08:30:00"
-    )
+    payload["base_time"] = "2026-10-15T08:30:00"
 
-    client = TestClient(
-        app_module.app
-    )
+    client = TestClient(app_module.app)
 
     response = client.post(
         "/predict",
