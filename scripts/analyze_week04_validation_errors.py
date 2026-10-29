@@ -50,9 +50,7 @@ def required_prediction_columns() -> list[str]:
                 f"target_h{horizon}_valid",
             ]
         )
-        columns.extend(
-            f"{prefix}_h{horizon}" for prefix in MODEL_PREFIXES.values()
-        )
+        columns.extend(f"{prefix}_h{horizon}" for prefix in MODEL_PREFIXES.values())
     return columns
 
 
@@ -159,9 +157,7 @@ def main() -> None:
                     prediction_column,
                 ],
             ].copy()
-            subset["residual"] = (
-                subset[prediction_column] - subset[target_column]
-            )
+            subset["residual"] = subset[prediction_column] - subset[target_column]
             subset["absolute_error"] = subset["residual"].abs()
 
             summary_rows.append(
