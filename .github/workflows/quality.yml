@@ -40,6 +40,9 @@ jobs:
           if [ -s requirements.txt ]; then
             python -m pip install -r requirements.txt
           fi
+          if [ -s requirements-ai-service.txt ]; then
+            python -m pip install -r requirements-ai-service.txt
+          fi
 
       - name: Run pre-commit checks
         run: pre-commit run --all-files
