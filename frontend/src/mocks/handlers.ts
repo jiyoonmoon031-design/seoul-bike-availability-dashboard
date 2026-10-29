@@ -9,8 +9,50 @@ import {
 import {
   getOperatorFixture,
 } from './operatorFixture'
+import {
+  nearbyStationFixture,
+  searchPlaceFixture,
+} from './userFixtures'
 
 export const handlers = [
+  http.get(
+    '*/api/v1/search/places',
+    ({ request }) => {
+      const query =
+        new URL(request.url)
+          .searchParams.get('query') ?? ''
+
+      return HttpResponse.json(
+        searchPlaceFixture(query),
+      )
+    },
+  ),
+
+  http.get(
+    '*/api/v1/search/addresses',
+    () => HttpResponse.json([]),
+  ),
+
+  http.get(
+    '*/api/v1/stations/nearby',
+    ({ request }) => {
+      const url = new URL(request.url)
+      const latitude = Number(
+        url.searchParams.get('latitude'),
+      )
+      const longitude = Number(
+        url.searchParams.get('longitude'),
+      )
+
+      return HttpResponse.json(
+        nearbyStationFixture(
+          latitude,
+          longitude,
+        ),
+      )
+    },
+  ),
+
   http.get(
     '/api/v1/operator/rebalancing',
     async ({ request }) => {

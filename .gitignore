@@ -104,6 +104,8 @@ node_modules/
 .next/
 frontend/**/dist/
 frontend/**/build/
+frontend/playwright-report/
+frontend/test-results/
 
 # ============================================================
 # Model / Large Binary Artifacts
