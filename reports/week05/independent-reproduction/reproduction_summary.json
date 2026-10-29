@@ -1,0 +1,13 @@
+{
+  "model_sha256": "e8b7543db145c63259301e60cf6fe248843ec9327cfe85f0c2323cba432deadd",
+  "feature_table_sha256": "e1c94933347c27ef80bb4dc8a774960497ec6de94455cc195266aefd551e5202",
+  "feature_order_matches": true,
+  "feature_count": 46,
+  "test_rows": 950455,
+  "active_station_threshold": 28428.0,
+  "active_station_count": 47,
+  "metric_rows": 12,
+  "all_rows_within_tolerance": true,
+  "maximum_absolute_difference": 4.6913584128560615e-12,
+  "tolerance": 1e-10
+}
