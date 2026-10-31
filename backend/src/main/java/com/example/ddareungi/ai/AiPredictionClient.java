@@ -38,4 +38,3 @@ public class AiPredictionClient implements PredictionProvider {
                 .body(PredictionResponse.class);
     }
 }
-
