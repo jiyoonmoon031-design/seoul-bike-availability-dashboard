@@ -4,9 +4,12 @@ import com.example.ddareungi.prediction.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.context.annotation.Profile;
 
 @Service
-public class MockPredictionService {
+@Profile("mock")
+public class MockPredictionService implements PredictionProvider {
+    @Override
     public PredictionResponse predict(PredictionRequest request){
         HorizonResult result15 = new HorizonResult(
                 15,
