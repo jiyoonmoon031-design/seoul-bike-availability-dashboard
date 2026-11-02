@@ -1,0 +1,927 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v1/predict": {
+      "post": {
+        "tags": [ "prediction-controller" ],
+        "operationId": "predict",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PredictionRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/PredictionResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/stations/status": {
+      "get": {
+        "tags": [ "station-status-controller" ],
+        "operationId": "getStationStatuses",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/StationStatusResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/stations/nearby": {
+      "get": {
+        "tags": [ "nearby-station-controller" ],
+        "operationId": "getNearbyStations",
+        "parameters": [
+          {
+            "name": "latitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/NearbyStation" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search/places": {
+      "get": {
+        "tags": [ "place-search-controller" ],
+        "operationId": "searchPlaces",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PlaceSearchResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search/addresses": {
+      "get": {
+        "tags": [ "place-search-controller" ],
+        "operationId": "searchAddresses",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AddressSearchResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes": {
+      "get": {
+        "tags": [ "tmap-route-controller" ],
+        "operationId": "getRoute",
+        "parameters": [
+          {
+            "name": "startLat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "startLon",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "endLat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "endLon",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "bike",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RouteResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/routes/recommendations": {
+      "get": {
+        "tags": [ "route-recommendation-controller" ],
+        "operationId": "recommendRoutes",
+        "parameters": [
+          {
+            "name": "originLat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "originLon",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "destinationLat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "destinationLon",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RouteRecommendationResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/recommendations": {
+      "get": {
+        "tags": [ "recommendation-controller" ],
+        "operationId": "getRecommendations",
+        "parameters": [
+          {
+            "name": "leg",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "latitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "etaMin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 5
+            }
+          },
+          {
+            "name": "topN",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 3
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RecommendationResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/operator/risk": {
+      "get": {
+        "tags": [ "operator-controller" ],
+        "operationId": "getRisk",
+        "parameters": [
+          {
+            "name": "basetime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "horizon",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "topn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/OperatorRiskResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/operator/rebalancing": {
+      "get": {
+        "tags": [ "operator-controller" ],
+        "operationId": "getRebalancing",
+        "parameters": [
+          {
+            "name": "basetime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "horizon",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "topn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RebalancingResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/operator/briefing": {
+      "get": {
+        "tags": [ "operator-controller" ],
+        "operationId": "getBriefing",
+        "parameters": [
+          {
+            "name": "basetime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "horizon",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "topn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "type": "string" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PredictionRequest": {
+        "type": "object",
+        "properties": {
+          "horizons": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "request_id": { "type": "string" },
+          "base_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "station_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "HorizonResult": {
+        "type": "object",
+        "properties": {
+          "horizon_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "delta_net": {
+            "type": "number",
+            "format": "double"
+          },
+          "bikes_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "docks_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "prediction_source": { "type": "string" }
+        }
+      },
+      "PredictionResponse": {
+        "type": "object",
+        "properties": {
+          "predictions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StationPrediction" }
+          },
+          "warnings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PredictionWarning" }
+          },
+          "request_id": { "type": "string" },
+          "base_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "model_version": { "type": "string" }
+        }
+      },
+      "PredictionWarning": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "station_id": { "type": "string" },
+          "horizon_min": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StationPrediction": {
+        "type": "object",
+        "properties": {
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "station_id": { "type": "string" },
+          "bikes_now": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inventory_source": { "type": "string" },
+          "horizon_results": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/HorizonResult" }
+          }
+        }
+      },
+      "StationStatus": {
+        "type": "object",
+        "properties": {
+          "station_id": { "type": "string" },
+          "station_name": { "type": "string" },
+          "district": { "type": "string" },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bikes_now": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "docks_now": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StationStatusResponse": {
+        "type": "object",
+        "properties": {
+          "stations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StationStatus" }
+          }
+        }
+      },
+      "NearbyStation": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "method": { "type": "string" },
+          "station_id": { "type": "string" },
+          "station_name": { "type": "string" },
+          "distance_m": {
+            "type": "number",
+            "format": "double"
+          },
+          "walk_min": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PlaceSearchResult": {
+        "type": "object",
+        "properties": {
+          "placeName": { "type": "string" },
+          "address": { "type": "string" },
+          "roadAddress": { "type": "string" },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "AddressSearchResult": {
+        "type": "object",
+        "properties": {
+          "address": { "type": "string" },
+          "roadAddress": { "type": "string" },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "RouteCoordinate": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "RouteResponse": {
+        "type": "object",
+        "properties": {
+          "method": { "type": "string" },
+          "path": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RouteCoordinate" }
+          },
+          "distance_m": {
+            "type": "number",
+            "format": "double"
+          },
+          "eta_min": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Route": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "origin_station_id": { "type": "string" },
+          "origin_station_name": { "type": "string" },
+          "destination_station_id": { "type": "string" },
+          "destination_station_name": { "type": "string" },
+          "walk_to_origin_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bike_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "walk_to_destination_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total_eta_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "score": {
+            "type": "number",
+            "format": "double"
+          },
+          "origin_latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "origin_longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "destination_latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "destination_longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "origin_bikes_now": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "origin_bikes_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "destination_docks_now": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "destination_docks_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "walk_to_origin_m": {
+            "type": "number",
+            "format": "double"
+          },
+          "walk_to_destination_m": {
+            "type": "number",
+            "format": "double"
+          },
+          "origin_eta_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "destination_eta_min": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "RouteRecommendationResponse": {
+        "type": "object",
+        "properties": {
+          "routes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Route" }
+          }
+        }
+      },
+      "Recommendation": {
+        "type": "object",
+        "properties": {
+          "station_id": { "type": "string" },
+          "station_name": { "type": "string" },
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "score": {
+            "type": "number",
+            "format": "double"
+          },
+          "reason": { "type": "string" },
+          "distance_m": {
+            "type": "number",
+            "format": "double"
+          },
+          "walk_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bikes_now": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "docks_now": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bikes_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "docks_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "score_breakdown": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        }
+      },
+      "RecommendationResponse": {
+        "type": "object",
+        "properties": {
+          "leg": { "type": "string" },
+          "eta_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "effective_horizon": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "recommendations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Recommendation" }
+          },
+          "warnings": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "OperatorRiskResponse": {
+        "type": "object",
+        "properties": {
+          "base_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "horizon_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shortage_top": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShortageStation" }
+          },
+          "surplus_top": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SurplusStation" }
+          }
+        }
+      },
+      "ShortageStation": {
+        "type": "object",
+        "properties": {
+          "station_id": { "type": "string" },
+          "station_name": { "type": "string" },
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          },
+          "bikes_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "s_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shortage": {
+            "type": "number",
+            "format": "double"
+          },
+          "urgency": {
+            "type": "number",
+            "format": "double"
+          },
+          "demand_weight": {
+            "type": "number",
+            "format": "double"
+          },
+          "priority_score": {
+            "type": "number",
+            "format": "double"
+          },
+          "risk_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SurplusStation": {
+        "type": "object",
+        "properties": {
+          "station_id": { "type": "string" },
+          "docks_expected": {
+            "type": "number",
+            "format": "double"
+          },
+          "supply_slack": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "MoveMatch": {
+        "type": "object",
+        "properties": {
+          "from_station_id": { "type": "string" },
+          "to_station_id": { "type": "string" },
+          "distance_km": {
+            "type": "number",
+            "format": "double"
+          },
+          "move_qty": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "RebalancingResponse": {
+        "type": "object",
+        "properties": {
+          "base_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "horizon_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shortage_top": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShortageStation" }
+          },
+          "surplus_top": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SurplusStation" }
+          },
+          "move_matches": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MoveMatch" }
+          }
+        }
+      }
+    }
+  }
+}
