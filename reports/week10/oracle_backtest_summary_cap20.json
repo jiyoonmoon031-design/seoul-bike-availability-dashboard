@@ -1,0 +1,61 @@
+{
+  "evaluation_type": "oracle_counterfactual_upper_bound",
+  "assumptions": [
+    "Observed station snapshot at t+h is treated as perfect future inventory.",
+    "Recommended moves are assumed completed within the selected horizon.",
+    "Vehicle route/travel time is not simulated.",
+    "Snapshot capacity is interpreted as rack count, not a hard upper bound on bikes_available.",
+    "Future empty racks are max(rack_count - future_bikes, 0).",
+    "Station-horizon pairs crossing a rack-count change are excluded."
+  ],
+  "base_time_count": 6026,
+  "capacity_change_pairs_skipped": {
+    "15": 1,
+    "30": 2,
+    "60": 4
+  },
+  "summary": [
+    {
+      "horizon_min": 15,
+      "case_count": 6026,
+      "shortage_score_before_total": 502633.0,
+      "shortage_score_after_total": 382413.0,
+      "shortage_reduction_total": 120220.0,
+      "shortage_reduction_rate": 0.23918047561540925,
+      "mean_case_reduction_rate": 0.2770843619412727,
+      "shortage_station_count_before_total": 262443,
+      "shortage_station_count_after_total": 221915,
+      "shortage_station_count_reduction_total": 40528,
+      "move_match_count_total": 43928,
+      "move_qty_total": 120220.0
+    },
+    {
+      "horizon_min": 30,
+      "case_count": 6026,
+      "shortage_score_before_total": 502370.0,
+      "shortage_score_after_total": 382210.0,
+      "shortage_reduction_total": 120160.0,
+      "shortage_reduction_rate": 0.23918625714115094,
+      "mean_case_reduction_rate": 0.27698864160805153,
+      "shortage_station_count_before_total": 262330,
+      "shortage_station_count_after_total": 222356,
+      "shortage_station_count_reduction_total": 39974,
+      "move_match_count_total": 43460,
+      "move_qty_total": 120160.0
+    },
+    {
+      "horizon_min": 60,
+      "case_count": 6026,
+      "shortage_score_before_total": 501851.0,
+      "shortage_score_after_total": 381811.0,
+      "shortage_reduction_total": 120040.0,
+      "shortage_reduction_rate": 0.23919450195376715,
+      "mean_case_reduction_rate": 0.2769039489064695,
+      "shortage_station_count_before_total": 262064,
+      "shortage_station_count_after_total": 222174,
+      "shortage_station_count_reduction_total": 39890,
+      "move_match_count_total": 43315,
+      "move_qty_total": 120040.0
+    }
+  ]
+}

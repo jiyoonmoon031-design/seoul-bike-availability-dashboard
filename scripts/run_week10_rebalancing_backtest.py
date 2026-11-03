@@ -9,7 +9,6 @@ from typing import Any
 
 import yaml
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 if str(ROOT) not in sys.path:
@@ -28,8 +27,7 @@ from src.rebalancing.logic import (  # noqa: E402
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate Week 10 rebalancing "
-            "counterfactual shortage reduction"
+            "Evaluate Week 10 rebalancing " "counterfactual shortage reduction"
         )
     )
 
@@ -62,48 +60,32 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--detail-output",
         type=Path,
-        default=Path(
-            "reports/week10/"
-            "rebalancing_backtest_detail.csv"
-        ),
+        default=Path("reports/week10/" "rebalancing_backtest_detail.csv"),
     )
 
     parser.add_argument(
         "--station-output",
         type=Path,
-        default=Path(
-            "reports/week10/"
-            "rebalancing_station_effects.csv"
-        ),
+        default=Path("reports/week10/" "rebalancing_station_effects.csv"),
     )
 
     parser.add_argument(
         "--summary-output",
         type=Path,
-        default=Path(
-            "reports/week10/"
-            "rebalancing_backtest_summary.csv"
-        ),
+        default=Path("reports/week10/" "rebalancing_backtest_summary.csv"),
     )
 
     parser.add_argument(
         "--summary-json-output",
         type=Path,
-        default=Path(
-            "reports/week10/"
-            "rebalancing_backtest_summary.json"
-        ),
+        default=Path("reports/week10/" "rebalancing_backtest_summary.json"),
     )
 
     return parser.parse_args()
 
 
 def load_json(path: Path) -> Any:
-    return json.loads(
-        path.read_text(
-            encoding="utf-8"
-        )
-    )
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def load_prediction_cases(
@@ -116,12 +98,9 @@ def load_prediction_cases(
 
         if isinstance(payload, list):
             candidates = payload
-        elif (
-            isinstance(payload, dict)
-            and isinstance(
-                payload.get("cases"),
-                list,
-            )
+        elif isinstance(payload, dict) and isinstance(
+            payload.get("cases"),
+            list,
         ):
             candidates = payload["cases"]
         else:
@@ -132,10 +111,7 @@ def load_prediction_cases(
                 candidate,
                 dict,
             ):
-                raise ValueError(
-                    f"{path}: prediction case "
-                    "must be a JSON object"
-                )
+                raise ValueError(f"{path}: prediction case " "must be a JSON object")
 
             cases.append(candidate)
 
@@ -153,10 +129,7 @@ def load_station_context(
         records = payload
 
     if not isinstance(records, list):
-        raise ValueError(
-            "station context must be "
-            'an array or {"stations": [...]}'
-        )
+        raise ValueError("station context must be " 'an array or {"stations": [...]}')
 
     return records
 
@@ -195,29 +168,15 @@ def write_csv(
 def main() -> None:
     args = parse_args()
 
-    params = yaml.safe_load(
-        args.params.read_text(
-            encoding="utf-8"
-        )
-    )
+    params = yaml.safe_load(args.params.read_text(encoding="utf-8"))
 
-    config = RebalancingConfig.from_params(
-        params
-    )
+    config = RebalancingConfig.from_params(params)
 
-    horizons = (
-        tuple(args.horizons)
-        if args.horizons
-        else config.horizons
-    )
+    horizons = tuple(args.horizons) if args.horizons else config.horizons
 
-    station_contexts = load_station_context(
-        args.station_context
-    )
+    station_contexts = load_station_context(args.station_context)
 
-    prediction_cases = load_prediction_cases(
-        args.prediction
-    )
+    prediction_cases = load_prediction_cases(args.prediction)
 
     case_rows: list[dict[str, Any]] = []
     station_rows: list[dict[str, Any]] = []
@@ -231,17 +190,11 @@ def main() -> None:
                 horizon_min=horizon_min,
             )
 
-            station_rows.extend(
-                result.pop(
-                    "station_effects"
-                )
-            )
+            station_rows.extend(result.pop("station_effects"))
 
             case_rows.append(result)
 
-    summaries = summarize_backtests(
-        case_rows
-    )
+    summaries = summarize_backtests(case_rows)
 
     write_csv(
         args.detail_output,
@@ -272,14 +225,8 @@ def main() -> None:
                         "assumed completed within "
                         "the selected horizon."
                     ),
-                    (
-                        "Vehicle routing and actual "
-                        "travel time are not simulated."
-                    ),
-                    (
-                        "VEHICLE_CAP is the current "
-                        "project assumption."
-                    ),
+                    ("Vehicle routing and actual " "travel time are not simulated."),
+                    ("VEHICLE_CAP is the current " "project assumption."),
                 ],
                 "summary": summaries,
             },
@@ -290,18 +237,10 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(
-        f"Cases: {len(case_rows)}"
-    )
-    print(
-        f"Station rows: {len(station_rows)}"
-    )
-    print(
-        f"Detail: {args.detail_output}"
-    )
-    print(
-        f"Summary: {args.summary_output}"
-    )
+    print(f"Cases: {len(case_rows)}")
+    print(f"Station rows: {len(station_rows)}")
+    print(f"Detail: {args.detail_output}")
+    print(f"Summary: {args.summary_output}")
 
 
 if __name__ == "__main__":

@@ -52,9 +52,7 @@ def station_prediction(
                 "horizon_min": horizon,
                 "delta_net": 0.0,
                 "bikes_expected": bikes_expected,
-                "docks_expected": (
-                    capacity - bikes_expected
-                ),
+                "docks_expected": (capacity - bikes_expected),
             }
             for horizon in (15, 30, 60)
         ],
@@ -66,9 +64,7 @@ def prediction_response(
 ):
     return {
         "request_id": "week10-test",
-        "base_time": (
-            "2026-11-02T09:00:00+09:00"
-        ),
+        "base_time": ("2026-11-02T09:00:00+09:00"),
         "model_version": "week10-test-model",
         "source": "model",
         "predictions": stations,
@@ -116,30 +112,11 @@ def test_rebalancing_reduces_shortage():
         horizon_min=30,
     )
 
-    assert (
-        result["shortage_score_before"]
-        == pytest.approx(2.0)
-    )
-    assert (
-        result["shortage_score_after"]
-        == pytest.approx(0.0)
-    )
-    assert (
-        result["shortage_reduction_rate"]
-        == pytest.approx(1.0)
-    )
-    assert (
-        result[
-            "shortage_station_count_before"
-        ]
-        == 1
-    )
-    assert (
-        result[
-            "shortage_station_count_after"
-        ]
-        == 0
-    )
+    assert result["shortage_score_before"] == pytest.approx(2.0)
+    assert result["shortage_score_after"] == pytest.approx(0.0)
+    assert result["shortage_reduction_rate"] == pytest.approx(1.0)
+    assert result["shortage_station_count_before"] == 1
+    assert result["shortage_station_count_after"] == 0
     assert result["move_qty_total"] == 2
 
 
@@ -163,18 +140,9 @@ def test_zero_shortage_has_no_rate():
         horizon_min=30,
     )
 
-    assert (
-        result["shortage_score_before"]
-        == 0.0
-    )
-    assert (
-        result["shortage_score_after"]
-        == 0.0
-    )
-    assert (
-        result["shortage_reduction_rate"]
-        is None
-    )
+    assert result["shortage_score_before"] == 0.0
+    assert result["shortage_score_after"] == 0.0
+    assert result["shortage_reduction_rate"] is None
 
 
 def test_all_shortages_are_counted():
@@ -203,20 +171,9 @@ def test_all_shortages_are_counted():
         horizon_min=30,
     )
 
-    assert (
-        result[
-            "shortage_station_count_before"
-        ]
-        == 2
-    )
-    assert (
-        result["shortage_score_before"]
-        == pytest.approx(4.0)
-    )
-    assert (
-        result["shortage_score_after"]
-        == pytest.approx(4.0)
-    )
+    assert result["shortage_station_count_before"] == 2
+    assert result["shortage_score_before"] == pytest.approx(4.0)
+    assert result["shortage_score_after"] == pytest.approx(4.0)
 
 
 def test_summary_groups_by_horizon():
@@ -245,27 +202,10 @@ def test_summary_groups_by_horizon():
         },
     ]
 
-    result = summarize_backtests(
-        records
-    )
+    result = summarize_backtests(records)
 
     assert len(result) == 1
     assert result[0]["case_count"] == 2
-    assert (
-        result[0][
-            "shortage_score_before_total"
-        ]
-        == pytest.approx(10.0)
-    )
-    assert (
-        result[0][
-            "shortage_score_after_total"
-        ]
-        == pytest.approx(5.0)
-    )
-    assert (
-        result[0][
-            "shortage_reduction_rate"
-        ]
-        == pytest.approx(0.5)
-    )
+    assert result[0]["shortage_score_before_total"] == pytest.approx(10.0)
+    assert result[0]["shortage_score_after_total"] == pytest.approx(5.0)
+    assert result[0]["shortage_reduction_rate"] == pytest.approx(0.5)
