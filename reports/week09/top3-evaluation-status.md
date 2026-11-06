@@ -40,9 +40,10 @@ evaluation contract. Therefore no hit-rate value is reported until the
 following source artifacts are supplied:
 
 1. the station master used for evaluation (`target_stations.csv`);
-2. hold-out `station_snapshot` rows covering 2026-06-07 06:00 through
-   2026-07-31 23:45 KST, including `station_id`, `collected_at`,
-   `bikes_available`, and `capacity`;
+2. `station_snapshot` rows for a frozen recommendation hold-out window
+   (at least the preregistered 28 complete days), including `station_id`,
+   `collected_at`, `bikes_available`, and `capacity`, with the collection
+   interval and KST start/end timestamps documented;
 3. the frozen candidate/request set, if it has already been generated.
 
 The implemented evaluator, unit tests, input checksum, request-level output,
