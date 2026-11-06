@@ -17,7 +17,9 @@ def rows():
     for request_id, horizon, mode, available_values in scenarios:
         for rank, available in enumerate(available_values, start=1):
             capacity = 10
-            actual_bikes = available if mode in {"rent", "origin"} else capacity - available
+            actual_bikes = (
+                available if mode in {"rent", "origin"} else capacity - available
+            )
             records.append(
                 {
                     "request_id": request_id,
@@ -72,4 +74,3 @@ def test_invalid_inventory_is_rejected():
     invalid.loc[0, "actual_bikes"] = 11
     with pytest.raises(ValueError, match="actual_bikes"):
         evaluate_top3(invalid)
-

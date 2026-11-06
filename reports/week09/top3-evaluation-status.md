@@ -47,4 +47,3 @@ following source artifacts are supplied:
 
 The implemented evaluator, unit tests, input checksum, request-level output,
 and horizon summary are ready to run as soon as these artifacts are available.
-
