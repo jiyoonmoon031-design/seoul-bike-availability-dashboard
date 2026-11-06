@@ -3,6 +3,7 @@ package com.example.ddareungi.api.recommendation.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import java.util.Map;
 
 public record RouteRecommendationResponse(
         @JsonProperty("routes")
@@ -38,6 +39,12 @@ public record RouteRecommendationResponse(
 
                 @JsonProperty("score")
                 Double score,
+
+                @JsonProperty("score_breakdown")
+                Map<String, Double> scoreBreakdown,
+
+                @JsonProperty("reason")
+                String reason,
 
                 @JsonProperty("origin_latitude")
                 Double originLatitude,

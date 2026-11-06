@@ -28,18 +28,21 @@ public class RouteRecommendationService {
     private final NearbyStationService nearbyStationService;
     private final RecommendationService recommendationService;
     private final StationStatusService stationStatusService;
+    private final RouteRankingPolicy routeRankingPolicy;
 
 
     public RouteRecommendationService(
             TravelTimeService travelTimeService,
             NearbyStationService nearbyStationService,
             RecommendationService recommendationService,
-            StationStatusService stationStatusService
+            StationStatusService stationStatusService,
+            RouteRankingPolicy routeRankingPolicy
     ) {
         this.travelTimeService = travelTimeService;
         this.nearbyStationService = nearbyStationService;
         this.recommendationService = recommendationService;
         this.stationStatusService = stationStatusService;
+        this.routeRankingPolicy = routeRankingPolicy;
     }
 
 
@@ -414,11 +417,22 @@ public class RouteRecommendationService {
                                                             .get(route.destinationStationId())
                                                             .score();
 
-                                            return 0.5 * originScore
-                                                    + 0.5 * destinationScore;
+                                            return routeRankingPolicy.calculate(
+                                                    originScore,
+                                                    destinationScore,
+                                                    route.totalEtaMin(),
+                                                    route.walkToOriginMin(),
+                                                    route.walkToDestinationMin()
+                                            ).total();
                                         }
                                 ).reversed()
                                 .thenComparingInt(RouteCandidate::totalEtaMin)
+                                .thenComparingInt(route ->
+                                        route.walkToOriginMin()
+                                                + route.walkToDestinationMin()
+                                )
+                                .thenComparing(RouteCandidate::originStationId)
+                                .thenComparing(RouteCandidate::destinationStationId)
                 )
                 .limit(3)
                 .toList();
@@ -582,16 +596,36 @@ public class RouteRecommendationService {
                                 .orElse(null);
             }
 
-            // 종합 점수 = 출발 AI 50% + 도착 AI 50%
+            // 종합 점수 = 출발·도착 가용성 + 총 ETA + 양쪽 도보시간
             Double score = null;
+            Map<String, Double> scoreBreakdown = Map.of();
+            String reason = null;
 
             if (originAi != null
                     && originAi.score() != null
                     && destinationAi != null
                     && destinationAi.score() != null) {
 
-                score = 0.5 * originAi.score()
-                        + 0.5 * destinationAi.score();
+                RouteRankingPolicy.RouteScore routeScore =
+                        routeRankingPolicy.calculate(
+                                originAi.score(),
+                                destinationAi.score(),
+                                route.totalEtaMin(),
+                                route.walkToOriginMin(),
+                                route.walkToDestinationMin()
+                        );
+
+                score = routeScore.total();
+                scoreBreakdown = Map.of(
+                        "origin_station", routeScore.originStation(),
+                        "destination_station", routeScore.destinationStation(),
+                        "eta", routeScore.eta(),
+                        "walking", routeScore.walking()
+                );
+                reason = routeRankingPolicy.reason(
+                        routeScore,
+                        route.totalEtaMin()
+                );
             }
 
             routes.add(new RouteRecommendationResponse.Route(
@@ -608,6 +642,8 @@ public class RouteRecommendationService {
                     route.walkToDestinationMin(),
                     route.totalEtaMin(),
                     score,
+                    scoreBreakdown,
+                    reason,
 
                     // 출발 대여소 좌표
                     originStation == null
