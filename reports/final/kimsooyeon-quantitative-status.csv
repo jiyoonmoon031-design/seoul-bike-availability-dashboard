@@ -11,4 +11,3 @@ recommendation,Top-3 minimum availability hit rate,15/30/60m,pending,holdout sna
 recommendation,Top-3 stable availability hit rate,15/30/60m,pending,holdout snapshot required,Issue #42
 rebalancing,shortage reduction oracle upper bound,CAP20 15/30/60m,about 23.9%,provisional PR review,PR #75
 rebalancing,risk-station reduction oracle upper bound,CAP20 15/30/60m,15.2%-15.4%,provisional PR review,PR #75
-
