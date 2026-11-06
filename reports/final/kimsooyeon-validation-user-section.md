@@ -1,6 +1,6 @@
 # 최종 결과보고서 — 검증 및 이용자 기능
 
-담당자: 김수연  
+담당자: 김수연
 관련 이슈: #44
 
 ## 1. 담당 범위
@@ -142,4 +142,3 @@ counterfactual 결과는 shortage 약 23.9%, 위험 대여소 약 15.2~15.4%
 - `reports/weekly/kimsooyeon-week08-system-ui-qa.md`
 - Issue #42·#43 평가 산출물
 - PR #75 재배치 backtesting 산출물
-
