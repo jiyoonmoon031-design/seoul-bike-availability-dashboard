@@ -37,7 +37,7 @@ function loadKakaoMap() {
   });
 }
 
-function KakaoMap({ origin, destination, originStations, destinationStations }) {
+function KakaoMap({ origin, destination, routes }) {
   const mapRef = useRef(null);
   const [mapError, setMapError] = useState("");
 
@@ -68,19 +68,19 @@ function KakaoMap({ origin, destination, originStations, destinationStations }) 
             markerType: "destination",
           });
         }
-        originStations.forEach((station, index) => {
+        routes.forEach((route) => {
           points.push({
-            ...station,
-            name: station.station_name,
-            markerLabel: index + 1,
+            latitude: route.origin_latitude,
+            longitude: route.origin_longitude,
+            name: `${route.rank}위 출발 · ${route.origin_station_name}`,
+            markerLabel: `${route.rank}O`,
             markerType: "origin-station",
           });
-        });
-        destinationStations.forEach((station, index) => {
           points.push({
-            ...station,
-            name: station.station_name,
-            markerLabel: index + 1,
+            latitude: route.destination_latitude,
+            longitude: route.destination_longitude,
+            name: `${route.rank}위 도착 · ${route.destination_station_name}`,
+            markerLabel: `${route.rank}D`,
             markerType: "destination-station",
           });
         });
@@ -122,7 +122,7 @@ function KakaoMap({ origin, destination, originStations, destinationStations }) 
     return () => {
       cancelled = true;
     };
-  }, [origin, destination, originStations, destinationStations]);
+  }, [origin, destination, routes]);
 
   return (
     <div className="map-shell">

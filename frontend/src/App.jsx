@@ -1,14 +1,10 @@
 import {
-  useCallback,
+  useEffect,
   useState,
 } from "react";
 
 import {
-  getNearbyStations,
-} from "./api/stationApi";
-
-import {
-  getRecommendationPreview,
+  getRouteRecommendations,
 } from "./api/recommendationApi";
 
 import LocationSearch
@@ -19,124 +15,81 @@ import KakaoMap
 
 
 function App() {
-  const [
-    origin,
-    setOrigin,
-  ] = useState(null);
+  const [origin, setOrigin] =
+    useState(null);
+  const [destination, setDestination] =
+    useState(null);
+  const [routes, setRoutes] =
+    useState([]);
+  const [loading, setLoading] =
+    useState(false);
+  const [error, setError] =
+    useState("");
 
-  const [
-    destination,
-    setDestination,
-  ] = useState(null);
+  useEffect(() => {
+    if (!origin || !destination) {
+      return undefined;
+    }
 
-  const [
-    originStations,
-    setOriginStations,
-  ] = useState([]);
+    let cancelled = false;
 
-  const [
-    destinationStations,
-    setDestinationStations,
-  ] = useState([]);
-
-  const [
-    originRecommendation,
-    setOriginRecommendation,
-  ] = useState(null);
-
-  const [
-    destinationRecommendation,
-    setDestinationRecommendation,
-  ] = useState(null);
-
-  const [
-    loadingSide,
-    setLoadingSide,
-  ] = useState(null);
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-
-  const selectLocation =
-    useCallback(
-      async (
-        side,
-        place,
-      ) => {
-        setError("");
-        setLoadingSide(side);
-
-        if (side === "origin") {
-          setOrigin(place);
-          setOriginStations([]);
-          setOriginRecommendation(null);
-        } else {
-          setDestination(place);
-          setDestinationStations([]);
-          setDestinationRecommendation(
-            null,
+    getRouteRecommendations(
+      origin,
+      destination,
+    )
+      .then((nextRoutes) => {
+        if (!cancelled) {
+          setRoutes(
+            nextRoutes.slice(0, 3),
           );
         }
-
-        try {
-          const stations =
-            await getNearbyStations(
-              place.latitude,
-              place.longitude,
-            );
-
-          /*
-           * 주변 후보 자체는 충분히 확보하고,
-           * Top-3 결정은 recommendation score가 한다.
-           */
-          const candidates =
-            stations.slice(0, 10);
-
-          const recommendation =
-            await getRecommendationPreview(
-              candidates,
-              side,
-            );
-
-          const topThree =
-            recommendation
-              .recommendations;
-
-          if (side === "origin") {
-            setOriginStations(
-              topThree,
-            );
-
-            setOriginRecommendation(
-              recommendation,
-            );
-          } else {
-            setDestinationStations(
-              topThree,
-            );
-
-            setDestinationRecommendation(
-              recommendation,
-            );
-          }
-        } catch (
-          requestError
-        ) {
+      })
+      .catch((requestError) => {
+        if (!cancelled) {
+          setRoutes([]);
           setError(
             requestError instanceof Error
               ? requestError.message
-              : "주변 대여소를 불러오지 못했습니다.",
+              : "추천 경로를 불러오지 못했습니다.",
           );
-        } finally {
-          setLoadingSide(null);
         }
-      },
-      [],
-    );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
 
+    return () => {
+      cancelled = true;
+    };
+  }, [origin, destination]);
+
+  const selectLocation = (
+    side,
+    place,
+  ) => {
+    const nextOrigin =
+      side === "origin"
+        ? place
+        : origin;
+    const nextDestination =
+      side === "destination"
+        ? place
+        : destination;
+
+    setError("");
+    setRoutes([]);
+    setLoading(Boolean(
+      nextOrigin && nextDestination,
+    ));
+
+    if (side === "origin") {
+      setOrigin(place);
+    } else {
+      setDestination(place);
+    }
+  };
 
   return (
     <main className="app-shell">
@@ -146,19 +99,17 @@ function App() {
         </p>
 
         <h1>
-          출발과 도착을 정하면
+          빌리는 곳부터 반납하는 곳까지
           <br />
-          미래 가용성이 보여요.
+          가장 안정적인 경로를 추천해요.
         </h1>
 
         <p className="hero-copy">
-          단순 현재 재고가 아니라
-          실제 도착 예상 시점의
-          자전거·빈 거치대 가용성을
-          기준으로 추천합니다.
+          출발 자전거와 도착 빈 거치대의
+          미래 가용성, 도보시간과 총 이동시간을
+          함께 비교한 Best 3 경로입니다.
         </p>
       </header>
-
 
       <section
         className="search-grid"
@@ -168,10 +119,7 @@ function App() {
           label="출발지"
           accent="origin"
           selected={origin}
-          loading={
-            loadingSide ===
-            "origin"
-          }
+          loading={false}
           onSelect={(place) =>
             selectLocation(
               "origin",
@@ -184,10 +132,7 @@ function App() {
           label="목적지"
           accent="destination"
           selected={destination}
-          loading={
-            loadingSide ===
-            "destination"
-          }
+          loading={false}
           onSelect={(place) =>
             selectLocation(
               "destination",
@@ -196,7 +141,6 @@ function App() {
           }
         />
       </section>
-
 
       {error && (
         <div
@@ -207,17 +151,13 @@ function App() {
         </div>
       )}
 
-
       <section className="map-card">
         <div className="map-heading">
           <div>
             <p className="eyebrow">
               MAP
             </p>
-
-            <h2>
-              추천 대여소
-            </h2>
+            <h2>Best 3 추천 경로</h2>
           </div>
 
           <div
@@ -226,219 +166,77 @@ function App() {
           >
             <span>
               <i className="legend-dot origin-dot" />
-              출발
+              출발 대여소
             </span>
-
             <span>
               <i className="legend-dot destination-dot" />
-              도착
+              도착 대여소
             </span>
           </div>
         </div>
 
         <KakaoMap
           origin={origin}
-          destination={
-            destination
-          }
-          originStations={
-            originStations
-          }
-          destinationStations={
-            destinationStations
-          }
+          destination={destination}
+          routes={routes}
         />
       </section>
 
-
-      <section
-        className="candidate-grid"
-        aria-label="추천 대여소 목록"
-      >
-        <RecommendationList
-          title="출발 Top-3"
-          accent="origin"
-          leg="origin"
-          data={
-            originRecommendation
-          }
-        />
-
-        <RecommendationList
-          title="도착 Top-3"
-          accent="destination"
-          leg="destination"
-          data={
-            destinationRecommendation
-          }
-        />
-      </section>
+      <RouteRecommendations
+        routes={routes}
+        loading={loading}
+        ready={Boolean(
+          origin && destination,
+        )}
+      />
     </main>
   );
 }
 
 
-function RecommendationList({
-  title,
-  accent,
-  leg,
-  data,
+function RouteRecommendations({
+  routes,
+  loading,
+  ready,
 }) {
-  const recommendations =
-    data?.recommendations ?? [];
-
   return (
-    <article
-      className={
-        `candidate-panel ${accent}`
-      }
-    >
+    <article className="route-panel">
       <div className="panel-title">
         <div>
-          <h2>{title}</h2>
-
-          {data && (
-            <small className="horizon-label">
-              ETA{" "}
-              {Number(
-                data.eta_min,
-              ).toFixed(0)}
-              분 ·{" "}
-              {formatHorizon(
-                data.effective_horizon,
-              )}
-            </small>
-          )}
+          <p className="eyebrow">
+            ROUTE RECOMMENDATION
+          </p>
+          <h2>Best 3 추천 경로</h2>
         </div>
-
-        <span>
-          {recommendations.length}/3
-        </span>
+        <span>{routes.length}/3</span>
       </div>
 
-
-      {data?.mock && (
-        <p className="mock-note">
-          추천 API 연결 전
-          UI 계약 검증용 Mock 예측
+      {loading && (
+        <p
+          className="empty-copy"
+          role="status"
+        >
+          출발·도착 가용성과 이동시간을
+          함께 계산하고 있습니다.
         </p>
       )}
 
-
-      {recommendations.length ===
-      0 ? (
+      {!loading && routes.length === 0 && (
         <p className="empty-copy">
-          장소를 선택하면
-          미래 가용성 기반
-          추천 Top-3가 표시됩니다.
+          {ready
+            ? "조건을 만족하는 추천 경로가 없습니다."
+            : "출발지와 목적지를 모두 선택하면 Best 3 경로가 표시됩니다."}
         </p>
-      ) : (
-        <ol className="candidate-list recommendation-list">
-          {recommendations.map(
-            (station) => (
-              <li
-                key={
-                  station.station_id
-                }
-              >
-                <span className="candidate-rank">
-                  {station.rank}
-                </span>
+      )}
 
-                <div className="recommendation-content">
-                  <div className="recommendation-heading">
-                    <strong>
-                      {
-                        station.station_name
-                      }
-                    </strong>
-
-                    <span className="score-badge">
-                      점수{" "}
-                      {station.score.toFixed(
-                        2,
-                      )}
-                    </span>
-                  </div>
-
-                  <small>
-                    {Math.round(
-                      station.distance_m,
-                    )}
-                    m · 도보{" "}
-                    {Number(
-                      station.walk_min,
-                    ).toFixed(0)}
-                    분
-                  </small>
-
-                  <div className="inventory-grid">
-                    <div className="inventory-main">
-                      <span>
-                        {leg ===
-                        "origin"
-                          ? "도착 시 예상 자전거"
-                          : "도착 시 예상 빈 거치대"}
-                      </span>
-
-                      <strong>
-                        {(
-                          leg ===
-                          "origin"
-                            ? station.bikes_expected
-                            : station.docks_expected
-                        ).toFixed(1)}
-                        대
-                      </strong>
-                    </div>
-
-                    <div className="inventory-current">
-                      <span>
-                        현재{" "}
-                        {leg ===
-                        "origin"
-                          ? "자전거"
-                          : "빈 거치대"}
-                      </span>
-
-                      <strong>
-                        {(
-                          leg ===
-                          "origin"
-                            ? station.bikes_now
-                            : station.docks_now
-                        ).toFixed(1)}
-                        대
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className="score-breakdown">
-                    <span>
-                      거리{" "}
-                      {station.score_breakdown.distance.toFixed(
-                        2,
-                      )}
-                    </span>
-
-                    <span>
-                      가용성{" "}
-                      {station.score_breakdown.availability.toFixed(
-                        2,
-                      )}
-                    </span>
-                  </div>
-
-                  <p className="recommendation-reason">
-                    {buildReason(
-                      leg,
-                      station,
-                    )}
-                  </p>
-                </div>
-              </li>
-            ),
-          )}
+      {!loading && routes.length > 0 && (
+        <ol className="route-list">
+          {routes.map((route) => (
+            <RouteCard
+              key={`${route.origin_station_id}-${route.destination_station_id}`}
+              route={route}
+            />
+          ))}
         </ol>
       )}
     </article>
@@ -446,50 +244,105 @@ function RecommendationList({
 }
 
 
-function formatHorizon(
-  horizon,
-) {
-  if (!horizon) {
-    return "";
-  }
+function RouteCard({ route }) {
+  return (
+    <li className="route-card">
+      <div className="route-rank">
+        <span>BEST</span>
+        <strong>{route.rank}</strong>
+      </div>
 
-  if (
-    horizon.method ===
-    "clamp"
-  ) {
-    return "60분 예측 사용";
-  }
+      <div className="route-content">
+        <div className="route-heading">
+          <div>
+            <strong>
+              {route.origin_station_name}
+            </strong>
+            <span aria-hidden="true">→</span>
+            <strong>
+              {route.destination_station_name}
+            </strong>
+          </div>
+          <span className="score-badge">
+            경로점수 {Number(route.score).toFixed(2)}
+          </span>
+        </div>
 
-  const [left, right] =
-    horizon.anchors ?? [];
+        <div className="journey-steps">
+          <span>
+            출발지 도보 {route.walk_to_origin_min}분
+          </span>
+          <span>
+            자전거 {route.bike_min}분
+          </span>
+          <span>
+            목적지 도보 {route.walk_to_destination_min}분
+          </span>
+          <strong>
+            총 {route.total_eta_min}분
+          </strong>
+        </div>
 
-  return `${left}-${right}분 보간`;
+        <div className="route-availability">
+          <div className="origin-availability">
+            <span>출발 도착 시 예상 자전거</span>
+            <strong>
+              {Number(
+                route.origin_bikes_expected,
+              ).toFixed(1)}대
+            </strong>
+            <small>
+              현재 {route.origin_bikes_now}대
+            </small>
+          </div>
+
+          <div className="destination-availability">
+            <span>반납 시 예상 빈 거치대</span>
+            <strong>
+              {Number(
+                route.destination_docks_expected,
+              ).toFixed(1)}대
+            </strong>
+            <small>
+              현재 {route.destination_docks_now}대
+            </small>
+          </div>
+        </div>
+
+        <div className="route-score-breakdown">
+          <span>
+            출발 {formatScore(
+              route.score_breakdown?.origin_station,
+            )}
+          </span>
+          <span>
+            도착 {formatScore(
+              route.score_breakdown?.destination_station,
+            )}
+          </span>
+          <span>
+            ETA {formatScore(
+              route.score_breakdown?.eta,
+            )}
+          </span>
+          <span>
+            도보 {formatScore(
+              route.score_breakdown?.walking,
+            )}
+          </span>
+        </div>
+
+        <p className="route-reason">
+          {route.reason}
+        </p>
+      </div>
+    </li>
+  );
 }
 
 
-function buildReason(
-  leg,
-  station,
-) {
-  if (leg === "origin") {
-    return (
-      `도보 ${Math.round(
-        station.walk_min,
-      )}분 · ` +
-      `예상 자전거 ${station.bikes_expected.toFixed(
-        1,
-      )}대`
-    );
-  }
-
-  return (
-    `도보 ${Math.round(
-      station.walk_min,
-    )}분 · ` +
-    `예상 빈 거치대 ${station.docks_expected.toFixed(
-      1,
-    )}대`
-  );
+function formatScore(value) {
+  return Number(value ?? 0).toFixed(2);
 }
 
 
