@@ -1,0 +1,14 @@
+area,metric,scope,value,status,source
+forecast,MAE improvement,ALL 15m,-2.42%,final,reports/week05/final_model_test_metrics.csv
+forecast,MAE improvement,ALL 30m,+2.22%,final,reports/week05/final_model_test_metrics.csv
+forecast,MAE improvement,ALL 60m,+7.33%,final,reports/week05/final_model_test_metrics.csv
+forecast,MAE improvement,ACTIVE_PEAK 15m,+10.71%,final,reports/week05/final_model_test_metrics.csv
+forecast,MAE improvement,ACTIVE_PEAK 30m,+16.63%,final,reports/week05/final_model_test_metrics.csv
+forecast,MAE improvement,ACTIVE_PEAK 60m,+21.92%,final,reports/week05/final_model_test_metrics.csv
+reproduction,maximum absolute metric difference,12 metrics,4.69e-12,final,reports/week05/independent-reproduction.md
+ui,E2E pass count,user and operator,7/7,final,frontend/tests/e2e
+recommendation,Top-3 minimum availability hit rate,15/30/60m,pending,holdout snapshot required,Issue #42
+recommendation,Top-3 stable availability hit rate,15/30/60m,pending,holdout snapshot required,Issue #42
+rebalancing,shortage reduction oracle upper bound,CAP20 15/30/60m,about 23.9%,provisional PR review,PR #75
+rebalancing,risk-station reduction oracle upper bound,CAP20 15/30/60m,15.2%-15.4%,provisional PR review,PR #75
+

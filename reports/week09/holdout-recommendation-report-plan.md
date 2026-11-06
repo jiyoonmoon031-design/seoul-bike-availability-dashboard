@@ -22,4 +22,3 @@ The official report cannot be generated until Issue #42 receives the hold-out
 station snapshots and station master documented in
 `top3-evaluation-status.md`. No synthetic or historical-flow substitute is
 used for the final result.
-

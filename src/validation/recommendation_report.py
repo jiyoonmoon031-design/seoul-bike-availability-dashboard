@@ -14,9 +14,7 @@ def _format_horizon(value: object) -> str:
 
 def render_hit_rate_svg(metrics: pd.DataFrame, output: Path) -> None:
     horizon = metrics[metrics["scope"].eq("horizon")].copy()
-    horizon = horizon.sort_values(
-        ["availability_threshold", "mode", "horizon_min"]
-    )
+    horizon = horizon.sort_values(["availability_threshold", "mode", "horizon_min"])
     labels = [
         f"{row.mode} {int(row.horizon_min)}m T≥{int(row.availability_threshold)}"
         for row in horizon.itertuples()
@@ -30,7 +28,7 @@ def render_hit_rate_svg(metrics: pd.DataFrame, output: Path) -> None:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="white"/>',
-        '<style>text{font-family:Arial,sans-serif;fill:#172554}.label{font-size:13px}.value{font-size:12px;font-weight:bold}.title{font-size:20px;font-weight:bold}</style>',
+        "<style>text{font-family:Arial,sans-serif;fill:#172554}.label{font-size:13px}.value{font-size:12px;font-weight:bold}.title{font-size:20px;font-weight:bold}</style>",
         '<text x="20" y="30" class="title">Week 09 Top-3 availability hit rate</text>',
         f'<line x1="{left + plot_width * 0.9:.1f}" y1="50" x2="{left + plot_width * 0.9:.1f}" y2="{height - 20}" stroke="#dc2626" stroke-dasharray="5 4"/>',
         f'<text x="{left + plot_width * 0.9 + 5:.1f}" y="62" class="value" fill="#dc2626">target 0.90</text>',
@@ -139,4 +137,3 @@ def write_report(
         ),
         encoding="utf-8",
     )
-

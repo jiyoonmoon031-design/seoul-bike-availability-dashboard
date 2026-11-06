@@ -55,4 +55,3 @@ def test_report_contains_horizon_and_micro_results(tmp_path):
     assert "Below target" in report
     assert "abc123" in report
     assert figure_path.exists()
-
