@@ -34,4 +34,3 @@ Related issue: #45
 |---|---|---:|---|---|---|
 | 1 | Pending | — | Pending | — | Team |
 | 2 | Pending | — | Pending | — | Team |
-

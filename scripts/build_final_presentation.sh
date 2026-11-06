@@ -12,4 +12,3 @@ pandoc \
   --output reports/final/seoul-bike-final-presentation.pptx
 
 echo "Created reports/final/seoul-bike-final-presentation.pptx"
-

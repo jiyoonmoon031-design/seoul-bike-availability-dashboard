@@ -101,4 +101,3 @@ or screenshot as a live response.
 - [ ] Browser zoom is 90–100%.
 - [ ] PPT and screenshots are available offline.
 - [ ] Top-3 hit rate is not quoted until Issue #42 has official inputs.
-
