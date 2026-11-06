@@ -60,8 +60,7 @@ def _validate_and_normalize(rows: pd.DataFrame) -> pd.DataFrame:
     if (frame["capacity"] <= 0).any():
         raise ValueError("capacity must be greater than zero")
     if (
-        (frame["actual_bikes"] < 0)
-        | (frame["actual_bikes"] > frame["capacity"])
+        (frame["actual_bikes"] < 0) | (frame["actual_bikes"] > frame["capacity"])
     ).any():
         raise ValueError("actual_bikes must be between zero and capacity")
 
@@ -177,4 +176,3 @@ def evaluate_top3(
         metrics=metrics.reset_index(drop=True),
         metadata=metadata,
     )
-
