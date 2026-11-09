@@ -21,6 +21,7 @@ from src.modeling.inference import (  # noqa: E402
     load_point_in_time_features,
     validate_prediction_request,
 )
+from src.modeling.model_comparison import FittedBaselines  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -68,6 +69,16 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--fallback-baselines",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--fallback-metadata",
+        type=Path,
+    )
+
+    parser.add_argument(
         "--output",
         type=Path,
     )
@@ -112,6 +123,38 @@ def main() -> None:
             "serialized model feature order " "does not match feature_names.json"
         )
 
+    baselines = None
+
+    if bool(args.fallback_baselines) != bool(args.fallback_metadata):
+        raise RuntimeError(
+            "--fallback-baselines and --fallback-metadata " "must be supplied together"
+        )
+
+    if args.fallback_baselines is not None:
+        fallback_path = args.fallback_baselines.expanduser().resolve()
+        fallback_metadata_path = args.fallback_metadata.expanduser().resolve()
+
+        fallback_metadata = json.loads(
+            fallback_metadata_path.read_text(encoding="utf-8")
+        )
+
+        expected_fallback_sha256 = fallback_metadata["artifact"]["sha256"]
+
+        actual_fallback_sha256 = sha256_file(fallback_path)
+
+        if actual_fallback_sha256 != expected_fallback_sha256:
+            raise RuntimeError(
+                "fallback baseline artifact SHA256 " "does not match Week 11 metadata"
+            )
+
+        baselines = joblib.load(fallback_path)
+
+        if not isinstance(
+            baselines,
+            FittedBaselines,
+        ):
+            raise RuntimeError("serialized fallback artifact is not " "FittedBaselines")
+
     frame = load_point_in_time_features(
         feature_path,
         feature_columns=raw_feature_order,
@@ -127,6 +170,7 @@ def main() -> None:
         feature_frame=frame,
         inventory=inventory,
         model_version=metadata["model_version"],
+        baselines=baselines,
     )
 
     rendered = json.dumps(

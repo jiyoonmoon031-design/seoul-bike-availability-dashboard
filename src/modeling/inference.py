@@ -13,7 +13,7 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 
 from src.modeling.feature_engineering import HORIZONS
-from src.modeling.model_comparison import FittedCandidate
+from src.modeling.model_comparison import FittedBaselines, FittedCandidate
 
 KST = ZoneInfo("Asia/Seoul")
 SUPPORTED_HORIZONS = tuple(int(value) for value in HORIZONS)
@@ -118,10 +118,26 @@ def load_point_in_time_features(
         )
     )
 
-    missing = set(required_columns) - set(dataset.schema.names)
+    schema_names = set(dataset.schema.names)
 
-    if missing:
-        raise ValueError(f"feature source missing columns: {sorted(missing)}")
+    identity_missing = {
+        "station_id",
+        "base_time",
+    } - schema_names
+
+    if identity_missing:
+        raise ValueError(
+            "feature source missing required identity columns: "
+            f"{sorted(identity_missing)}"
+        )
+
+    # Model-feature schema drift must not terminate the whole
+    # request. Load the columns that are still available and let
+    # build_prediction_response emit FEATURE_UNAVAILABLE for the
+    # affected station prediction.
+    available_columns = [
+        column for column in required_columns if column in schema_names
+    ]
 
     requested_time = pd.Timestamp(base_time)
 
@@ -159,7 +175,7 @@ def load_point_in_time_features(
         expression = expression & (ds.field("station_id").isin(station_filter_values))
 
     table = dataset.to_table(
-        columns=required_columns,
+        columns=available_columns,
         filter=expression,
     )
 
@@ -231,6 +247,158 @@ def _display_number(
     return number
 
 
+def _warning(
+    code: str,
+    message: str,
+    *,
+    station_id: str | None = None,
+    horizon_min: int | None = None,
+) -> dict[str, Any]:
+    warning: dict[str, Any] = {
+        "code": code,
+        "message": message,
+    }
+
+    if station_id is not None:
+        warning["station_id"] = station_id
+
+    if horizon_min is not None:
+        warning["horizon_min"] = int(horizon_min)
+
+    return warning
+
+
+def _predict_model_horizons(
+    candidate: FittedCandidate,
+    row: pd.DataFrame,
+    horizons: list[int],
+) -> tuple[dict[int, float], dict[int, str]]:
+    """Run model inference while isolating horizon-level estimator failures."""
+
+    values: dict[int, float] = {}
+    errors: dict[int, str] = {}
+
+    preprocessor = getattr(candidate, "preprocessor", None)
+    estimators = getattr(candidate, "estimators", None)
+
+    # Real FittedCandidate path.
+    #
+    # Transform only once per station, then call each horizon estimator
+    # independently. This prevents one failed estimator from suppressing
+    # otherwise valid horizons.
+    if preprocessor is not None and isinstance(estimators, Mapping):
+        try:
+            transformed = preprocessor.transform(row[candidate.feature_columns])
+
+            if candidate.model_id == "lightgbm":
+                transformed = pd.DataFrame(
+                    np.asarray(transformed, dtype=np.float32),
+                    columns=preprocessor.get_feature_names_out(),
+                )
+
+        except Exception as exc:
+            reason = (
+                "model feature preprocessing failed: " f"{type(exc).__name__}: {exc}"
+            )
+            return {}, {horizon: reason for horizon in horizons}
+
+        for horizon in horizons:
+            try:
+                estimator = estimators[horizon]
+
+                raw = np.asarray(
+                    estimator.predict(transformed),
+                    dtype=np.float64,
+                ).reshape(-1)
+
+                if raw.size != 1:
+                    raise ValueError(
+                        "expected exactly one prediction "
+                        f"for {horizon}m, got {raw.size}"
+                    )
+
+                value = float(raw[0])
+
+                if not np.isfinite(value):
+                    raise ValueError(f"non-finite {horizon}m prediction")
+
+                values[horizon] = value
+
+            except Exception as exc:
+                errors[horizon] = f"{type(exc).__name__}: {exc}"
+
+        return values, errors
+
+    # Compatibility path for existing test doubles.
+    try:
+        predicted = candidate.predict_all(row)
+    except Exception as exc:
+        reason = "model inference failed: " f"{type(exc).__name__}: {exc}"
+        return {}, {horizon: reason for horizon in horizons}
+
+    for horizon in horizons:
+        try:
+            if horizon not in predicted:
+                raise KeyError(f"{horizon}m prediction not returned")
+
+            raw = np.asarray(
+                predicted[horizon],
+                dtype=np.float64,
+            ).reshape(-1)
+
+            if raw.size != 1:
+                raise ValueError(
+                    "expected exactly one prediction " f"for {horizon}m, got {raw.size}"
+                )
+
+            value = float(raw[0])
+
+            if not np.isfinite(value):
+                raise ValueError(f"non-finite {horizon}m prediction")
+
+            values[horizon] = value
+
+        except Exception as exc:
+            errors[horizon] = f"{type(exc).__name__}: {exc}"
+
+    return values, errors
+
+
+def _fallback_delta(
+    *,
+    baselines: FittedBaselines | None,
+    row: pd.DataFrame,
+    horizon: int,
+) -> tuple[float, str]:
+    """Return B3 fallback when available, otherwise B1 persistence."""
+
+    if baselines is not None:
+        try:
+            predicted = baselines.predict_all(
+                row,
+                "b3_dow_time_mean",
+            )
+
+            raw = np.asarray(
+                predicted[horizon],
+                dtype=np.float64,
+            ).reshape(-1)
+
+            if raw.size != 1:
+                raise ValueError("B3 expected exactly one prediction")
+
+            value = float(raw[0])
+
+            if np.isfinite(value):
+                return value, "b3_dow_time_mean"
+
+        except Exception:
+            # B1 is deliberately the final deterministic safety net.
+            pass
+
+    return 0.0, "b1_persistence"
+
+
 def build_prediction_response(
     *,
     candidate: FittedCandidate,
@@ -241,6 +409,7 @@ def build_prediction_response(
         Mapping[str, Any],
     ],
     model_version: str,
+    baselines: FittedBaselines | None = None,
 ) -> dict[str, Any]:
     request = validate_prediction_request(request)
 
@@ -252,72 +421,139 @@ def build_prediction_response(
 
         frame["station_id"] = frame["station_id"].astype(str)
 
-    missing_features = set(candidate.feature_columns) - set(frame.columns)
+    missing_model_features = (
+        set(candidate.feature_columns) - set(frame.columns)
+        if not frame.empty
+        else set()
+    )
 
-    if missing_features and not frame.empty:
-        raise ValueError(
-            "feature frame missing model features: " f"{sorted(missing_features)}"
-        )
+    warnings: list[dict[str, Any]] = []
 
-    station_rows: dict[
-        str,
-        pd.DataFrame,
-    ] = {}
-
-    warnings: list[str] = []
     valid_station_ids: list[str] = []
-    valid_rows: list[pd.DataFrame] = []
-    valid_inventory: dict[
-        str,
-        tuple[float, float],
-    ] = {}
+    valid_rows: dict[str, pd.DataFrame] = {}
+    valid_inventory: dict[str, tuple[float, float]] = {}
 
     for station_id in request["station_ids"]:
-        matching = frame.loc[frame["station_id"].eq(station_id)]
-
-        station_rows[station_id] = matching
+        if frame.empty:
+            matching = frame
+        else:
+            matching = frame.loc[frame["station_id"].eq(station_id)]
 
         if matching.empty:
-            warnings.append(f"{station_id}: feature row not found " "for base_time")
+            warnings.append(
+                _warning(
+                    "FEATURE_UNAVAILABLE",
+                    "feature row is unavailable for base_time.",
+                    station_id=station_id,
+                )
+            )
             continue
 
         if len(matching) != 1:
             warnings.append(
-                f"{station_id}: expected exactly one " "feature row for base_time"
+                _warning(
+                    "FEATURE_UNAVAILABLE",
+                    ("expected exactly one feature row " "for base_time."),
+                    station_id=station_id,
+                )
+            )
+            continue
+
+        if missing_model_features:
+            warnings.append(
+                _warning(
+                    "FEATURE_UNAVAILABLE",
+                    (
+                        "required model feature columns are "
+                        "unavailable: "
+                        f"{sorted(missing_model_features)}"
+                    ),
+                    station_id=station_id,
+                )
             )
             continue
 
         current = inventory.get(station_id)
 
         if current is None:
-            warnings.append(f"{station_id}: current inventory " "not available")
+            warnings.append(
+                _warning(
+                    "MISSING_INVENTORY",
+                    "current inventory is unavailable.",
+                    station_id=station_id,
+                )
+            )
+            continue
+
+        raw_capacity = current.get("capacity")
+        raw_bikes_now = current.get("bikes_now")
+
+        if raw_capacity is None:
+            warnings.append(
+                _warning(
+                    "MISSING_CAPACITY",
+                    "station capacity is unavailable.",
+                    station_id=station_id,
+                )
+            )
+            continue
+
+        if raw_bikes_now is None:
+            warnings.append(
+                _warning(
+                    "MISSING_INVENTORY",
+                    "current bike inventory is unavailable.",
+                    station_id=station_id,
+                )
+            )
             continue
 
         try:
-            capacity = float(current["capacity"])
-            bikes_now = float(current["bikes_now"])
-        except (
-            KeyError,
-            TypeError,
-            ValueError,
-        ):
-            warnings.append(f"{station_id}: invalid current inventory")
+            capacity = float(raw_capacity)
+        except (TypeError, ValueError):
+            warnings.append(
+                _warning(
+                    "MISSING_CAPACITY",
+                    "station capacity is invalid.",
+                    station_id=station_id,
+                )
+            )
             continue
 
-        if (
-            not np.isfinite(capacity)
-            or not np.isfinite(bikes_now)
-            or capacity <= 0
-            or bikes_now < 0
-            or bikes_now > capacity
-        ):
-            warnings.append(f"{station_id}: current inventory " "outside valid range")
+        try:
+            bikes_now = float(raw_bikes_now)
+        except (TypeError, ValueError):
+            warnings.append(
+                _warning(
+                    "MISSING_INVENTORY",
+                    "current bike inventory is invalid.",
+                    station_id=station_id,
+                )
+            )
+            continue
+
+        if not np.isfinite(capacity) or capacity <= 0:
+            warnings.append(
+                _warning(
+                    "MISSING_CAPACITY",
+                    "station capacity is outside the valid range.",
+                    station_id=station_id,
+                )
+            )
+            continue
+
+        if not np.isfinite(bikes_now) or bikes_now < 0 or bikes_now > capacity:
+            warnings.append(
+                _warning(
+                    "MISSING_INVENTORY",
+                    ("current bike inventory is outside " "the valid range."),
+                    station_id=station_id,
+                )
+            )
             continue
 
         valid_station_ids.append(station_id)
-
-        valid_rows.append(matching.iloc[[0]])
-
+        valid_rows[station_id] = matching.iloc[[0]].copy()
         valid_inventory[station_id] = (
             capacity,
             bikes_now,
@@ -325,30 +561,57 @@ def build_prediction_response(
 
     prediction_lookup: dict[
         str,
-        dict[int, float],
+        dict[int, tuple[float, str]],
     ] = {}
 
-    if valid_rows:
-        model_frame = pd.concat(
-            valid_rows,
-            ignore_index=True,
+    for station_id in valid_station_ids:
+        row = valid_rows[station_id]
+
+        model_values, model_errors = _predict_model_horizons(
+            candidate,
+            row,
+            request["horizons"],
         )
 
-        predicted = candidate.predict_all(model_frame)
+        station_predictions: dict[
+            int,
+            tuple[float, str],
+        ] = {}
 
-        for position, station_id in enumerate(valid_station_ids):
-            prediction_lookup[station_id] = {}
+        for horizon in request["horizons"]:
+            if horizon in model_values:
+                station_predictions[horizon] = (
+                    model_values[horizon],
+                    "model",
+                )
+                continue
 
-            for horizon in request["horizons"]:
-                value = float(predicted[horizon][position])
+            delta_net, fallback_method = _fallback_delta(
+                baselines=baselines,
+                row=row,
+                horizon=horizon,
+            )
 
-                if not np.isfinite(value):
-                    warnings.append(
-                        f"{station_id}: non-finite " f"{horizon}m prediction"
-                    )
-                    continue
+            reason = model_errors.get(
+                horizon,
+                "primary model prediction unavailable",
+            )
 
-                prediction_lookup[station_id][horizon] = value
+            warnings.append(
+                _warning(
+                    "BASELINE_FALLBACK",
+                    (f"{reason}; used {fallback_method} " "fallback."),
+                    station_id=station_id,
+                    horizon_min=horizon,
+                )
+            )
+
+            station_predictions[horizon] = (
+                delta_net,
+                "baseline_fallback",
+            )
+
+        prediction_lookup[station_id] = station_predictions
 
     response_predictions = []
 
@@ -362,13 +625,13 @@ def build_prediction_response(
 
         if current is not None:
             try:
-                entry["capacity"] = _display_number(float(current["capacity"]))
-                entry["bikes_now"] = _display_number(float(current["bikes_now"]))
-            except (
-                KeyError,
-                TypeError,
-                ValueError,
-            ):
+                if current.get("capacity") is not None:
+                    entry["capacity"] = _display_number(float(current["capacity"]))
+
+                if current.get("bikes_now") is not None:
+                    entry["bikes_now"] = _display_number(float(current["bikes_now"]))
+
+            except (TypeError, ValueError):
                 pass
 
         if station_id in prediction_lookup:
@@ -380,7 +643,7 @@ def build_prediction_response(
                 if horizon not in prediction_lookup[station_id]:
                     continue
 
-                delta_net = prediction_lookup[station_id][horizon]
+                delta_net, prediction_source = prediction_lookup[station_id][horizon]
 
                 bikes_expected = float(
                     np.clip(
@@ -395,6 +658,7 @@ def build_prediction_response(
                 results.append(
                     {
                         "horizon_min": horizon,
+                        "prediction_source": prediction_source,
                         "delta_net": delta_net,
                         "bikes_expected": bikes_expected,
                         "docks_expected": docks_expected,
@@ -409,6 +673,9 @@ def build_prediction_response(
         "request_id": request["request_id"],
         "base_time": request["base_time"],
         "model_version": model_version,
+        # Kept temporarily for backwards compatibility with
+        # the existing Week 05 consumer/tests. Horizon-level
+        # prediction_source is the v0.2 source contract.
         "source": "model",
         "predictions": response_predictions,
         "warnings": warnings,

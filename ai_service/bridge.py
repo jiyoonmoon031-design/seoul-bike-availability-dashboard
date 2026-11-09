@@ -20,6 +20,10 @@ MODEL_PATH = ROOT / "models" / "week05" / "final_model.joblib"
 
 MODEL_METADATA_PATH = ROOT / "reports" / "week05" / "final_model_metadata.json"
 
+FALLBACK_BASELINE_PATH = ROOT / "models" / "week11" / "fallback_baselines.joblib"
+
+FALLBACK_METADATA_PATH = ROOT / "reports" / "week11" / "fallback_baseline_metadata.json"
+
 PREDICT_SCRIPT = ROOT / "scripts" / "run_week05_inference.py"
 
 REBALANCING_SCRIPT = ROOT / "scripts" / "run_week06_rebalancing.py"
@@ -223,20 +227,39 @@ def run_predict(
                 payload,
             )
 
-            _run(
-                [
-                    sys.executable,
-                    str(PREDICT_SCRIPT),
-                    "--request",
-                    str(request_path),
-                    "--feature-table",
-                    str(feature_table),
-                    "--inventory",
-                    str(inventory_path),
-                    "--output",
-                    str(output_path),
-                ]
-            )
+            command = [
+                sys.executable,
+                str(PREDICT_SCRIPT),
+                "--request",
+                str(request_path),
+                "--feature-table",
+                str(feature_table),
+                "--inventory",
+                str(inventory_path),
+                "--output",
+                str(output_path),
+            ]
+
+            fallback_artifact_exists = FALLBACK_BASELINE_PATH.exists()
+            fallback_metadata_exists = FALLBACK_METADATA_PATH.exists()
+
+            if fallback_artifact_exists != fallback_metadata_exists:
+                raise BridgeConfigurationError(
+                    "Week 11 fallback artifact and metadata "
+                    "must either both exist or both be absent"
+                )
+
+            if fallback_artifact_exists:
+                command.extend(
+                    [
+                        "--fallback-baselines",
+                        str(FALLBACK_BASELINE_PATH),
+                        "--fallback-metadata",
+                        str(FALLBACK_METADATA_PATH),
+                    ]
+                )
+
+            _run(command)
 
             return _read_json(output_path)
 
