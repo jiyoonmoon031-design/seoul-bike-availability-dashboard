@@ -211,10 +211,7 @@ def test_b1_persistence_is_final_fallback_when_b3_is_unavailable():
     results = horizon_map(response)
 
     for horizon in (15, 30, 60):
-        assert (
-            results[horizon]["prediction_source"]
-            == "baseline_fallback"
-        )
+        assert results[horizon]["prediction_source"] == "baseline_fallback"
         assert results[horizon]["delta_net"] == pytest.approx(0.0)
         assert results[horizon]["bikes_expected"] == pytest.approx(10.0)
         assert results[horizon]["docks_expected"] == pytest.approx(10.0)
@@ -222,13 +219,11 @@ def test_b1_persistence_is_final_fallback_when_b3_is_unavailable():
     assert len(response["warnings"]) == 3
 
     assert all(
-        warning["code"] == "BASELINE_FALLBACK"
-        for warning in response["warnings"]
+        warning["code"] == "BASELINE_FALLBACK" for warning in response["warnings"]
     )
 
     assert all(
-        "b1_persistence" in warning["message"]
-        for warning in response["warnings"]
+        "b1_persistence" in warning["message"] for warning in response["warnings"]
     )
 
 
@@ -282,8 +277,7 @@ def test_missing_feature_column_is_station_failure_not_silent_imputation():
         {
             "code": "FEATURE_UNAVAILABLE",
             "message": (
-                "required model feature columns are unavailable: "
-                "['feature_x']"
+                "required model feature columns are unavailable: " "['feature_x']"
             ),
             "station_id": "ST-0001",
         }

@@ -36,10 +36,7 @@ def sha256_file(path: Path) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description=(
-            "Build the Week 11 train-only B3 fallback "
-            "baseline artifact."
-        )
+        description=("Build the Week 11 train-only B3 fallback " "baseline artifact.")
     )
 
     parser.add_argument(
@@ -51,17 +48,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(
-            "models/week11/fallback_baselines.joblib"
-        ),
+        default=Path("models/week11/fallback_baselines.joblib"),
     )
 
     parser.add_argument(
         "--metadata-output",
         type=Path,
-        default=Path(
-            "reports/week11/fallback_baseline_metadata.json"
-        ),
+        default=Path("reports/week11/fallback_baseline_metadata.json"),
     )
 
     return parser.parse_args()
@@ -73,9 +66,7 @@ def main() -> None:
     feature_path = args.feature_table.expanduser().resolve()
 
     if not feature_path.exists():
-        raise FileNotFoundError(
-            f"feature table not found: {feature_path}"
-        )
+        raise FileNotFoundError(f"feature table not found: {feature_path}")
 
     columns = [
         "station_id",
@@ -110,14 +101,10 @@ def main() -> None:
         global_mean = baselines.global_means[horizon]
 
         if group_mean.empty:
-            raise RuntimeError(
-                f"B3 {horizon}m group lookup is empty"
-            )
+            raise RuntimeError(f"B3 {horizon}m group lookup is empty")
 
         if not np.isfinite(global_mean):
-            raise RuntimeError(
-                f"B3 {horizon}m global mean is non-finite"
-            )
+            raise RuntimeError(f"B3 {horizon}m global mean is non-finite")
 
         validation[str(horizon)] = {
             "group_count": int(len(group_mean)),
@@ -140,9 +127,7 @@ def main() -> None:
     )
 
     metadata = {
-        "generated_at_utc": datetime.now(
-            timezone.utc
-        ).isoformat(),
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "baseline_id": "b3_dow_time_mean",
         "fallback_chain": [
             "primary_model",
@@ -150,13 +135,8 @@ def main() -> None:
             "b1_persistence",
         ],
         "group_columns": list(GROUP_COLUMNS),
-        "horizons": [
-            int(value)
-            for value in HORIZONS
-        ],
-        "training_policy": (
-            "original chronological train split only"
-        ),
+        "horizons": [int(value) for value in HORIZONS],
+        "training_policy": ("original chronological train split only"),
         "feature_table": {
             "path": str(feature_path),
             "sha256": sha256_file(feature_path),
