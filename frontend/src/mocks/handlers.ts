@@ -11,6 +11,7 @@ import {
 } from './operatorFixture'
 import {
   nearbyStationFixture,
+  routeRecommendationFixture,
   searchPlaceFixture,
 } from './userFixtures'
 
@@ -48,6 +49,22 @@ export const handlers = [
         nearbyStationFixture(
           latitude,
           longitude,
+        ),
+      )
+    },
+  ),
+
+  http.get(
+    '*/api/v1/routes/recommendations',
+    ({ request }) => {
+      const url = new URL(request.url)
+
+      return HttpResponse.json(
+        routeRecommendationFixture(
+          Number(url.searchParams.get('originLat')),
+          Number(url.searchParams.get('originLon')),
+          Number(url.searchParams.get('destinationLat')),
+          Number(url.searchParams.get('destinationLon')),
         ),
       )
     },

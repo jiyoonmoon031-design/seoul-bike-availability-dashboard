@@ -79,33 +79,19 @@ for (const [origin, destination] of scenarios) {
       destination,
     )
 
-    const originPanel = page.getByRole('article')
+    const routePanel = page.getByRole('article')
       .filter({
         has: page.getByRole('heading', {
-          name: '출발 Top-3',
-        }),
-      })
-    const destinationPanel = page.getByRole('article')
-      .filter({
-        has: page.getByRole('heading', {
-          name: '도착 Top-3',
+          name: 'Best 3 추천 경로',
         }),
       })
 
     await expect(
-      originPanel.locator('li'),
+      routePanel.locator('.route-card'),
     ).toHaveCount(3)
     await expect(
-      destinationPanel.locator('li'),
-    ).toHaveCount(3)
-    await expect(
-      originPanel.locator(
-        '.recommendation-reason',
-      ),
-    ).toHaveCount(3)
-    await expect(
-      destinationPanel.locator(
-        '.recommendation-reason',
+      routePanel.locator(
+        '.route-reason',
       ),
     ).toHaveCount(3)
     await expect(

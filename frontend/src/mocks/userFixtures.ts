@@ -77,3 +77,67 @@ export function nearbyStationFixture(
     },
   ]
 }
+
+export function routeRecommendationFixture(
+  originLatitude: number,
+  originLongitude: number,
+  destinationLatitude: number,
+  destinationLongitude: number,
+) {
+  const names = [
+    ['가용성 우수 출발 대여소', '반납 안정 도착 대여소'],
+    ['가까운 출발 대여소', '가까운 도착 대여소'],
+    ['보조 출발 대여소', '보조 도착 대여소'],
+  ] as const
+
+  return {
+    routes: names.map((namePair, index) => {
+      const rank = index + 1
+      const originScore = 0.32 - index * 0.03
+      const destinationScore = 0.31 - index * 0.03
+      const etaScore = 0.12 - index * 0.01
+      const walkingScore = 0.12 - index * 0.01
+
+      return {
+        rank,
+        origin_station_id: `ROUTE-O-${rank}`,
+        origin_station_name: namePair[0],
+        destination_station_id: `ROUTE-D-${rank}`,
+        destination_station_name: namePair[1],
+        walk_to_origin_min: 2 + index * 2,
+        bike_min: 18 + index * 2,
+        walk_to_destination_min: 3 + index,
+        total_eta_min: 23 + index * 5,
+        score:
+          originScore +
+          destinationScore +
+          etaScore +
+          walkingScore,
+        score_breakdown: {
+          origin_station: originScore,
+          destination_station: destinationScore,
+          eta: etaScore,
+          walking: walkingScore,
+        },
+        reason:
+          '출발 자전거와 도착 빈 거치대의 미래 가용성, 양쪽 도보시간, 총 이동시간을 함께 고려한 경로입니다.',
+        origin_latitude:
+          originLatitude + 0.001 * rank,
+        origin_longitude:
+          originLongitude + 0.001 * rank,
+        destination_latitude:
+          destinationLatitude - 0.001 * rank,
+        destination_longitude:
+          destinationLongitude - 0.001 * rank,
+        origin_bikes_now: 7 - index,
+        origin_bikes_expected: 6.4 - index,
+        destination_docks_now: 8 - index,
+        destination_docks_expected: 7.5 - index,
+        walk_to_origin_m: 120 + index * 140,
+        walk_to_destination_m: 160 + index * 130,
+        origin_eta_min: 2 + index * 2,
+        destination_eta_min: 20 + index * 4,
+      }
+    }),
+  }
+}

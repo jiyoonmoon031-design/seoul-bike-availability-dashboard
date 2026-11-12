@@ -1,20 +1,27 @@
-import {
-  buildRecommendationMock,
-} from "../mocks/recommendationMock";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ??
+  "http://localhost:8080";
 
-export async function getRecommendationPreview(
-  stations,
-  leg,
+export async function getRouteRecommendations(
+  origin,
+  destination,
 ) {
-  /*
-   * 조성은 backend recommendation endpoint가
-   * 준비되기 전 Week 08 frontend 계약 검증용.
-   *
-   * frontend는 최종적으로 score를 계산하지 않고
-   * backend response를 그대로 표시한다.
-   */
-  return buildRecommendationMock(
-    stations,
-    leg,
+  const params = new URLSearchParams({
+    originLat: String(origin.latitude),
+    originLon: String(origin.longitude),
+    destinationLat: String(destination.latitude),
+    destinationLon: String(destination.longitude),
+  });
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/routes/recommendations?${params.toString()}`,
   );
+
+  if (!response.ok) {
+    throw new Error(
+      `추천 경로를 불러오지 못했습니다. (${response.status})`,
+    );
+  }
+
+  const payload = await response.json();
+  return payload.routes ?? [];
 }

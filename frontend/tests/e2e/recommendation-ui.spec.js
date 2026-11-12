@@ -55,7 +55,7 @@ async function selectLocation(
   }).click()
 }
 
-test('출발·도착 Top-3 카드와 추천 이유를 표시한다', async ({
+test('출발과 도착을 묶은 Best 3 경로와 추천 이유를 표시한다', async ({
   page,
 }) => {
   await installKakaoMapStub(page)
@@ -72,43 +72,29 @@ test('출발·도착 Top-3 카드와 추천 이유를 표시한다', async ({
     '성수역',
   )
 
-  const originPanel = page.getByRole('article')
+  const routePanel = page.getByRole('article')
     .filter({
       has: page.getByRole('heading', {
-        name: '출발 Top-3',
-      }),
-    })
-  const destinationPanel = page.getByRole('article')
-    .filter({
-      has: page.getByRole('heading', {
-        name: '도착 Top-3',
+        name: 'Best 3 추천 경로',
       }),
     })
 
   await expect(
-    originPanel.locator('li'),
+    routePanel.locator('.route-card'),
   ).toHaveCount(3)
   await expect(
-    destinationPanel.locator('li'),
-  ).toHaveCount(3)
-  await expect(
-    originPanel.locator(
-      '.inventory-main span',
+    routePanel.locator(
+      '.origin-availability',
     ),
   ).toHaveCount(3)
   await expect(
-    destinationPanel.locator(
-      '.inventory-main span',
+    routePanel.locator(
+      '.destination-availability',
     ),
   ).toHaveCount(3)
   await expect(
-    originPanel.locator(
-      '.recommendation-reason',
-    ),
-  ).toHaveCount(3)
-  await expect(
-    destinationPanel.locator(
-      '.recommendation-reason',
+    routePanel.locator(
+      '.route-reason',
     ),
   ).toHaveCount(3)
   await expect(
