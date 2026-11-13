@@ -1,0 +1,4 @@
+horizon_min,case_count,shortage_score_before_total,shortage_score_after_total,shortage_reduction_total,shortage_reduction_rate,mean_case_reduction_rate,shortage_station_count_before_total,shortage_station_count_after_total,shortage_station_count_reduction_total,move_match_count_total,move_qty_total
+15,6026,502633.0,382413.0,120220.0,0.23918047561540925,0.2770843619412727,262443,221915,40528,43928,120220.0
+30,6026,502370.0,382210.0,120160.0,0.23918625714115094,0.27698864160805153,262330,222356,39974,43460,120160.0
+60,6026,501851.0,381811.0,120040.0,0.23919450195376715,0.2769039489064695,262064,222174,39890,43315,120040.0
