@@ -1,0 +1,96 @@
+{
+  "generated_at_utc": "2026-11-09T16:10:38.479573+00:00",
+  "baseline_id": "b3_dow_time_mean",
+  "fallback_chain": [
+    "primary_model",
+    "b3_dow_time_mean",
+    "b1_persistence"
+  ],
+  "group_columns": [
+    "station_id",
+    "weekday_index",
+    "hour",
+    "minute"
+  ],
+  "horizons": [
+    15,
+    30,
+    60
+  ],
+  "training_policy": "original chronological train split only",
+  "feature_table": {
+    "path": "/Users/jiyoonmoon/Desktop/창학 4-2/ddareungi_data/processed/model/week03_features.parquet",
+    "sha256": "e1c94933347c27ef80bb4dc8a774960497ec6de94455cc195266aefd551e5202"
+  },
+  "artifact": {
+    "path": "models/week11/fallback_baselines.joblib",
+    "sha256": "578d679fec113d0c112ed0c2181319939b2ce167ff665f2ad542d61c082f821e",
+    "committed_to_git": false
+  },
+  "validation": {
+    "15": {
+      "group_count": 124320,
+      "global_mean": -0.002501952972948305
+    },
+    "30": {
+      "group_count": 124320,
+      "global_mean": -0.004995184676870007
+    },
+    "60": {
+      "group_count": 124320,
+      "global_mean": -0.009978973620047342
+    }
+  },
+  "split": {
+    "strategy": "chronological_unique_timestamp_ratio_with_purge",
+    "requested_ratios": {
+      "train": 0.7,
+      "validation": 0.15,
+      "test": 0.15
+    },
+    "actual_retained_timestamp_ratios": {
+      "train": 0.6999885818680064,
+      "validation": 0.14997716373601278,
+      "test": 0.1500342543959808
+    },
+    "base_interval_minutes": 15,
+    "gap_minutes": 60,
+    "gap_timestamps_each_boundary": 4,
+    "data_period": {
+      "start": "2025-08-01T00:00:00",
+      "end": "2026-07-31T23:45:00",
+      "timestamps": 35040
+    },
+    "train": {
+      "start": "2025-08-01T00:00:00",
+      "end": "2026-04-13T10:15:00",
+      "timestamps": 24522
+    },
+    "train_validation_gap": {
+      "start": "2026-04-13T10:30:00",
+      "end": "2026-04-13T11:15:00",
+      "timestamps": 4
+    },
+    "validation": {
+      "start": "2026-04-13T11:30:00",
+      "end": "2026-06-07T04:45:00",
+      "timestamps": 5254
+    },
+    "validation_test_gap": {
+      "start": "2026-06-07T05:00:00",
+      "end": "2026-06-07T05:45:00",
+      "timestamps": 4
+    },
+    "test": {
+      "start": "2026-06-07T06:00:00",
+      "end": "2026-07-31T23:45:00",
+      "timestamps": 5256
+    },
+    "row_counts": {
+      "train": 4470108,
+      "validation": 955628,
+      "test": 950455,
+      "excluded_gap": 1452
+    }
+  }
+}

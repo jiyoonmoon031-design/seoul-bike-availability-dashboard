@@ -122,4 +122,12 @@ def test_prediction_response_contract_and_clipping():
 
     assert missing["horizon_results"] == []
 
-    assert any("ST-9999" in warning for warning in response["warnings"])
+    assert results[15]["prediction_source"] == "model"
+    assert results[30]["prediction_source"] == "model"
+    assert results[60]["prediction_source"] == "model"
+
+    assert any(
+        warning["code"] == "FEATURE_UNAVAILABLE"
+        and warning.get("station_id") == "ST-9999"
+        for warning in response["warnings"]
+    )
