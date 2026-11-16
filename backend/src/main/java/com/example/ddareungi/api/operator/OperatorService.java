@@ -92,9 +92,8 @@ public class OperatorService {
                                 "station_id", station.getStationId(),
                                 "station_name", station.getStationName(),
                                 "district", station.getDistrict(),
-                                "capacity", station.getCapacity(),
-                                "lat", station.getLatitude(),
-                                "lon", station.getLongitude()
+                                "latitude", station.getLatitude(),
+                                "longitude", station.getLongitude()
                         ))
                         .toList();
 

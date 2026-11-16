@@ -1,0 +1,8 @@
+{
+  "base_time": "2025-07-31T15:00:00Z",
+  "horizon_min": 30,
+  "shortage_count": 10,
+  "surplus_count": 6,
+  "move_match_count": 6,
+  "recommended_move_qty": 20
+}
