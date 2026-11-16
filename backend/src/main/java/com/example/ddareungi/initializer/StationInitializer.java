@@ -7,7 +7,7 @@ import org.springframework.boot.ApplicationArguments;
 
 import com.example.ddareungi.domain.station.StationRepository;
 import com.example.ddareungi.collector.BikeApiService;
-import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class StationInitializer implements ApplicationRunner{
 
             try {
                 bikeApiService.saveTargetStations();
-            } catch(ResourceAccessException | IllegalStateException e){
+            } catch(RestClientException | IllegalStateException e){
                 log.error("대여소 초기화 중 문제 발생",e);
             }
         }

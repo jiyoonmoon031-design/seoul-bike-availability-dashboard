@@ -280,6 +280,7 @@ def test_missing_feature_column_is_station_failure_not_silent_imputation():
                 "required model feature columns are unavailable: " "['feature_x']"
             ),
             "station_id": "ST-0001",
+            "horizon_min": None,
         }
     ]
 

@@ -254,18 +254,12 @@ def _warning(
     station_id: str | None = None,
     horizon_min: int | None = None,
 ) -> dict[str, Any]:
-    warning: dict[str, Any] = {
+    return {
         "code": code,
         "message": message,
+        "station_id": station_id,
+        "horizon_min": (int(horizon_min) if horizon_min is not None else None),
     }
-
-    if station_id is not None:
-        warning["station_id"] = station_id
-
-    if horizon_min is not None:
-        warning["horizon_min"] = int(horizon_min)
-
-    return warning
 
 
 def _predict_model_horizons(
@@ -442,9 +436,10 @@ def build_prediction_response(
         if matching.empty:
             warnings.append(
                 _warning(
-                    "FEATURE_UNAVAILABLE",
-                    "feature row is unavailable for base_time.",
+                    "FEATURE_ROW_NOT_FOUND",
+                    "feature row not found for base_time",
                     station_id=station_id,
+                    horizon_min=None,
                 )
             )
             continue
