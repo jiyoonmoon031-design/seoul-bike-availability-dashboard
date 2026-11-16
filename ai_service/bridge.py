@@ -245,9 +245,7 @@ def health_status() -> dict[str, Any]:
 
     feature_exists = bool(feature_raw and Path(feature_raw).expanduser().exists())
 
-    backend_configured = bool(
-        inventory_raw and Path(inventory_raw).expanduser().exists()
-    )
+    backend_configured = bool(backend_raw)
 
     predict_ready = all(
         [
