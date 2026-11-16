@@ -1,1 +1,24 @@
-Internal Server Error
+{
+  "service": "seoul-bike-ai",
+  "status": "degraded",
+  "ready": false,
+  "components": {
+    "predict": {
+      "ready": true,
+      "model_present": true,
+      "metadata_present": true,
+      "feature_table_present": true,
+      "backend_station_status_configured": true
+    },
+    "rebalancing": {
+      "ready": true
+    },
+    "recommendation": {
+      "ready": true
+    },
+    "llm": {
+      "ready": false,
+      "model": "gpt-6-luna"
+    }
+  }
+}
