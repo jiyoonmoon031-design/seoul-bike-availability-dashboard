@@ -4,16 +4,16 @@ import argparse
 import json
 from pathlib import Path
 
-from src.llm.operator_copilot import (
-    answer_operator_question,
-    diagnose_operator_state,
-    generate_operator_briefing_v2,
-)
 from src.llm.operator_contracts import (
     OperatorBriefingRequest,
     OperatorContext,
     OperatorDiagnosisRequest,
     OperatorQuestionRequest,
+)
+from src.llm.operator_copilot import (
+    answer_operator_question,
+    diagnose_operator_state,
+    generate_operator_briefing_v2,
 )
 
 
@@ -71,9 +71,7 @@ def main() -> None:
         "briefing": generate_operator_briefing_v2(
             OperatorBriefingRequest(context=context)
         ),
-        "diagnosis": diagnose_operator_state(
-            OperatorDiagnosisRequest(context=context)
-        ),
+        "diagnosis": diagnose_operator_state(OperatorDiagnosisRequest(context=context)),
         "qa": answer_operator_question(
             OperatorQuestionRequest(question=args.question, context=context)
         ),

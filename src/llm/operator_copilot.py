@@ -173,13 +173,9 @@ def _extract_usage(response: Any) -> dict[str, int]:
 
     return {
         "input_tokens": _safe_int(getattr(usage, "input_tokens", 0)),
-        "cached_tokens": _safe_int(
-            getattr(input_details, "cached_tokens", 0)
-        ),
+        "cached_tokens": _safe_int(getattr(input_details, "cached_tokens", 0)),
         "output_tokens": _safe_int(getattr(usage, "output_tokens", 0)),
-        "reasoning_tokens": _safe_int(
-            getattr(output_details, "reasoning_tokens", 0)
-        ),
+        "reasoning_tokens": _safe_int(getattr(output_details, "reasoning_tokens", 0)),
         "total_tokens": _safe_int(getattr(usage, "total_tokens", 0)),
     }
 
@@ -198,10 +194,7 @@ def _log_usage(record: dict[str, Any]) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as handle:
-            handle.write(
-                json.dumps(record, ensure_ascii=False, sort_keys=True)
-                + "\n"
-            )
+            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
     except OSError:
         LOGGER.exception("failed to write OPENAI_USAGE_LOG_PATH")
 
@@ -274,11 +267,7 @@ def _result_envelope(
         "kind": kind,
         "text": llm_result["text"],
         "evidence": evidence,
-        "llm": {
-            key: value
-            for key, value in llm_result.items()
-            if key != "text"
-        },
+        "llm": {key: value for key, value in llm_result.items() if key != "text"},
     }
 
 

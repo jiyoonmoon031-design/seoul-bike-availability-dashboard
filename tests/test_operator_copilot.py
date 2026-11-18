@@ -111,9 +111,7 @@ def test_diagnosis_passes_structured_warning(monkeypatch):
         return fake_llm_result()
 
     monkeypatch.setattr(copilot, "_perform_openai_request", fake_request)
-    result = copilot.diagnose_operator_state(
-        OperatorDiagnosisRequest(context=ctx)
-    )
+    result = copilot.diagnose_operator_state(OperatorDiagnosisRequest(context=ctx))
 
     assert captured["feature"] == "operator_diagnosis"
     assert result["evidence"]["warnings"][0]["code"] == "FEATURE_ROW_NOT_FOUND"
