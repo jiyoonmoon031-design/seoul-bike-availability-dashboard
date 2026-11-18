@@ -31,6 +31,16 @@ from src.llm.contracts import (
     OperatorBriefingPayload,
     UserRecommendationPayload,
 )
+from src.llm.operator_contracts import (
+    OperatorBriefingRequest,
+    OperatorDiagnosisRequest,
+    OperatorQuestionRequest,
+)
+from src.llm.operator_copilot import (
+    answer_operator_question,
+    diagnose_operator_state,
+    generate_operator_briefing_v2,
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -144,5 +154,35 @@ def recommendation_reasons(
 ):
     try:
         return generate_user_reasons(payload.model_dump())
+    except Exception as error:
+        _handle_error(error)
+
+
+@app.post("/llm/operator-copilot/briefing")
+def operator_copilot_briefing(
+    payload: OperatorBriefingRequest,
+):
+    try:
+        return generate_operator_briefing_v2(payload)
+    except Exception as error:
+        _handle_error(error)
+
+
+@app.post("/llm/operator-copilot/diagnosis")
+def operator_copilot_diagnosis(
+    payload: OperatorDiagnosisRequest,
+):
+    try:
+        return diagnose_operator_state(payload)
+    except Exception as error:
+        _handle_error(error)
+
+
+@app.post("/llm/operator-copilot/qa")
+def operator_copilot_qa(
+    payload: OperatorQuestionRequest,
+):
+    try:
+        return answer_operator_question(payload)
     except Exception as error:
         _handle_error(error)

@@ -1,0 +1,13 @@
+{
+  "first": {
+    "response_id": "resp_0a398197b3891b9f006afe3129af3c87d085f420481e75b072",
+    "cache_hit": false,
+    "total_tokens": 2062
+  },
+  "second": {
+    "response_id": null,
+    "cache_hit": true,
+    "cache_source_response_id": "resp_0a398197b3891b9f006afe3129af3c87d085f420481e75b072",
+    "total_tokens": 0
+  }
+}
