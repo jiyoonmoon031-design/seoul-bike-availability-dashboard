@@ -9,6 +9,8 @@ import tempfile
 import threading
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,6 +32,8 @@ REBALANCING_SCRIPT = ROOT / "scripts" / "run_week06_rebalancing.py"
 
 RECOMMEND_SCRIPT = ROOT / "scripts" / "run_week08_recommendation.py"
 
+STATION_STATUS_PATH = "/api/v1/stations/status"
+
 PREDICT_LOCK = threading.Lock()
 
 
@@ -37,8 +41,111 @@ class BridgeConfigurationError(RuntimeError):
     pass
 
 
+def _backend_base_url() -> str:
+    raw = os.getenv(
+        "AI_BACKEND_BASE_URL",
+        "",
+    ).strip()
+
+    if not raw:
+        raise BridgeConfigurationError("AI_BACKEND_BASE_URL is not configured")
+
+    return raw.rstrip("/")
+
+
 class BridgeExecutionError(RuntimeError):
     pass
+
+
+def _backend_timeout_seconds() -> float:
+    raw = os.getenv(
+        "AI_BACKEND_TIMEOUT_SEC",
+        "5",
+    ).strip()
+
+    try:
+        value = float(raw)
+    except ValueError as exc:
+        raise BridgeConfigurationError(
+            "AI_BACKEND_TIMEOUT_SEC must be numeric"
+        ) from exc
+
+    if value <= 0:
+        raise BridgeConfigurationError("AI_BACKEND_TIMEOUT_SEC must be > 0")
+
+    return value
+
+
+def _fetch_station_inventory(
+    station_ids: list[str],
+) -> dict[str, Any]:
+    url = _backend_base_url() + STATION_STATUS_PATH
+
+    request = Request(
+        url,
+        headers={
+            "Accept": "application/json",
+        },
+        method="GET",
+    )
+
+    try:
+        with urlopen(
+            request,
+            timeout=_backend_timeout_seconds(),
+        ) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+
+    except HTTPError as exc:
+        raise BridgeExecutionError(
+            "backend station-status request failed " f"with HTTP {exc.code}"
+        ) from exc
+
+    except (URLError, TimeoutError) as exc:
+        raise BridgeExecutionError("backend station-status request failed") from exc
+
+    except json.JSONDecodeError as exc:
+        raise BridgeExecutionError(
+            "backend station-status response " "is not valid JSON"
+        ) from exc
+
+    stations = payload.get("stations")
+
+    if not isinstance(stations, list):
+        raise BridgeExecutionError(
+            "backend station-status response " "does not contain stations array"
+        )
+
+    requested = {str(station_id) for station_id in station_ids}
+
+    selected = []
+
+    for item in stations:
+        if not isinstance(item, dict):
+            continue
+
+        station_id = item.get("station_id")
+
+        if station_id is None:
+            continue
+
+        station_id = str(station_id)
+
+        if station_id not in requested:
+            continue
+
+        selected.append(
+            {
+                "station_id": station_id,
+                "capacity": item.get("capacity"),
+                "bikes_now": item.get("bikes_now"),
+                "collected_at": item.get("collected_at"),
+            }
+        )
+
+    return {
+        "stations": selected,
+    }
 
 
 def _timeout_seconds() -> int:
@@ -73,23 +180,6 @@ def _feature_table_path() -> Path:
 
     if not path.exists():
         raise BridgeConfigurationError("AI_FEATURE_TABLE_PATH does not exist")
-
-    return path
-
-
-def _inventory_path() -> Path:
-    raw = os.getenv(
-        "AI_INVENTORY_PATH",
-        "",
-    ).strip()
-
-    if not raw:
-        raise BridgeConfigurationError("AI_INVENTORY_PATH " "is not configured")
-
-    path = Path(raw).expanduser()
-
-    if not path.exists():
-        raise BridgeConfigurationError("AI_INVENTORY_PATH " "does not exist")
 
     return path
 
@@ -148,14 +238,14 @@ def health_status() -> dict[str, Any]:
         "",
     ).strip()
 
-    inventory_raw = os.getenv(
-        "AI_INVENTORY_PATH",
+    backend_raw = os.getenv(
+        "AI_BACKEND_BASE_URL",
         "",
     ).strip()
 
     feature_exists = bool(feature_raw and Path(feature_raw).expanduser().exists())
 
-    inventory_exists = bool(inventory_raw and Path(inventory_raw).expanduser().exists())
+    backend_configured = bool(backend_raw)
 
     predict_ready = all(
         [
@@ -163,7 +253,7 @@ def health_status() -> dict[str, Any]:
             MODEL_PATH.exists(),
             MODEL_METADATA_PATH.exists(),
             feature_exists,
-            inventory_exists,
+            backend_configured,
         ]
     )
 
@@ -195,7 +285,7 @@ def health_status() -> dict[str, Any]:
                 "model_present": MODEL_PATH.exists(),
                 "metadata_present": MODEL_METADATA_PATH.exists(),
                 "feature_table_present": feature_exists,
-                "inventory_adapter_present": inventory_exists,
+                "backend_station_status_configured": backend_configured,
             },
             "rebalancing": {
                 "ready": rebalancing_ready,
@@ -212,7 +302,15 @@ def run_predict(
 ) -> dict[str, Any]:
     feature_table = _feature_table_path()
 
-    inventory_path = _inventory_path()
+    station_ids = [
+        str(station_id)
+        for station_id in payload.get(
+            "station_ids",
+            [],
+        )
+    ]
+
+    inventory_payload = _fetch_station_inventory(station_ids)
 
     with PREDICT_LOCK:
         with tempfile.TemporaryDirectory(prefix="seoul-bike-predict-") as directory:
@@ -220,11 +318,18 @@ def run_predict(
 
             request_path = base / "request.json"
 
+            inventory_path = base / "inventory.json"
+
             output_path = base / "output.json"
 
             _write_json(
                 request_path,
                 payload,
+            )
+
+            _write_json(
+                inventory_path,
+                inventory_payload,
             )
 
             command = [
@@ -241,12 +346,14 @@ def run_predict(
             ]
 
             fallback_artifact_exists = FALLBACK_BASELINE_PATH.exists()
+
             fallback_metadata_exists = FALLBACK_METADATA_PATH.exists()
 
             if fallback_artifact_exists != fallback_metadata_exists:
                 raise BridgeConfigurationError(
-                    "Week 11 fallback artifact and metadata "
-                    "must either both exist or both be absent"
+                    "Week 11 fallback artifact "
+                    "and metadata must either "
+                    "both exist or both be absent"
                 )
 
             if fallback_artifact_exists:

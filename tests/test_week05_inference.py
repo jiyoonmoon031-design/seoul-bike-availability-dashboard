@@ -127,7 +127,7 @@ def test_prediction_response_contract_and_clipping():
     assert results[60]["prediction_source"] == "model"
 
     assert any(
-        warning["code"] == "FEATURE_UNAVAILABLE"
+        warning["code"] == "FEATURE_ROW_NOT_FOUND"
         and warning.get("station_id") == "ST-9999"
         for warning in response["warnings"]
     )
