@@ -1,57 +1,66 @@
 package com.example.ddareungi.api.station;
 
-import com.example.ddareungi.domain.snapshot.StationSnapshotRepository;
+import com.example.ddareungi.collector.BikeApiService;
+import com.example.ddareungi.api.station.dto.StationStatus;
+import com.example.ddareungi.collector.BikeStation;
+import com.example.ddareungi.domain.station.Station;
 import com.example.ddareungi.domain.station.StationRepository;
+
 import org.springframework.stereotype.Service;
 
-import com.example.ddareungi.domain.station.Station;
-import com.example.ddareungi.domain.snapshot.StationSnapshot;
-import com.example.ddareungi.api.station.dto.StationStatus;
-
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 @Service
 public class StationStatusService {
+
     private final StationRepository stationRepository;
-    private final StationSnapshotRepository stationSnapshotRepository;
+    private final BikeApiService bikeApiService;
 
     public StationStatusService(
             StationRepository stationRepository,
-            StationSnapshotRepository stationSnapshotRepository
-    ){
+            BikeApiService bikeApiService
+    ) {
         this.stationRepository = stationRepository;
-        this.stationSnapshotRepository = stationSnapshotRepository;
+        this.bikeApiService = bikeApiService;
     }
 
-    public List<StationStatus> getStationStatuses(){
+    public List<StationStatus> getStationStatuses() {
+
         List<Station> stations = stationRepository.findAll();
+        List<BikeStation> realtimeData =
+                bikeApiService.getRealtimeBikeData();
 
-        List<StationSnapshot> snapshots = stationSnapshotRepository.findLatestSnapshots();
+        Map<String, BikeStation> realtimeMap = new HashMap<>();
 
-        Map<String, StationSnapshot> snapshotMap = new HashMap<>();
-        for(StationSnapshot snapshot : snapshots){
-            snapshotMap.put(snapshot.getStationId(), snapshot);
+        for (BikeStation bike : realtimeData) {
+            realtimeMap.put(bike.getStationId(), bike);
         }
 
-        List<StationStatus> stationStatuses = new ArrayList<>();
+        List<StationStatus> result = new ArrayList<>();
 
-        for (Station station : stations){
-            StationSnapshot snapshot = snapshotMap.get(station.getStationId());
-            if(snapshot == null){
+        Instant collectedAt = Instant.now();
+
+        for (Station station : stations) {
+
+            BikeStation bike =
+                    realtimeMap.get(station.getStationId());
+
+            if (bike == null) {
                 continue;
             }
-            Integer docksNow = null;
-            Integer bikesNow = snapshot.getBikesAvailable();
-            Integer capacity = snapshot.getCapacity();
 
-            if (capacity != null && bikesNow != null) {
-                docksNow = Math.max(capacity - bikesNow, 0);
-            }
+            int capacity = Integer.parseInt(bike.getRackTotCnt());
+            int bikesNow = Integer.parseInt(
+                    bike.getParkingBikeTotCnt()
+            );
 
-            StationStatus status = new StationStatus(
+            int docksNow = Math.max(capacity - bikesNow, 0);
+
+            result.add(new StationStatus(
                     station.getStationId(),
                     station.getStationName(),
                     station.getDistrict(),
@@ -60,11 +69,10 @@ public class StationStatusService {
                     capacity,
                     bikesNow,
                     docksNow,
-                    snapshot.getCollectedAt()
-            );
-            stationStatuses.add(status);
+                    collectedAt
+            ));
         }
-        return stationStatuses;
-    }
 
+        return result;
+    }
 }
