@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import yaml
 
-
 KST = "Asia/Seoul"
 EARTH_RADIUS_KM = 6371.0
 DETOUR_FACTOR = 1.3
