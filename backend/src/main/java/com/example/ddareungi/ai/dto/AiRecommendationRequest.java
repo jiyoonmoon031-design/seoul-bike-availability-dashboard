@@ -1,6 +1,7 @@
 package com.example.ddareungi.ai.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.example.ddareungi.prediction.dto.HorizonResult;
 import java.util.List;
 
 public record AiRecommendationRequest(
@@ -41,6 +42,9 @@ public record AiRecommendationRequest(
             @JsonProperty("docks_now")
             Integer docksNow,
 
-            Integer capacity
+            Integer capacity,
+
+            @JsonProperty("horizon_results")
+            List<HorizonResult> horizonResults
     ) {}
 }

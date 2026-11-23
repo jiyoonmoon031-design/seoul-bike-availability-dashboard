@@ -268,4 +268,51 @@ public class BikeApiService {
 
         return capacityMap;
     }
+    public List<BikeStation> getRealtimeBikeData() {
+
+        Set<String> targetStationIds = getTargetStationIdsFromDb();
+
+        if (targetStationIds.isEmpty()) {
+            throw new IllegalStateException("대상 대여소 정보가 없습니다");
+        }
+
+        String url = "http://openapi.seoul.go.kr:8088/"
+                + apiKey + "/json/bikeList/";
+
+        List<BikeStation> result = new ArrayList<>();
+
+        int start = 1;
+        int pageSize = 1000;
+
+        while (true) {
+            int end = start + pageSize - 1;
+
+            BikeApiResponse response = fetchBikePage(
+                    url + start + "/" + end + "/",
+                    start,
+                    end
+            );
+
+            List<BikeStation> stations =
+                    response.getRentBikeStatus().getRow();
+
+            for (BikeStation station : stations) {
+                if (targetStationIds.contains(station.getStationId())) {
+                    result.add(station);
+                }
+            }
+
+            if (stations.size() < pageSize) {
+                break;
+            }
+
+            start += pageSize;
+        }
+
+        if (result.isEmpty()) {
+            throw new IllegalStateException("실시간 대여소 데이터가 없습니다");
+        }
+
+        return result;
+    }
 }

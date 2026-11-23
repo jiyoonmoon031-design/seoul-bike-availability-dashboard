@@ -286,7 +286,8 @@ public class RouteRecommendationService {
                             route.arrivalEtaMin(),
                             status.getBikesNow(),
                             status.getDocksNow(),
-                            status.getCapacity()
+                            status.getCapacity(),
+                            List.of()
                     );
                 })
                 .toList();
