@@ -1,0 +1,33 @@
+{
+  "status": "provisional_diagnostic",
+  "reason": "minimum 90-day pre-test history requirement is not met",
+  "snapshot_sha256": "ee6debb89cf0e01d2fe70633f78a0de30844c82e8bf7185a0b9c9c462abcad7d",
+  "station_master_sha256": "8a78dcd633fa7b73f049273fb75fe20856c56d246dd0f90d312cfec3b548bd34",
+  "request_set_sha256": "901a43116e544bca2e20a2e587044e601688db5b4e12178a93cafe8eee1cf2f0",
+  "source_timezone": "UTC",
+  "evaluation_timezone": "Asia/Seoul",
+  "test_complete_dates": [
+    "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02",
+    "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06",
+    "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-10",
+    "2026-10-11", "2026-10-12", "2026-10-14", "2026-10-15",
+    "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19",
+    "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23",
+    "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27"
+  ],
+  "test_days": 28,
+  "observed_pretest_days": 34.93055555555556,
+  "required_pretest_days": 90,
+  "station_count": 181,
+  "request_count": 1459584,
+  "eligible_request_count": 1366412,
+  "excluded_no_base": 0,
+  "excluded_no_route": 93093,
+  "excluded_no_actual": 79,
+  "candidate_shortage_requests": 19040,
+  "base_rows_over_capacity_seen": 150435,
+  "future_route_endpoint_rows_over_capacity_seen": 283544,
+  "prediction_policy": "pre-test B3 station-weekday-time mean; station mean; B1 zero",
+  "request_pair_policy": "sorted station IDs paired by half-list circular offset",
+  "future_over_capacity_policy": "raw bikes retained; empty docks floored at zero"
+}
