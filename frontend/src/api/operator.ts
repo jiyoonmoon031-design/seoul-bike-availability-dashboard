@@ -15,9 +15,9 @@ export async function fetchOperatorRebalancing(
   query: OperatorQuery,
 ): Promise<RebalancingResponse> {
   const params = new URLSearchParams({
-    base_time: query.baseTime,
+    basetime: query.baseTime,
     horizon: String(query.horizon),
-    top_n: String(query.topN),
+    topn: String(query.topN),
   })
 
   const controller =

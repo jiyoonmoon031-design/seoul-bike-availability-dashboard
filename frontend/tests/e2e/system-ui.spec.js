@@ -76,6 +76,12 @@ test('운영자 탭의 우선순위 표를 표시한다', async ({
   await expect(
     page.locator('tbody tr'),
   ).not.toHaveCount(0)
+
+  await expect(
+    page.getByText(
+      '운영자 데이터를 불러오지 못했습니다.',
+    ),
+  ).toHaveCount(0)
 })
 
 test('모바일 폭에서 이용자 화면이 넘치지 않는다', async ({
