@@ -14,17 +14,21 @@ def _runtime_b3_frame(*, station_id: str, base_time: str) -> pd.DataFrame:
     if timestamp.tzinfo is None:
         raise ValueError("runtime fallback base_time must be timezone-aware")
     timestamp = timestamp.tz_convert(KST)
-    return pd.DataFrame([
-        {
-            "station_id": station_id,
-            "weekday_index": int(timestamp.weekday()),
-            "hour": int(timestamp.hour),
-            "minute": int(timestamp.minute),
-        }
-    ])
+    return pd.DataFrame(
+        [
+            {
+                "station_id": station_id,
+                "weekday_index": int(timestamp.weekday()),
+                "hour": int(timestamp.hour),
+                "minute": int(timestamp.minute),
+            }
+        ]
+    )
 
 
-def _warning(code: str, message: str, *, station_id: str | None, horizon_min: int | None) -> dict[str, Any]:
+def _warning(
+    code: str, message: str, *, station_id: str | None, horizon_min: int | None
+) -> dict[str, Any]:
     return {
         "code": code,
         "message": message,
@@ -33,7 +37,9 @@ def _warning(code: str, message: str, *, station_id: str | None, horizon_min: in
     }
 
 
-def _valid_inventory(inventory: Mapping[str, Mapping[str, Any]], station_id: str) -> tuple[float, float] | None:
+def _valid_inventory(
+    inventory: Mapping[str, Mapping[str, Any]], station_id: str
+) -> tuple[float, float] | None:
     current = inventory.get(station_id)
     if current is None:
         return None
@@ -53,7 +59,13 @@ def _valid_inventory(inventory: Mapping[str, Mapping[str, Any]], station_id: str
     return capacity, bikes_now
 
 
-def apply_runtime_feature_fallback(*, response: Mapping[str, Any], request: Mapping[str, Any], inventory: Mapping[str, Mapping[str, Any]], baselines: Any | None) -> dict[str, Any]:
+def apply_runtime_feature_fallback(
+    *,
+    response: Mapping[str, Any],
+    request: Mapping[str, Any],
+    inventory: Mapping[str, Mapping[str, Any]],
+    baselines: Any | None,
+) -> dict[str, Any]:
     """Fill FEATURE_ROW_NOT_FOUND stations using runtime B3/B1 fallback."""
     result = deepcopy(dict(response))
     if baselines is None:
@@ -101,7 +113,9 @@ def apply_runtime_feature_fallback(*, response: Mapping[str, Any], request: Mapp
             try:
                 if b3_predictions is None:
                     raise ValueError("B3 unavailable")
-                delta_net = float(np.asarray(b3_predictions[horizon], dtype=np.float64)[0])
+                delta_net = float(
+                    np.asarray(b3_predictions[horizon], dtype=np.float64)[0]
+                )
                 if not np.isfinite(delta_net):
                     raise ValueError("B3 non-finite")
             except Exception:
@@ -111,20 +125,24 @@ def apply_runtime_feature_fallback(*, response: Mapping[str, Any], request: Mapp
             bikes_expected = float(np.clip(bikes_now + delta_net, 0.0, capacity))
             docks_expected = float(capacity - bikes_expected)
 
-            horizon_results.append({
-                "horizon_min": horizon,
-                "prediction_source": "baseline_fallback",
-                "delta_net": delta_net,
-                "bikes_expected": bikes_expected,
-                "docks_expected": docks_expected,
-            })
+            horizon_results.append(
+                {
+                    "horizon_min": horizon,
+                    "prediction_source": "baseline_fallback",
+                    "delta_net": delta_net,
+                    "bikes_expected": bikes_expected,
+                    "docks_expected": docks_expected,
+                }
+            )
 
-            warnings.append(_warning(
-                "BASELINE_FALLBACK",
-                f"exact feature row unavailable; used {fallback_method} runtime fallback",
-                station_id=str(station_id),
-                horizon_min=horizon,
-            ))
+            warnings.append(
+                _warning(
+                    "BASELINE_FALLBACK",
+                    f"exact feature row unavailable; used {fallback_method} runtime fallback",
+                    station_id=str(station_id),
+                    horizon_min=horizon,
+                )
+            )
 
         station["horizon_results"] = horizon_results
 
