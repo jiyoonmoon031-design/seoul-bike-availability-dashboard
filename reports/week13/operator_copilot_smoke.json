@@ -1,0 +1,770 @@
+{
+  "briefing": {
+    "kind": "operator_briefing",
+    "text": "30분 후 부족 위험은 자양(뚝섬한강공원)역 1번출구 앞(ST-99)이 가장 높으며, priority_score 11.58과 shortage 5.79대가 근거입니다. 그다음으로 세종대학교 대양AI센터(ST-382), 한양대병원사거리(ST-241) 등이 부족 후보입니다. 공급 후보는 ST-445, ST-1664, ST-2407 등이며, 입력된 매칭에는 ST-445→ST-382 4대, ST-2335→ST-241 3대 등이 포함되어 있습니다. 예측 결과는 `model` 출처이며, 경고는 없습니다.",
+    "evidence": {
+      "base_time": "2025-07-31T15:00:00Z",
+      "horizon_min": 30,
+      "shortage_top": [
+        {
+          "station_id": "ST-99",
+          "station_name": "자양(뚝섬한강공원)역 1번출구 앞",
+          "lat": 37.53186035,
+          "lon": 127.06719208,
+          "bikes_expected": 1.2116891198657518,
+          "s_min": 7.0,
+          "shortage": 5.788310880134248,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 11.576621760268496,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-382",
+          "station_name": "세종대학교 대양AI센터",
+          "lat": 37.55039597,
+          "lon": 127.07585907,
+          "bikes_expected": 0.0,
+          "s_min": 4.0,
+          "shortage": 4.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 8.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-241",
+          "station_name": "한양대병원사거리",
+          "lat": 37.55805206,
+          "lon": 127.04035187,
+          "bikes_expected": 0.20417857540452955,
+          "s_min": 4.0,
+          "shortage": 3.7958214245954705,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 7.591642849190941,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-102",
+          "station_name": "자양사거리 광진아크로텔 앞",
+          "lat": 37.53701019,
+          "lon": 127.08224487,
+          "bikes_expected": 0.0,
+          "s_min": 3.0,
+          "shortage": 3.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 6.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-112",
+          "station_name": "성수사거리 버스정류장 앞",
+          "lat": 37.54257965,
+          "lon": 127.06330872,
+          "bikes_expected": 0.0,
+          "s_min": 3.0,
+          "shortage": 3.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 6.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-360",
+          "station_name": "왕십리역 4번 출구 건너편",
+          "lat": 37.56109619,
+          "lon": 127.03679657,
+          "bikes_expected": 0.0,
+          "s_min": 3.0,
+          "shortage": 3.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 6.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-2309",
+          "station_name": "구의역 리버비스타 오피스텔",
+          "lat": 37.53780746,
+          "lon": 127.08976746,
+          "bikes_expected": 0.2079503469290933,
+          "s_min": 3.0,
+          "shortage": 2.7920496530709067,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 5.584099306141813,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-1660",
+          "station_name": "건대입구역 사거리(롯데백화점)",
+          "lat": 37.5392952,
+          "lon": 127.07078552,
+          "bikes_expected": 0.0,
+          "s_min": 2.0,
+          "shortage": 2.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 4.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-1661",
+          "station_name": "건대입구역 5번출구 뒤",
+          "lat": 37.54008102,
+          "lon": 127.06956482,
+          "bikes_expected": 0.0,
+          "s_min": 2.0,
+          "shortage": 2.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 4.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-3121",
+          "station_name": "성수역 1번출구 주변",
+          "lat": 37.54555893,
+          "lon": 127.05336761,
+          "bikes_expected": 0.0,
+          "s_min": 2.0,
+          "shortage": 2.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 4.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        }
+      ],
+      "surplus_top": [
+        {
+          "station_id": "ST-445",
+          "docks_expected": 0.7862266941679827,
+          "supply_slack": 15.213773305832017
+        },
+        {
+          "station_id": "ST-1664",
+          "docks_expected": 0.776594860042584,
+          "supply_slack": 11.223405139957416
+        },
+        {
+          "station_id": "ST-2407",
+          "docks_expected": 1.78745002674175,
+          "supply_slack": 10.21254997325825
+        },
+        {
+          "station_id": "ST-378",
+          "docks_expected": 0.7754173789483865,
+          "supply_slack": 6.2245826210516135
+        },
+        {
+          "station_id": "ST-2335",
+          "docks_expected": 1.7764246530709062,
+          "supply_slack": 6.223575346929094
+        },
+        {
+          "station_id": "ST-446",
+          "docks_expected": 1.788120633561924,
+          "supply_slack": 5.211879366438076
+        }
+      ],
+      "move_matches": [
+        {
+          "from_station_id": "ST-446",
+          "to_station_id": "ST-99",
+          "distance_km": 1.52,
+          "move_qty": 5
+        },
+        {
+          "from_station_id": "ST-445",
+          "to_station_id": "ST-382",
+          "distance_km": 0.524,
+          "move_qty": 4
+        },
+        {
+          "from_station_id": "ST-2335",
+          "to_station_id": "ST-241",
+          "distance_km": 1.189,
+          "move_qty": 3
+        },
+        {
+          "from_station_id": "ST-445",
+          "to_station_id": "ST-102",
+          "distance_km": 1.913,
+          "move_qty": 3
+        },
+        {
+          "from_station_id": "ST-445",
+          "to_station_id": "ST-112",
+          "distance_km": 1.311,
+          "move_qty": 3
+        },
+        {
+          "from_station_id": "ST-2335",
+          "to_station_id": "ST-360",
+          "distance_km": 1.011,
+          "move_qty": 2
+        }
+      ],
+      "warnings": [],
+      "prediction_summary": {
+        "model_version": "week05-random_forest-5b8406059363",
+        "source": "model"
+      },
+      "health": {
+        "service": "seoul-bike-ai",
+        "status": "ready",
+        "ready": true,
+        "components": {
+          "predict": {
+            "ready": true,
+            "model_present": true,
+            "metadata_present": true,
+            "feature_table_present": true,
+            "backend_station_status_configured": true
+          },
+          "rebalancing": {
+            "ready": true
+          },
+          "recommendation": {
+            "ready": true
+          },
+          "llm": {
+            "ready": true,
+            "model": "gpt-6-luna"
+          }
+        }
+      },
+      "horizon_snapshots": []
+    },
+    "llm": {
+      "model": "gpt-6-luna",
+      "response_id": "resp_0fbe6f98e6faedea006afe3240405c87d08a0ba008b92990ed",
+      "cache_hit": false,
+      "cache_source_response_id": null,
+      "usage": {
+        "input_tokens": 1893,
+        "cached_tokens": 1890,
+        "output_tokens": 153,
+        "reasoning_tokens": 0,
+        "total_tokens": 2046
+      },
+      "latency_ms": 4537.4,
+      "prompt_version": "operator-copilot-v1"
+    }
+  },
+  "diagnosis": {
+    "kind": "operator_diagnosis",
+    "text": "30분 예측은 **model** 상태이며, `week05-random_forest-5b8406059363` 모델을 사용했습니다. 서비스와 예측·재배치·추천 구성요소는 모두 준비 상태이고 경고는 없습니다.\n\n부족 예상 상위 대여소는 자양(뚝섬한강공원)역 1번출구 앞, 세종대학교 대양AI센터, 한양대병원사거리입니다. 재배치 매칭에는 ST-445에서 ST-99·ST-102·ST-112로, ST-446에서 ST-99로 이동하는 항목 등이 포함되어 있습니다. 이는 입력에 제시된 매칭 정보이며, 실행 여부를 뜻하지는 않습니다.\n\n**확인할 항목**\n- 매칭된 이동 계획을 현장 작업에 반영할지 확인\n- 부족 예상 대여소의 현장 자전거 수량 확인\n- 재배치 후 수량을 확인할 담당자 지정",
+    "evidence": {
+      "base_time": "2025-07-31T15:00:00Z",
+      "horizon_min": 30,
+      "shortage_top": [
+        {
+          "station_id": "ST-99",
+          "station_name": "자양(뚝섬한강공원)역 1번출구 앞",
+          "lat": 37.53186035,
+          "lon": 127.06719208,
+          "bikes_expected": 1.2116891198657518,
+          "s_min": 7.0,
+          "shortage": 5.788310880134248,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 11.576621760268496,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-382",
+          "station_name": "세종대학교 대양AI센터",
+          "lat": 37.55039597,
+          "lon": 127.07585907,
+          "bikes_expected": 0.0,
+          "s_min": 4.0,
+          "shortage": 4.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 8.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-241",
+          "station_name": "한양대병원사거리",
+          "lat": 37.55805206,
+          "lon": 127.04035187,
+          "bikes_expected": 0.20417857540452955,
+          "s_min": 4.0,
+          "shortage": 3.7958214245954705,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 7.591642849190941,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-102",
+          "station_name": "자양사거리 광진아크로텔 앞",
+          "lat": 37.53701019,
+          "lon": 127.08224487,
+          "bikes_expected": 0.0,
+          "s_min": 3.0,
+          "shortage": 3.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 6.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-112",
+          "station_name": "성수사거리 버스정류장 앞",
+          "lat": 37.54257965,
+          "lon": 127.06330872,
+          "bikes_expected": 0.0,
+          "s_min": 3.0,
+          "shortage": 3.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 6.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-360",
+          "station_name": "왕십리역 4번 출구 건너편",
+          "lat": 37.56109619,
+          "lon": 127.03679657,
+          "bikes_expected": 0.0,
+          "s_min": 3.0,
+          "shortage": 3.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 6.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-2309",
+          "station_name": "구의역 리버비스타 오피스텔",
+          "lat": 37.53780746,
+          "lon": 127.08976746,
+          "bikes_expected": 0.2079503469290933,
+          "s_min": 3.0,
+          "shortage": 2.7920496530709067,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 5.584099306141813,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-1660",
+          "station_name": "건대입구역 사거리(롯데백화점)",
+          "lat": 37.5392952,
+          "lon": 127.07078552,
+          "bikes_expected": 0.0,
+          "s_min": 2.0,
+          "shortage": 2.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 4.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-1661",
+          "station_name": "건대입구역 5번출구 뒤",
+          "lat": 37.54008102,
+          "lon": 127.06956482,
+          "bikes_expected": 0.0,
+          "s_min": 2.0,
+          "shortage": 2.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 4.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        },
+        {
+          "station_id": "ST-3121",
+          "station_name": "성수역 1번출구 주변",
+          "lat": 37.54555893,
+          "lon": 127.05336761,
+          "bikes_expected": 0.0,
+          "s_min": 2.0,
+          "shortage": 2.0,
+          "urgency": 2.0,
+          "demand_weight": 1.0,
+          "priority_score": 4.0,
+          "risk_time": "2025-07-31T15:30:00Z"
+        }
+      ],
+      "surplus_top": [
+        {
+          "station_id": "ST-445",
+          "docks_expected": 0.7862266941679827,
+          "supply_slack": 15.213773305832017
+        },
+        {
+          "station_id": "ST-1664",
+          "docks_expected": 0.776594860042584,
+          "supply_slack": 11.223405139957416
+        },
+        {
+          "station_id": "ST-2407",
+          "docks_expected": 1.78745002674175,
+          "supply_slack": 10.21254997325825
+        },
+        {
+          "station_id": "ST-378",
+          "docks_expected": 0.7754173789483865,
+          "supply_slack": 6.2245826210516135
+        },
+        {
+          "station_id": "ST-2335",
+          "docks_expected": 1.7764246530709062,
+          "supply_slack": 6.223575346929094
+        },
+        {
+          "station_id": "ST-446",
+          "docks_expected": 1.788120633561924,
+          "supply_slack": 5.211879366438076
+        }
+      ],
+      "move_matches": [
+        {
+          "from_station_id": "ST-446",
+          "to_station_id": "ST-99",
+          "distance_km": 1.52,
+          "move_qty": 5
+        },
+        {
+          "from_station_id": "ST-445",
+          "to_station_id": "ST-382",
+          "distance_km": 0.524,
+          "move_qty": 4
+        },
+        {
+          "from_station_id": "ST-2335",
+          "to_station_id": "ST-241",
+          "distance_km": 1.189,
+          "move_qty": 3
+        },
+        {
+          "from_station_id": "ST-445",
+          "to_station_id": "ST-102",
+          "distance_km": 1.913,
+          "move_qty": 3
+        },
+        {
+          "from_station_id": "ST-445",
+          "to_station_id": "ST-112",
+          "distance_km": 1.311,
+          "move_qty": 3
+        },
+        {
+          "from_station_id": "ST-2335",
+          "to_station_id": "ST-360",
+          "distance_km": 1.011,
+          "move_qty": 2
+        }
+      ],
+      "warnings": [],
+      "prediction_summary": {
+        "model_version": "week05-random_forest-5b8406059363",
+        "source": "model"
+      },
+      "health": {
+        "service": "seoul-bike-ai",
+        "status": "ready",
+        "ready": true,
+        "components": {
+          "predict": {
+            "ready": true,
+            "model_present": true,
+            "metadata_present": true,
+            "feature_table_present": true,
+            "backend_station_status_configured": true
+          },
+          "rebalancing": {
+            "ready": true
+          },
+          "recommendation": {
+            "ready": true
+          },
+          "llm": {
+            "ready": true,
+            "model": "gpt-6-luna"
+          }
+        }
+      },
+      "horizon_snapshots": []
+    },
+    "llm": {
+      "model": "gpt-6-luna",
+      "response_id": "resp_0fd28ba61cab571b006afe32444afc87d0b008fe679037e76c",
+      "cache_hit": false,
+      "cache_source_response_id": null,
+      "usage": {
+        "input_tokens": 1895,
+        "cached_tokens": 0,
+        "output_tokens": 216,
+        "reasoning_tokens": 0,
+        "total_tokens": 2111
+      },
+      "latency_ms": 3876.04,
+      "prompt_version": "operator-copilot-v1"
+    }
+  },
+  "qa": {
+    "kind": "operator_qa",
+    "text": "가장 우선순위가 높은 부족 대여소는 **ST-99(자양(뚝섬한강공원)역 1번출구 앞)**입니다. `priority_score`가 **11.576621760268496**으로 제공된 부족 대여소 중 가장 높고, 예측 부족량은 **5.788310880134248대**입니다. 해당 예측의 출처는 `model`이며, 이 대여소로 **ST-446에서 5대**를 이동하는 매칭이 있습니다.",
+    "evidence": {
+      "question": "가장 우선순위가 높은 부족 대여소와 근거를 설명해줘.",
+      "context": {
+        "base_time": "2025-07-31T15:00:00Z",
+        "horizon_min": 30,
+        "shortage_top": [
+          {
+            "station_id": "ST-99",
+            "station_name": "자양(뚝섬한강공원)역 1번출구 앞",
+            "lat": 37.53186035,
+            "lon": 127.06719208,
+            "bikes_expected": 1.2116891198657518,
+            "s_min": 7.0,
+            "shortage": 5.788310880134248,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 11.576621760268496,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-382",
+            "station_name": "세종대학교 대양AI센터",
+            "lat": 37.55039597,
+            "lon": 127.07585907,
+            "bikes_expected": 0.0,
+            "s_min": 4.0,
+            "shortage": 4.0,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 8.0,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-241",
+            "station_name": "한양대병원사거리",
+            "lat": 37.55805206,
+            "lon": 127.04035187,
+            "bikes_expected": 0.20417857540452955,
+            "s_min": 4.0,
+            "shortage": 3.7958214245954705,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 7.591642849190941,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-102",
+            "station_name": "자양사거리 광진아크로텔 앞",
+            "lat": 37.53701019,
+            "lon": 127.08224487,
+            "bikes_expected": 0.0,
+            "s_min": 3.0,
+            "shortage": 3.0,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 6.0,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-112",
+            "station_name": "성수사거리 버스정류장 앞",
+            "lat": 37.54257965,
+            "lon": 127.06330872,
+            "bikes_expected": 0.0,
+            "s_min": 3.0,
+            "shortage": 3.0,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 6.0,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-360",
+            "station_name": "왕십리역 4번 출구 건너편",
+            "lat": 37.56109619,
+            "lon": 127.03679657,
+            "bikes_expected": 0.0,
+            "s_min": 3.0,
+            "shortage": 3.0,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 6.0,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-2309",
+            "station_name": "구의역 리버비스타 오피스텔",
+            "lat": 37.53780746,
+            "lon": 127.08976746,
+            "bikes_expected": 0.2079503469290933,
+            "s_min": 3.0,
+            "shortage": 2.7920496530709067,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 5.584099306141813,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-1660",
+            "station_name": "건대입구역 사거리(롯데백화점)",
+            "lat": 37.5392952,
+            "lon": 127.07078552,
+            "bikes_expected": 0.0,
+            "s_min": 2.0,
+            "shortage": 2.0,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 4.0,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-1661",
+            "station_name": "건대입구역 5번출구 뒤",
+            "lat": 37.54008102,
+            "lon": 127.06956482,
+            "bikes_expected": 0.0,
+            "s_min": 2.0,
+            "shortage": 2.0,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 4.0,
+            "risk_time": "2025-07-31T15:30:00Z"
+          },
+          {
+            "station_id": "ST-3121",
+            "station_name": "성수역 1번출구 주변",
+            "lat": 37.54555893,
+            "lon": 127.05336761,
+            "bikes_expected": 0.0,
+            "s_min": 2.0,
+            "shortage": 2.0,
+            "urgency": 2.0,
+            "demand_weight": 1.0,
+            "priority_score": 4.0,
+            "risk_time": "2025-07-31T15:30:00Z"
+          }
+        ],
+        "surplus_top": [
+          {
+            "station_id": "ST-445",
+            "docks_expected": 0.7862266941679827,
+            "supply_slack": 15.213773305832017
+          },
+          {
+            "station_id": "ST-1664",
+            "docks_expected": 0.776594860042584,
+            "supply_slack": 11.223405139957416
+          },
+          {
+            "station_id": "ST-2407",
+            "docks_expected": 1.78745002674175,
+            "supply_slack": 10.21254997325825
+          },
+          {
+            "station_id": "ST-378",
+            "docks_expected": 0.7754173789483865,
+            "supply_slack": 6.2245826210516135
+          },
+          {
+            "station_id": "ST-2335",
+            "docks_expected": 1.7764246530709062,
+            "supply_slack": 6.223575346929094
+          },
+          {
+            "station_id": "ST-446",
+            "docks_expected": 1.788120633561924,
+            "supply_slack": 5.211879366438076
+          }
+        ],
+        "move_matches": [
+          {
+            "from_station_id": "ST-446",
+            "to_station_id": "ST-99",
+            "distance_km": 1.52,
+            "move_qty": 5
+          },
+          {
+            "from_station_id": "ST-445",
+            "to_station_id": "ST-382",
+            "distance_km": 0.524,
+            "move_qty": 4
+          },
+          {
+            "from_station_id": "ST-2335",
+            "to_station_id": "ST-241",
+            "distance_km": 1.189,
+            "move_qty": 3
+          },
+          {
+            "from_station_id": "ST-445",
+            "to_station_id": "ST-102",
+            "distance_km": 1.913,
+            "move_qty": 3
+          },
+          {
+            "from_station_id": "ST-445",
+            "to_station_id": "ST-112",
+            "distance_km": 1.311,
+            "move_qty": 3
+          },
+          {
+            "from_station_id": "ST-2335",
+            "to_station_id": "ST-360",
+            "distance_km": 1.011,
+            "move_qty": 2
+          }
+        ],
+        "warnings": [],
+        "prediction_summary": {
+          "model_version": "week05-random_forest-5b8406059363",
+          "source": "model"
+        },
+        "health": {
+          "service": "seoul-bike-ai",
+          "status": "ready",
+          "ready": true,
+          "components": {
+            "predict": {
+              "ready": true,
+              "model_present": true,
+              "metadata_present": true,
+              "feature_table_present": true,
+              "backend_station_status_configured": true
+            },
+            "rebalancing": {
+              "ready": true
+            },
+            "recommendation": {
+              "ready": true
+            },
+            "llm": {
+              "ready": true,
+              "model": "gpt-6-luna"
+            }
+          }
+        },
+        "horizon_snapshots": []
+      }
+    },
+    "llm": {
+      "model": "gpt-6-luna",
+      "response_id": "resp_05551788c5baa349006afe32482d5887d0ac8d8ca267e4b873",
+      "cache_hit": false,
+      "cache_source_response_id": null,
+      "usage": {
+        "input_tokens": 1895,
+        "cached_tokens": 0,
+        "output_tokens": 121,
+        "reasoning_tokens": 0,
+        "total_tokens": 2016
+      },
+      "latency_ms": 2928.36,
+      "prompt_version": "operator-copilot-v1"
+    }
+  }
+}

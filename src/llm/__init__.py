@@ -13,3 +13,15 @@ __all__ = [
     "generate_operator_briefing",
     "generate_user_reasons",
 ]
+
+from src.llm.operator_contracts import (
+    OperatorBriefingRequest,
+    OperatorContext,
+    OperatorDiagnosisRequest,
+    OperatorQuestionRequest,
+)
+from src.llm.operator_copilot import (
+    answer_operator_question,
+    diagnose_operator_state,
+    generate_operator_briefing_v2,
+)
