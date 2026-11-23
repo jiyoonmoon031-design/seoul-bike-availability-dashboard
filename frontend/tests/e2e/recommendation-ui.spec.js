@@ -100,4 +100,22 @@ test('출발과 도착을 묶은 Best 3 경로와 추천 이유를 표시한다'
   await expect(
     page.locator('.map-marker'),
   ).toHaveCount(8)
+
+  const secondRoute = routePanel.getByRole('button', {
+    name: /2위 경로 선택/,
+  })
+
+  await secondRoute.focus()
+  await expect(secondRoute).toBeFocused()
+  await secondRoute.press('Enter')
+  await expect(secondRoute).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(
+    page.locator('.map-marker.selected-route'),
+  ).toHaveCount(2)
+  await expect(
+    page.getByRole('status'),
+  ).toContainText('추천 2위 경로')
 })
