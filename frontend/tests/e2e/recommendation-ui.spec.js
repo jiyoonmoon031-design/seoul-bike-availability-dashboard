@@ -32,6 +32,13 @@ async function installKakaoMapStub(page) {
         },
         CustomOverlay: CustomOverlayStub,
         Polyline: class {
+          constructor({ map, path, strokeStyle }) {
+            const line = document.createElement('span')
+            line.dataset.routeStyle = strokeStyle
+            line.dataset.pathLength = String(path.length)
+            map.container.appendChild(line)
+          }
+
           setMap() {}
         },
       },
@@ -103,6 +110,13 @@ test('출발과 도착을 묶은 Best 3 경로와 추천 이유를 표시한다'
   await expect(
     page.locator('.map-marker'),
   ).toHaveCount(8)
+  await expect(page.locator('[data-route-style="solid"][data-path-length="3"]'))
+    .toHaveCount(3)
+  await expect(page.locator('[data-route-style="dash"][data-path-length="2"]'))
+    .toHaveCount(6)
+  await expect(routePanel.getByText('TMAP 경로 표시')).toHaveCount(3)
+  await expect(routePanel.getByText('경로를 불러올 수 없는 구간은 직선 연결로 표시합니다.'))
+    .toHaveCount(3)
 
   await page.screenshot({
     path: '../reports/week13/browser-user-route.png',

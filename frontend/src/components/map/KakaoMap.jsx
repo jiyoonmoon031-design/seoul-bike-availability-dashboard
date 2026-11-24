@@ -37,7 +37,7 @@ function loadKakaoMap() {
   });
 }
 
-function KakaoMap({ origin, destination, routes }) {
+function KakaoMap({ origin, destination, routes, geometryByRank }) {
   const mapRef = useRef(null);
   const [mapError, setMapError] = useState("");
 
@@ -106,48 +106,28 @@ function KakaoMap({ origin, destination, routes }) {
           });
         });
 
-        // Recommended route connections.
-        // These are schematic lines, not road navigation paths.
-        if (origin && destination) {
-          const colors = [
-            "#187E68",
-            "#397CC5",
-            "#D98335",
-          ];
-
-          [...routes].reverse().forEach((route) => {
-            const coordinates = [
-              [origin.latitude, origin.longitude],
-              [route.origin_latitude, route.origin_longitude],
-              [route.destination_latitude, route.destination_longitude],
-              [destination.latitude, destination.longitude],
-            ];
-
-            if (!coordinates.every(
-              ([lat, lon]) =>
-                lat != null &&
-                lon != null &&
-                Number.isFinite(Number(lat)) &&
-                Number.isFinite(Number(lon))
-            )) {
-              return;
-            }
-
-            const path = coordinates.map(
-              ([lat, lon]) =>
-                new maps.LatLng(Number(lat), Number(lon))
-            );
-
+        const colors = ["#187E68", "#397CC5", "#D98335"];
+        [...routes].reverse().forEach((route) => {
+          (geometryByRank[route.rank] ?? []).forEach((leg) => {
+            const path = leg.path
+              .filter(({ latitude, longitude }) =>
+                Number.isFinite(latitude) && Number.isFinite(longitude))
+              .map(({ latitude, longitude }) => {
+                const point = new maps.LatLng(latitude, longitude);
+                bounds.extend(point);
+                return point;
+              });
+            if (path.length < 2) return;
             new maps.Polyline({
               map,
               path,
               strokeWeight: route.rank === 1 ? 5 : 3,
               strokeColor: colors[route.rank - 1] ?? colors[0],
               strokeOpacity: route.rank === 1 ? 0.9 : 0.55,
-              strokeStyle: "dash",
+              strokeStyle: leg.method === "route_api" ? "solid" : "dash",
             });
           });
-        }
+        });
 
         if (points.length > 0) {
           map.setBounds(bounds);
@@ -165,7 +145,7 @@ function KakaoMap({ origin, destination, routes }) {
     return () => {
       cancelled = true;
     };
-  }, [origin, destination, routes]);
+  }, [origin, destination, routes, geometryByRank]);
 
   return (
     <div className="map-shell">

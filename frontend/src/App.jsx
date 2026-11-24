@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import {
+  getRouteGeometry,
   getRouteRecommendations,
 } from "./api/recommendationApi";
 
@@ -23,6 +24,8 @@ function App() {
     useState(null);
   const [routes, setRoutes] =
     useState([]);
+  const [geometryByRank, setGeometryByRank] =
+    useState({});
   const [loading, setLoading] =
     useState(false);
   const [error, setError] =
@@ -33,21 +36,27 @@ function App() {
       return undefined;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
+    const { signal } = controller;
 
     getRouteRecommendations(
       origin,
       destination,
+      signal,
     )
       .then((nextRoutes) => {
-        if (!cancelled) {
-          setRoutes(
-            nextRoutes.slice(0, 3),
-          );
+        if (!signal.aborted) {
+          const bestRoutes = nextRoutes.slice(0, 3);
+          setRoutes(bestRoutes);
+          setLoading(false);
+          return getRouteGeometry(origin, destination, bestRoutes, signal)
+            .then((geometry) => {
+              if (!signal.aborted) setGeometryByRank(geometry);
+            });
         }
       })
       .catch((requestError) => {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setRoutes([]);
           setError(
             requestError instanceof Error
@@ -57,13 +66,13 @@ function App() {
         }
       })
       .finally(() => {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setLoading(false);
         }
       });
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [origin, destination]);
 
@@ -82,6 +91,7 @@ function App() {
 
     setError("");
     setRoutes([]);
+    setGeometryByRank({});
     setLoading(Boolean(
       nextOrigin && nextDestination,
     ));
@@ -178,19 +188,22 @@ function App() {
         </div>
 
         <p className="empty-copy">
-          점선은 추천 대여소 간 직선 연결이며 실제 도로 경로가 아닙니다.
+          실선은 TMAP 보행 경로입니다. 경로를 불러올 수 없는 구간은 직선 점선으로 표시합니다.
+          자전거 구간도 보행 경로를 참고하므로 주행 가능 여부를 확인하세요.
         </p>
 
         <KakaoMap
           origin={origin}
           destination={destination}
           routes={routes}
+          geometryByRank={geometryByRank}
         />
       </section>
 
       <RouteRecommendations
-          key={JSON.stringify(routes)}
+        key={JSON.stringify(routes)}
         routes={routes}
+        geometryByRank={geometryByRank}
         loading={loading}
         ready={Boolean(
           origin && destination,
@@ -203,6 +216,7 @@ function App() {
 
 function RouteRecommendations({
   routes,
+  geometryByRank,
   loading,
   ready,
 }) {
@@ -322,6 +336,7 @@ function RouteRecommendations({
             <RouteCard
               key={`${route.origin_station_id}-${route.destination_station_id}`}
               route={route}
+              legs={geometryByRank[route.rank]}
               aiReason={aiReasons[route.rank]}
             />
           ))}
@@ -332,7 +347,7 @@ function RouteRecommendations({
 }
 
 
-function RouteCard({ route, aiReason }) {
+function RouteCard({ route, legs, aiReason }) {
   return (
     <li className="route-card">
       <div className="route-rank">
@@ -436,9 +451,13 @@ function RouteCard({ route, aiReason }) {
               재고 수집 {formatKst(route.origin_inventory_collected_at)}
             </small>
           )}
-          {route.route_geometry_source === "straight_line" && (
+          {!legs && <small>지도 경로 불러오는 중</small>}
+          {legs?.some((leg) => leg.method === "route_api") && (
+            <small>TMAP 경로 표시</small>
+          )}
+          {legs?.some((leg) => leg.method === "straight_line") && (
             <small className="route-warning">
-              실제 도로 경로를 사용할 수 없어 직선 연결을 표시합니다.
+              경로를 불러올 수 없는 구간은 직선 연결로 표시합니다.
             </small>
           )}
           {(Number(route.origin_overflow_bikes ?? 0) > 0 ||

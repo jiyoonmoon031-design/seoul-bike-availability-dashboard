@@ -1,5 +1,6 @@
 package com.example.ddareungi.ai;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -14,16 +15,13 @@ public class AiLlmClient {
     private final String recommendationReasonsPath;
 
     public AiLlmClient(
-            RestClient.Builder builder,
-            @Value("${ai.server.url}") String baseUrl,
+            @Qualifier("aiRestClient") RestClient aiRestClient,
             @Value("${ai.server.operator-briefing-path:/llm/operator-briefing}")
             String operatorBriefingPath,
             @Value("${ai.server.recommendation-reasons-path:/llm/recommendation-reasons}")
             String recommendationReasonsPath
     ) {
-        this.restClient = builder
-                .baseUrl(baseUrl)
-                .build();
+        this.restClient = aiRestClient;
 
         this.operatorBriefingPath = operatorBriefingPath;
         this.recommendationReasonsPath = recommendationReasonsPath;

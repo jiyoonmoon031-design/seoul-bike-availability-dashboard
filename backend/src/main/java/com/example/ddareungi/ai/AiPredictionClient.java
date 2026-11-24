@@ -4,6 +4,7 @@ import com.example.ddareungi.prediction.PredictionProvider;
 import com.example.ddareungi.prediction.dto.PredictionRequest;
 import com.example.ddareungi.prediction.dto.PredictionResponse;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -17,13 +18,10 @@ public class AiPredictionClient implements PredictionProvider {
     private final String predictPath;
 
     public AiPredictionClient(
-            RestClient.Builder builder,
-            @Value("${ai.server.url}") String baseUrl,
+            @Qualifier("aiRestClient") RestClient aiRestClient,
             @Value("${ai.server.predict-path}") String predictPath
     ) {
-        this.restClient = builder
-                .baseUrl(baseUrl)
-                .build();
+        this.restClient = aiRestClient;
 
         this.predictPath = predictPath;
     }

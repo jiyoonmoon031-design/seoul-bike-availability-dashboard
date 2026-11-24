@@ -3,6 +3,7 @@ package com.example.ddareungi.ai;
 import com.example.ddareungi.ai.dto.AiRebalancingRequest;
 import com.example.ddareungi.api.operator.dto.RebalancingResponse;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -21,13 +22,10 @@ public class AiRebalancingClient {
     private final String rebalancingPath;
 
     public AiRebalancingClient(
-            RestClient.Builder builder,
-            @Value("${ai.server.url}") String baseUrl,
+            @Qualifier("aiRestClient") RestClient aiRestClient,
             @Value("${ai.server.rebalancing-path}") String rebalancingPath
     ) {
-        this.restClient = builder
-                .baseUrl(baseUrl)
-                .build();
+        this.restClient = aiRestClient;
 
         this.rebalancingPath = rebalancingPath;
     }

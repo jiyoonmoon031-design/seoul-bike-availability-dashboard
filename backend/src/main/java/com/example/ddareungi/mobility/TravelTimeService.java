@@ -10,6 +10,7 @@ import com.example.ddareungi.mobility.dto.RouteResponse;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestClientResponseException;
 
 @Service
 public class TravelTimeService {
@@ -252,6 +253,10 @@ public class TravelTimeService {
             List<RouteCoordinate> path =
                     tmapRouteService.extractPath(route);
 
+            if (path.size() < 2) {
+                return getStraightLineRoute(startLat, startLon, endLat, endLon, bike);
+            }
+
             return new RouteResponse(
                     distanceM,
                     etaMin,
@@ -261,10 +266,11 @@ public class TravelTimeService {
 
         } catch (Exception e) {
 
-            log.warn(
-                    "tmap_geometry_fallback error_type={}",
-                    e.getClass().getSimpleName()
-            );
+            if (e instanceof RestClientResponseException responseError) {
+                log.warn("tmap_geometry_fallback upstream_status={}", responseError.getStatusCode().value());
+            } else {
+                log.warn("tmap_geometry_fallback error_type={}", e.getClass().getSimpleName());
+            }
 
             return getStraightLineRoute(
                     startLat,
