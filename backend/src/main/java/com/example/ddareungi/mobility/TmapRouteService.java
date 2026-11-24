@@ -3,6 +3,7 @@ package com.example.ddareungi.mobility;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import com.example.ddareungi.mobility.dto.TmapRouteResponse;
 import com.example.ddareungi.mobility.dto.RouteCoordinate;
 import com.example.ddareungi.mobility.dto.TmapFeature;
@@ -19,12 +20,20 @@ public class TmapRouteService {
     private final String appKey;
 
     public TmapRouteService(
-            @Value("${tmap.api.key}") String appKey
+            @Value("${tmap.api.key}") String appKey,
+            @Value("${tmap.connect-timeout-ms:2000}") int connectTimeoutMs,
+            @Value("${tmap.read-timeout-ms:5000}") int readTimeoutMs
     ) {
         this.appKey = appKey;
 
+        SimpleClientHttpRequestFactory requestFactory =
+                new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(connectTimeoutMs);
+        requestFactory.setReadTimeout(readTimeoutMs);
+
         this.restClient = RestClient.builder()
                 .baseUrl("https://apis.openapi.sk.com")
+                .requestFactory(requestFactory)
                 .build();
     }
 

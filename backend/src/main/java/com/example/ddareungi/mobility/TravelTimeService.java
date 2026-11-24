@@ -8,9 +8,14 @@ import com.example.ddareungi.mobility.dto.RouteCoordinate;
 import com.example.ddareungi.mobility.dto.RouteResponse;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TravelTimeService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(TravelTimeService.class);
 
     private static final double EARTH_RADIUS_KM = 6371.0;
     private static final double DETOUR_FACTOR = 1.3;
@@ -149,6 +154,10 @@ public class TravelTimeService {
             );
 
         } catch (Exception e) {
+            log.warn(
+                    "tmap_route_fallback error_type={}",
+                    e.getClass().getSimpleName()
+            );
             return estimateByStraightLine(
                     startLat,
                     startLon,
@@ -251,6 +260,11 @@ public class TravelTimeService {
             );
 
         } catch (Exception e) {
+
+            log.warn(
+                    "tmap_geometry_fallback error_type={}",
+                    e.getClass().getSimpleName()
+            );
 
             return getStraightLineRoute(
                     startLat,

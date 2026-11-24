@@ -31,7 +31,7 @@ class PredictionRequest(BaseModel):
 
     base_time: datetime
 
-    station_ids: list[str] = Field(min_length=1)
+    station_ids: list[str] = Field(min_length=1, max_length=200)
 
     horizons: list[Literal[15, 30, 60]] = Field(min_length=1)
 
@@ -108,7 +108,7 @@ class RecommendationEnvelope(BaseModel):
 
     eta_min: float = Field(ge=0)
 
-    candidates: list[dict[str, Any]]
+    candidates: list[dict[str, Any]] = Field(min_length=1, max_length=100)
 
     top_n: int = Field(
         default=3,
