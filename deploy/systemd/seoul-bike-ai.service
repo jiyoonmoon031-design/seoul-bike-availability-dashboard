@@ -1,0 +1,22 @@
+[Unit]
+Description=Seoul Bike AI service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=seoulbike
+Group=seoulbike
+WorkingDirectory=/opt/seoul-bike/current
+EnvironmentFile=/etc/seoul-bike/ai.env
+ExecStart=/opt/seoul-bike/venv/bin/uvicorn ai_service.app:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/log/seoul-bike /opt/seoul-bike/shared
+
+[Install]
+WantedBy=multi-user.target

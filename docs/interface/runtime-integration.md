@@ -15,8 +15,9 @@ POST /predict
 Historical feature rows are not fabricated when
 current-time features are unavailable.
 
-The existing inventory capacity constraint remains
-unchanged.
+The historical model capacity constraint remains unchanged. Runtime inventory
+uses the separate overflow-aware policy in
+`docs/data/runtime-inventory-policy.md`.
 
 ## 2. Recommendation
 
@@ -87,16 +88,17 @@ LLM requests are triggered separately by the user.
 - Current-time Random Forest feature generation
   is not implemented.
 - Current-time predictions may use B3/B1 fallback.
-- Stations without valid inventory remain excluded.
-- Inventory exceeding registered capacity remains
-  excluded under the existing model contract.
+- Missing, invalid and stale inventory remains excluded.
+- Inventory exceeding registered capacity remains usable and is reported as
+  overflow; available docks are clamped at zero.
 - TMAP authentication is unresolved.
 - Map connections are schematic straight lines.
-- Prediction warnings are not fully propagated
-  to the operator Copilot.
-- Public deployment requires LLM authentication,
-  request limits and additional security validation.
-- End-to-end performance requires optimization.
+- Prediction provenance is propagated to route cards; full live operator
+  warning coverage still requires an integrated Backend/AI run.
+- Production LLM authentication, request limits and CORS controls are
+  implemented but require trusted proxy configuration.
+- In-process warm scoring is optimized; full live HTTP p95 still requires the
+  real DB and provider configuration.
 
 ## 6. Local Integration Evidence
 
@@ -141,12 +143,13 @@ Other valid stations continue to return predictions.
 Missing inventory must not be replaced with fabricated
 values or stale historical inventory.
 
-The existing capacity constraint remains unchanged.
+The historical capacity constraint remains unchanged; the runtime projection
+ceiling is `max(registered_capacity, observed_inventory)`.
 
 ### Additional validation
 
 - Runtime fallback tests: 7 passed
-- Full Python test suite: 80 passed
+- Full Python test suite: 94 passed
 - Java PredictionWarning uses a String code field.
 - Live API regression verification remains required.
 
@@ -156,7 +159,6 @@ The existing capacity constraint remains unchanged.
 - Its latest stored snapshot was collected on
   2026-09-13 07:30 KST.
 - The stale snapshot must not be used as current inventory.
-- 107 of 180 stations exceeded registered capacity
-  during the integration test.
-- Overflow-aware inventory policy requires a separate
-  interface and algorithm review.
+- 107 of 180 stations exceeded registered capacity during the earlier live
+  integration test. The policy now preserves those observations, and the new
+  interface/calculation remains a reviewer approval item.

@@ -31,6 +31,9 @@ async function installKakaoMapStub(page) {
           extend() {}
         },
         CustomOverlay: CustomOverlayStub,
+        Polyline: class {
+          setMap() {}
+        },
       },
     }
   })
@@ -100,4 +103,9 @@ test('출발과 도착을 묶은 Best 3 경로와 추천 이유를 표시한다'
   await expect(
     page.locator('.map-marker'),
   ).toHaveCount(8)
+
+  await page.screenshot({
+    path: '../reports/week13/browser-user-route.png',
+    fullPage: true,
+  })
 })

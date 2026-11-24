@@ -76,6 +76,11 @@ test('운영자 탭의 우선순위 표를 표시한다', async ({
   await expect(
     page.locator('tbody tr'),
   ).not.toHaveCount(0)
+
+  await page.screenshot({
+    path: '../reports/week13/browser-operator.png',
+    fullPage: true,
+  })
 })
 
 test('모바일 폭에서 이용자 화면이 넘치지 않는다', async ({

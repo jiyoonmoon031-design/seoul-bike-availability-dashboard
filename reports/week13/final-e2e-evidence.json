@@ -1,0 +1,53 @@
+{
+  "generated_at_kst": "2026-11-25T06:10:00+09:00",
+  "branch": "feat/final-runtime-production-integration",
+  "base_commit": "1024b76daf9e399f22fbb96f91fc1222d410572e",
+  "phase0": {
+    "python_baseline": {"status": "pass", "passed": 80},
+    "pr100": {"state": "merged", "head": "ec556dcabcb3a0ba798fc35c3239d98a51d0896f"},
+    "pr95_96_98_99": "open_ci_pass",
+    "pr101": "closed_unmerged"
+  },
+  "artifacts": {
+    "feature_table_sha256": "e1c94933347c27ef80bb4dc8a774960497ec6de94455cc195266aefd551e5202",
+    "random_forest_sha256": "e8b7543db145c63259301e60cf6fe248843ec9327cfe85f0c2323cba432deadd",
+    "fallback_sha256": "578d679fec113d0c112ed0c2181319939b2ce167ff665f2ad542d61c082f821e",
+    "feature_rows": 6377643,
+    "feature_stations": 185,
+    "feature_period": ["2025-08-01T00:00:00", "2026-07-31T23:45:00"]
+  },
+  "tests": {
+    "pre_commit_all_files": "pass",
+    "python_pytest": {"status": "pass", "passed": 94},
+    "backend_gradle": "pass",
+    "frontend_eslint": "pass",
+    "frontend_typescript": "pass",
+    "frontend_vite_build": "pass",
+    "playwright": {"status": "pass", "passed": 7},
+    "python_compileall": "pass",
+    "python_pip_audit": {"status": "pass", "known_vulnerabilities": 0},
+    "npm_audit": {"status": "pass", "known_vulnerabilities": 0},
+    "backend_boot_jar": {"status": "pass", "size_mib": 57}
+  },
+  "performance": {
+    "scope": "in_process_recommendation_scoring_fixed_20_station_fixture",
+    "runs": 20,
+    "p50_ms": 0.109,
+    "p95_ms": 0.124,
+    "max_ms": 4.329,
+    "ranking_stable": true,
+    "full_http_e2e_p95": null
+  },
+  "screenshots": [
+    "reports/week13/browser-user-route.png",
+    "reports/week13/browser-operator.png"
+  ],
+  "blocked": {
+    "runtime_rf": "current gross rental/return lag and current weather feature row unavailable",
+    "tmap_live": "TMAP_API_KEY unavailable here; prior live result HTTP 403 INVALID_API_KEY",
+    "openai_live": "OPENAI_API_KEY unavailable here",
+    "ec2": "AWS CLI/EC2 host and approved deployment access unavailable; reviewer/security gate not complete",
+    "production_e2e": "no approved HTTPS deployment"
+  },
+  "deployment_state": "not_deployed"
+}

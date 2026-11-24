@@ -37,6 +37,9 @@ async function installKakaoMapStub(page) {
           extend() {}
         },
         CustomOverlay: CustomOverlayStub,
+        Polyline: class {
+          setMap() {}
+        },
       },
     }
   })
