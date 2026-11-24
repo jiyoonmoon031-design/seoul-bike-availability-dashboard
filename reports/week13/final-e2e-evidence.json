@@ -1,7 +1,18 @@
 {
-  "generated_at_kst": "2026-11-25T06:10:00+09:00",
+  "generated_at_kst": "2026-11-25T06:14:00+09:00",
   "branch": "feat/final-runtime-production-integration",
   "base_commit": "1024b76daf9e399f22fbb96f91fc1222d410572e",
+  "pull_request": {
+    "number": 102,
+    "url": "https://github.com/jiyoonmoon031-design/seoul-bike-availability-dashboard/pull/102",
+    "state": "open",
+    "mergeable": true,
+    "review_decision": "pending"
+  },
+  "github_ci": {
+    "backend_ci": "pass",
+    "python_quality": "pass"
+  },
   "phase0": {
     "python_baseline": {"status": "pass", "passed": 80},
     "pr100": {"state": "merged", "head": "ec556dcabcb3a0ba798fc35c3239d98a51d0896f"},
