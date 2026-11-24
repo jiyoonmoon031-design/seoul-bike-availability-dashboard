@@ -7,6 +7,11 @@ import com.example.ddareungi.api.station.NearbyStationService;
 import com.example.ddareungi.api.station.StationStatusService;
 import com.example.ddareungi.api.station.dto.NearbyStation;
 import com.example.ddareungi.api.station.dto.StationStatus;
+import com.example.ddareungi.prediction.PredictionProvider;
+import com.example.ddareungi.prediction.dto.HorizonResult;
+import com.example.ddareungi.prediction.dto.PredictionRequest;
+import com.example.ddareungi.prediction.dto.PredictionResponse;
+import com.example.ddareungi.prediction.dto.StationPrediction;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,6 +19,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -23,15 +32,23 @@ public class RecommendationService {
     private final NearbyStationService nearbyStationService;
     private final StationStatusService stationStatusService;
     private final AiRecommendationClient aiRecommendationClient;
+    private final PredictionProvider predictionProvider;
+
+    private static final List<Integer> PREDICTION_HORIZONS =
+            List.of(15, 30, 60);
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     public RecommendationService(
             NearbyStationService nearbyStationService,
             StationStatusService stationStatusService,
-            AiRecommendationClient aiRecommendationClient
+            AiRecommendationClient aiRecommendationClient,
+            PredictionProvider predictionProvider
     ) {
         this.nearbyStationService = nearbyStationService;
         this.stationStatusService = stationStatusService;
         this.aiRecommendationClient = aiRecommendationClient;
+        this.predictionProvider = predictionProvider;
     }
 
     public RecommendationResponse recommend(
@@ -93,31 +110,19 @@ public class RecommendationService {
                                     station.getWalkMin(),
                                     status.getBikesNow(),
                                     status.getDocksNow(),
-                                    status.getCapacity()
+                                    status.getCapacity(),
+                                    List.of()
                             );
                         })
                         .toList();
 
-        // 4. Python AI에 추천 요청
-        AiRecommendationRequest request =
-                new AiRecommendationRequest(
-                        leg,
-                        etaMin,
-                        candidates,
-                        topN
-                );
-
-        RecommendationResponse response =
-                aiRecommendationClient.recommend(request);
-
-        if (response == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "AI recommendation server returned an empty response"
-            );
-        }
-
-        return response;
+        // 4. 예측 결과를 후보에 결합한 뒤 추천 요청
+        return recommendWithCandidates(
+                leg,
+                candidates,
+                etaMin,
+                topN
+        );
     }
 
     // 실시간 상태 정보가 있는 주변 대여소 후보 조회
@@ -187,11 +192,14 @@ public class RecommendationService {
             );
         }
 
+        List<AiRecommendationRequest.Candidate> enrichedCandidates =
+                attachPredictions(candidates);
+
         AiRecommendationRequest request =
                 new AiRecommendationRequest(
                         leg,
                         etaMin,
-                        candidates,
+                        enrichedCandidates,
                         topN
                 );
 
@@ -206,6 +214,118 @@ public class RecommendationService {
         }
 
         return response;
+    }
+
+    List<AiRecommendationRequest.Candidate> attachPredictions(
+            List<AiRecommendationRequest.Candidate> candidates
+    ) {
+        List<String> stationIds = candidates.stream()
+                .map(AiRecommendationRequest.Candidate::stationId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+
+        OffsetDateTime now = OffsetDateTime.now(KST);
+
+        OffsetDateTime baseTime = now
+                .withMinute((now.getMinute() / 15) * 15)
+                .withSecond(0)
+                .withNano(0);
+
+        PredictionResponse predictionResponse;
+
+        try {
+            predictionResponse = predictionProvider.predict(
+                    new PredictionRequest(
+                            UUID.randomUUID().toString(),
+                            baseTime,
+                            stationIds,
+                            PREDICTION_HORIZONS
+                    )
+            );
+        } catch (RuntimeException error) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Prediction service is unavailable",
+                    error
+            );
+        }
+
+        if (predictionResponse == null
+                || predictionResponse.getPredictions() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Prediction service returned an empty response"
+            );
+        }
+
+        Map<String, StationPrediction> predictionMap =
+                predictionResponse.getPredictions().stream()
+                        .filter(java.util.Objects::nonNull)
+                        .filter(prediction -> prediction.getStationId() != null)
+                        .collect(Collectors.toMap(
+                                StationPrediction::getStationId,
+                                Function.identity(),
+                                (first, second) -> first
+                        ));
+
+        List<AiRecommendationRequest.Candidate> enriched =
+                candidates.stream()
+                        .map(candidate -> {
+                            StationPrediction prediction =
+                                    predictionMap.get(candidate.stationId());
+
+                            List<HorizonResult> horizons =
+                                    prediction == null
+                                            || prediction.getHorizonResults() == null
+                                            ? List.of()
+                                            : prediction.getHorizonResults();
+
+                            return new AiRecommendationRequest.Candidate(
+                                    candidate.stationId(),
+                                    candidate.stationName(),
+                                    candidate.latitude(),
+                                    candidate.longitude(),
+                                    candidate.distanceM(),
+                                    candidate.walkMin(),
+                                    candidate.etaMin(),
+                                    candidate.bikesNow(),
+                                    candidate.docksNow(),
+                                    candidate.capacity(),
+                                    horizons
+                            );
+                        })
+                        .toList();
+
+        boolean hasCompletePrediction = enriched.stream()
+                .anyMatch(candidate -> hasRequiredHorizons(
+                        candidate.horizonResults()
+                ));
+
+        if (!hasCompletePrediction) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "No complete 15/30/60 minute prediction is available"
+            );
+        }
+
+        return enriched;
+    }
+
+    private boolean hasRequiredHorizons(
+            List<HorizonResult> horizons
+    ) {
+        if (horizons == null) {
+            return false;
+        }
+
+        Set<Integer> available = horizons.stream()
+                .filter(java.util.Objects::nonNull)
+                .map(HorizonResult::getHorizonMin)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        return available.containsAll(PREDICTION_HORIZONS);
     }
 
 }

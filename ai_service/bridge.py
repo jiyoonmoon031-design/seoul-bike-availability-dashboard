@@ -7,13 +7,10 @@ import subprocess
 import sys
 import tempfile
 import threading
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from uuid import uuid4
-from zoneinfo import ZoneInfo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -435,134 +432,9 @@ def run_rebalancing(
         return result
 
 
-def _current_kst_model_bin() -> str:
-    now = datetime.now(ZoneInfo("Asia/Seoul"))
-
-    minute = (now.minute // 15) * 15
-
-    return now.replace(
-        minute=minute,
-        second=0,
-        microsecond=0,
-    ).isoformat()
-
-
-def _enrich_recommendation_candidates(
-    candidates: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    enriched = [dict(candidate) for candidate in candidates]
-
-    station_ids: list[str] = []
-
-    for candidate in enriched:
-        station_id = str(candidate.get("station_id", "")).strip()
-
-        if (
-            station_id
-            and not candidate.get("horizon_results")
-            and station_id not in station_ids
-        ):
-            station_ids.append(station_id)
-
-    if not station_ids:
-        return enriched
-
-    LOGGER.info(
-        "recommendation auto-predict stations=%s",
-        len(station_ids),
-    )
-
-    try:
-        prediction_response = run_predict(
-            {
-                "request_id": str(uuid4()),
-                "base_time": _current_kst_model_bin(),
-                "station_ids": station_ids,
-                "horizons": [
-                    15,
-                    30,
-                    60,
-                ],
-            }
-        )
-    except Exception:
-        LOGGER.exception("recommendation auto-predict failed")
-        return enriched
-
-    prediction_by_station = {
-        str(item["station_id"]): item
-        for item in prediction_response.get(
-            "predictions",
-            [],
-        )
-        if item.get("station_id")
-    }
-
-    enriched_count = 0
-
-    for candidate in enriched:
-        if candidate.get("horizon_results"):
-            continue
-
-        station_id = str(candidate.get("station_id", ""))
-
-        prediction = prediction_by_station.get(station_id)
-
-        if not prediction:
-            continue
-
-        horizon_results = prediction.get("horizon_results") or []
-
-        if not horizon_results:
-            continue
-
-        candidate["horizon_results"] = horizon_results
-
-        # /predict가 authoritative inventory를
-        # 가지고 있으므로 누락된 inventory도 보강
-        if prediction.get("capacity") is not None:
-            candidate["capacity"] = prediction["capacity"]
-
-        if prediction.get("bikes_now") is not None:
-            candidate["bikes_now"] = prediction["bikes_now"]
-
-        capacity = candidate.get("capacity")
-        bikes_now = candidate.get("bikes_now")
-
-        if capacity is not None and bikes_now is not None:
-            candidate["docks_now"] = capacity - bikes_now
-
-        enriched_count += 1
-
-    unresolved = [
-        str(candidate.get("station_id"))
-        for candidate in enriched
-        if (candidate.get("station_id") and not candidate.get("horizon_results"))
-    ]
-
-    fallback_count = sum(
-        1
-        for warning in prediction_response.get(
-            "warnings",
-            [],
-        )
-        if warning.get("code") == "BASELINE_FALLBACK"
-    )
-
-    LOGGER.info(
-        "recommendation auto-predict enriched=%s " "fallback_horizons=%s unresolved=%s",
-        enriched_count,
-        fallback_count,
-        unresolved,
-    )
-
-    return enriched
-
-
 def run_recommendation(
     payload: dict[str, Any],
 ) -> dict[str, Any]:
-    candidates = _enrich_recommendation_candidates(payload["candidates"])
     with tempfile.TemporaryDirectory(prefix="seoul-bike-recommend-") as directory:
         base = Path(directory)
 
@@ -571,7 +443,7 @@ def run_recommendation(
 
         _write_json(
             input_path,
-            {"candidates": candidates},
+            {"candidates": payload["candidates"]},
         )
 
         _run(
