@@ -175,6 +175,10 @@ function App() {
           </div>
         </div>
 
+        <p className="empty-copy">
+          점선은 추천 대여소 간 직선 연결이며 실제 도로 경로가 아닙니다.
+        </p>
+
         <KakaoMap
           origin={origin}
           destination={destination}
