@@ -41,6 +41,10 @@ from src.llm.operator_copilot import (
     diagnose_operator_state,
     generate_operator_briefing_v2,
 )
+from src.llm.route_reasons import (
+    RouteReasonsPayload,
+    generate_route_reasons,
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -184,5 +188,13 @@ def operator_copilot_qa(
 ):
     try:
         return answer_operator_question(payload)
+    except Exception as error:
+        _handle_error(error)
+
+
+@app.post("/llm/route-reasons")
+def route_reasons(payload: RouteReasonsPayload):
+    try:
+        return generate_route_reasons(payload.model_dump())
     except Exception as error:
         _handle_error(error)

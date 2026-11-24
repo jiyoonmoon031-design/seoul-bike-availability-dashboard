@@ -57,6 +57,14 @@ class RecommendationPredictionIntegrationTest {
         assertEquals(List.of("ST-382"), request.getValue().getStationIds());
         assertEquals(List.of(15, 30, 60), request.getValue().getHorizons());
         assertTrue(request.getValue().getBaseTime().getSecond() == 0);
+        assertEquals(
+                0,
+                request.getValue().getBaseTime().getMinute() % 15
+        );
+        assertEquals(
+                java.time.ZoneOffset.ofHours(9),
+                request.getValue().getBaseTime().getOffset()
+        );
     }
 
     @Test

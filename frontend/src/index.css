@@ -1113,3 +1113,168 @@ td small {
   background: #0f766e;
   border-color: #0f766e;
 }
+
+/* Operator Copilot */
+
+.copilot-panel {
+  margin: 20px 0;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #dce5e1;
+  border-radius: 16px;
+}
+
+.copilot-heading h2 {
+  margin: 8px 0;
+}
+
+.copilot-heading p {
+  color: #64736d;
+}
+
+.copilot-actions,
+.copilot-question {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.copilot-panel button {
+  background: #176b58;
+  color: white;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.copilot-panel button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.copilot-question input {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px;
+  border: 1px solid #dce5e1;
+  border-radius: 8px;
+}
+
+.copilot-result {
+  background: #f5f8f7;
+  border-radius: 10px;
+  padding: 20px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.copilot-error {
+  color: #b42318;
+}
+
+/* Copilot Markdown response */
+
+.copilot-result {
+  white-space: normal;
+}
+
+.copilot-result p {
+  margin: 0 0 12px;
+  line-height: 1.8;
+}
+
+.copilot-result p:last-child {
+  margin-bottom: 0;
+}
+
+.copilot-result strong {
+  color: #176b58;
+  font-weight: 700;
+}
+
+.copilot-result ul,
+.copilot-result ol {
+  padding-left: 24px;
+  margin: 12px 0;
+}
+
+.copilot-result li {
+  margin: 6px 0;
+}
+
+.copilot-result code {
+  background: #e8efec;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: .9em;
+}
+
+.copilot-result h1,
+.copilot-result h2,
+.copilot-result h3 {
+  font-size: 1.1rem;
+  margin: 16px 0 8px;
+}
+
+
+/* User Route AI Explanation */
+
+.route-ai-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  border: 1px solid #dce5e1;
+  background: #f5f8f7;
+  border-radius: 12px;
+}
+
+.route-ai-toolbar p {
+  margin: 6px 0 0;
+  color: #64736d;
+  font-size: .9rem;
+}
+
+.route-ai-toolbar button {
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 0;
+  background: #176b58;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.route-ai-toolbar button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.route-ai-reason {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: #f2f8f5;
+  border-left: 3px solid #176b58;
+  border-radius: 8px;
+}
+
+.route-ai-reason strong {
+  color: #176b58;
+}
+
+.route-ai-reason p {
+  line-height: 1.75;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+.route-ai-reason small {
+  color: #64736d;
+  font-size: .8rem;
+}
