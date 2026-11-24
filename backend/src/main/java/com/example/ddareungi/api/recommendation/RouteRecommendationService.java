@@ -3,6 +3,9 @@ package com.example.ddareungi.api.recommendation;
 import com.example.ddareungi.mobility.TravelTimeService;
 import com.example.ddareungi.mobility.dto.TravelTimeResponse;
 import org.springframework.stereotype.Service;
+import com.example.ddareungi.ai.AiRecommendationReasonClient;
+import com.example.ddareungi.ai.dto.LlmReasonRequest;
+import com.example.ddareungi.ai.dto.LlmReasonResponse;
 import com.example.ddareungi.api.station.dto.NearbyStation;
 import java.util.List;
 import java.util.ArrayList;
@@ -29,6 +32,7 @@ public class RouteRecommendationService {
     private final RecommendationService recommendationService;
     private final StationStatusService stationStatusService;
     private final RouteRankingPolicy routeRankingPolicy;
+    private final AiRecommendationReasonClient aiRecommendationReasonClient;
 
 
     public RouteRecommendationService(
@@ -36,13 +40,15 @@ public class RouteRecommendationService {
             NearbyStationService nearbyStationService,
             RecommendationService recommendationService,
             StationStatusService stationStatusService,
-            RouteRankingPolicy routeRankingPolicy
+            RouteRankingPolicy routeRankingPolicy,
+            AiRecommendationReasonClient aiRecommendationReasonClient
     ) {
         this.travelTimeService = travelTimeService;
         this.nearbyStationService = nearbyStationService;
         this.recommendationService = recommendationService;
         this.stationStatusService = stationStatusService;
         this.routeRankingPolicy = routeRankingPolicy;
+        this.aiRecommendationReasonClient = aiRecommendationReasonClient;
     }
 
 
@@ -441,6 +447,45 @@ public class RouteRecommendationService {
 
 
 
+    private String getLlmReason(
+            String leg,
+            String stationName,
+            Double distanceM,
+            Double bikesExpected,
+            Double docksExpected,
+            int etaMin
+    ) {
+        try {
+            LlmReasonRequest request = new LlmReasonRequest(
+                    leg,
+                    etaMin,
+                    List.of(new LlmReasonRequest.Candidate(
+                            1,
+                            stationName,
+                            distanceM,
+                            bikesExpected,
+                            docksExpected
+                    ))
+            );
+
+            LlmReasonResponse response =
+                    aiRecommendationReasonClient.getReasons(request);
+
+            if (response != null
+                    && response.reasons() != null
+                    && !response.reasons().isEmpty()
+                    && response.reasons().get(0).text() != null) {
+                return response.reasons().get(0).text();
+            }
+        } catch (Exception e) {
+            System.err.println(
+                    "LLM reason request failed: " + e.getMessage()
+            );
+        }
+
+        return null;
+    }
+
     public RouteRecommendationResponse recommendRoutes(
             double originLat,
             double originLon,
@@ -627,6 +672,61 @@ public class RouteRecommendationService {
                         routeScore,
                         route.totalEtaMin()
                 );
+            }
+
+            String originReason = getLlmReason(
+                    "origin",
+                    route.originStationName(),
+                    originStation == null
+                            ? null : originStation.getDistanceM(),
+                    originAi == null
+                            ? null : originAi.bikesExpected(),
+                    originAi == null
+                            ? null : originAi.docksExpected(),
+                    route.walkToOriginMin()
+            );
+
+            String destinationReason = getLlmReason(
+                    "destination",
+                    route.destinationStationName(),
+                    destinationStation == null
+                            ? null : destinationStation.getDistanceM(),
+                    destinationAi == null
+                            ? null : destinationAi.bikesExpected(),
+                    destinationAi == null
+                            ? null : destinationAi.docksExpected(),
+                    route.arrivalEtaMin()
+            );
+
+            if (originReason == null || originReason.isBlank()) {
+                originReason = originAi == null
+                        ? null : originAi.reason();
+            }
+
+            if (destinationReason == null || destinationReason.isBlank()) {
+                destinationReason = destinationAi == null
+                        ? null : destinationAi.reason();
+            }
+
+            StringBuilder reasonBuilder = new StringBuilder();
+
+            if (originReason != null && !originReason.isBlank()) {
+                reasonBuilder.append(originReason.trim());
+            }
+
+            if (destinationReason != null && !destinationReason.isBlank()) {
+                if (reasonBuilder.length() > 0) {
+                    reasonBuilder.append(" ");
+                }
+                reasonBuilder.append(destinationReason.trim());
+            }
+
+            if (reasonBuilder.length() > 0) {
+                reasonBuilder.append(" 총 예상 이동시간은 ")
+                        .append(route.totalEtaMin())
+                        .append("분입니다.");
+
+                reason = reasonBuilder.toString();
             }
 
             routes.add(new RouteRecommendationResponse.Route(
