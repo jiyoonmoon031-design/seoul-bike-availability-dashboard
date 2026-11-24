@@ -165,7 +165,11 @@ def test_runtime_over_capacity_warning():
         baselines=FakeBaselines(),
     )
 
-    assert result["predictions"][0]["horizon_results"] == []
+    horizons = result["predictions"][0]["horizon_results"]
+    assert len(horizons) == 3
+    assert horizons[0]["bikes_expected"] == 24.8
+    assert horizons[0]["docks_expected"] == 0
+    assert horizons[0]["overflow_expected"] == 14.8
 
     assert any(
         warning["code"] == "INVENTORY_OVER_CAPACITY" for warning in result["warnings"]

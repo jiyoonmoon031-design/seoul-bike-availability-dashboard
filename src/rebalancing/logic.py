@@ -330,15 +330,12 @@ def build_rebalancing_plan(
 
         bikes_expected = _finite_float(selected.get("bikes_expected"))
 
-        if (
-            bikes_expected is None
-            or bikes_expected < 0
-            or bikes_expected > capacity + EPSILON
-        ):
+        if bikes_expected is None or bikes_expected < 0:
             warnings.append(f"{station_id}: invalid " "bikes_expected")
             continue
 
-        docks_expected = capacity - bikes_expected
+        docks_expected = max(0.0, capacity - bikes_expected)
+        overflow_expected = max(0.0, bikes_expected - capacity)
 
         reported_docks = _finite_float(selected.get("docks_expected"))
 
@@ -365,6 +362,7 @@ def build_rebalancing_plan(
                 "e_min": e_min,
                 "bikes_expected": bikes_expected,
                 "docks_expected": docks_expected,
+                "overflow_expected": overflow_expected,
                 "result_by_horizon": result_by_horizon,
                 "context": context,
             }

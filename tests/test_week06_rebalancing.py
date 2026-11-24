@@ -506,3 +506,24 @@ def test_demand_weight_clipping_affects_priority_order():
     assert low["demand_weight"] == pytest.approx(0.5)
 
     assert high["priority_score"] > low["priority_score"]
+
+
+def test_over_capacity_prediction_is_available_as_rebalancing_supply():
+    response = prediction_response(
+        [
+            station_prediction(
+                "OVER",
+                10,
+                {15: 13, 30: 12, 60: 11},
+            )
+        ]
+    )
+    result = build_rebalancing_plan(
+        response,
+        [context("OVER", lat=37.55, lon=127.05)],
+        config=config(),
+        horizon_min=30,
+    )
+    assert result.response["surplus_top"][0]["station_id"] == "OVER"
+    assert result.response["surplus_top"][0]["docks_expected"] == 0
+    assert result.response["surplus_top"][0]["supply_slack"] == 10
