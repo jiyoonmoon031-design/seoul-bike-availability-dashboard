@@ -4,11 +4,27 @@ package com.example.ddareungi.api.recommendation.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import com.example.ddareungi.prediction.dto.PredictionWarning;
 
 public record RouteRecommendationResponse(
         @JsonProperty("routes")
-        List<Route> routes
+        List<Route> routes,
+
+        @JsonProperty("model_version")
+        String modelVersion,
+
+        @JsonProperty("prediction_base_time")
+        OffsetDateTime predictionBaseTime,
+
+        @JsonProperty("prediction_warnings")
+        List<PredictionWarning> predictionWarnings
 ) {
+        public RouteRecommendationResponse(List<Route> routes) {
+                this(routes, null, null, List.of());
+        }
+
         public record Route(
                 @JsonProperty("rank")
                 Integer rank,
@@ -80,6 +96,24 @@ public record RouteRecommendationResponse(
                 Integer originEtaMin,
 
                 @JsonProperty("destination_eta_min")
-                Integer destinationEtaMin
+                Integer destinationEtaMin,
+
+                @JsonProperty("origin_prediction_source")
+                String originPredictionSource,
+
+                @JsonProperty("destination_prediction_source")
+                String destinationPredictionSource,
+
+                @JsonProperty("origin_inventory_collected_at")
+                Instant originInventoryCollectedAt,
+
+                @JsonProperty("destination_inventory_collected_at")
+                Instant destinationInventoryCollectedAt,
+
+                @JsonProperty("origin_overflow_bikes")
+                Integer originOverflowBikes,
+
+                @JsonProperty("destination_overflow_bikes")
+                Integer destinationOverflowBikes
         ) {}
 }

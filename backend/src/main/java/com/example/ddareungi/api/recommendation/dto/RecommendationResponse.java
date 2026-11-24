@@ -3,6 +3,8 @@ package com.example.ddareungi.api.recommendation.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
+import java.time.OffsetDateTime;
+import com.example.ddareungi.prediction.dto.PredictionWarning;
 
 public record RecommendationResponse(
 
@@ -19,7 +21,16 @@ public record RecommendationResponse(
         List<Recommendation> recommendations,
 
         @JsonProperty("warnings")
-        List<String> warnings
+        List<String> warnings,
+
+        @JsonProperty("model_version")
+        String modelVersion,
+
+        @JsonProperty("prediction_base_time")
+        OffsetDateTime predictionBaseTime,
+
+        @JsonProperty("prediction_warnings")
+        List<PredictionWarning> predictionWarnings
 
 ) {
     public record Recommendation(
@@ -56,6 +67,15 @@ public record RecommendationResponse(
 
             @JsonProperty("docks_expected")
             Double docksExpected,
+
+            @JsonProperty("overflow_now")
+            Double overflowNow,
+
+            @JsonProperty("overflow_expected")
+            Double overflowExpected,
+
+            @JsonProperty("prediction_source")
+            String predictionSource,
 
             @JsonProperty("score_breakdown")
             Map<String, Object> scoreBreakdown

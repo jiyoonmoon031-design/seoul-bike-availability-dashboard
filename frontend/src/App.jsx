@@ -1,6 +1,7 @@
 import { requestRouteReasons } from "./api/llm";
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -208,9 +209,13 @@ function RouteRecommendations({
   const [aiReasons, setAiReasons] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const aiRequestId = useRef(0);
 
   const loadAiReasons = async () => {
     if (aiLoading || !routes.length) return;
+
+    const requestId = aiRequestId.current + 1;
+    aiRequestId.current = requestId;
 
     setAiLoading(true);
     setAiError("");
@@ -235,15 +240,21 @@ function RouteRecommendations({
         throw new Error("일부 AI 설명이 누락되었습니다.");
       }
 
-      setAiReasons(reasons);
+      if (aiRequestId.current === requestId) {
+        setAiReasons(reasons);
+      }
 
     } catch {
-      setAiError(
-        "AI 설명을 불러오지 못했습니다. "
-        + "기존 추천 결과는 계속 이용할 수 있습니다."
-      );
+      if (aiRequestId.current === requestId) {
+        setAiError(
+          "AI 설명을 불러오지 못했습니다. "
+          + "기존 추천 결과는 계속 이용할 수 있습니다."
+        );
+      }
     } finally {
-      setAiLoading(false);
+      if (aiRequestId.current === requestId) {
+        setAiLoading(false);
+      }
     }
   };
 
@@ -409,6 +420,35 @@ function RouteCard({ route, aiReason }) {
           </span>
         </div>
 
+        <div className="route-provenance" aria-label="예측 데이터 출처">
+          <strong>예측 출처</strong>
+          <span>
+            출발 {formatPredictionSource(route.origin_prediction_source)}
+          </span>
+          <span>
+            도착 {formatPredictionSource(route.destination_prediction_source)}
+          </span>
+          {route.model_version && (
+            <small>모델 {route.model_version}</small>
+          )}
+          {route.origin_inventory_collected_at && (
+            <small>
+              재고 수집 {formatKst(route.origin_inventory_collected_at)}
+            </small>
+          )}
+          {route.route_geometry_source === "straight_line" && (
+            <small className="route-warning">
+              실제 도로 경로를 사용할 수 없어 직선 연결을 표시합니다.
+            </small>
+          )}
+          {(Number(route.origin_overflow_bikes ?? 0) > 0 ||
+            Number(route.destination_overflow_bikes ?? 0) > 0) && (
+            <small className="route-warning">
+              등록 거치대 수를 초과한 실시간 재고가 포함되었습니다.
+            </small>
+          )}
+        </div>
+
         <p className="route-reason">
           {route.reason}
         </p>
@@ -431,6 +471,25 @@ function RouteCard({ route, aiReason }) {
 
 function formatScore(value) {
   return Number(value ?? 0).toFixed(2);
+}
+
+
+function formatPredictionSource(value) {
+  if (value === "model") return "Random Forest";
+  if (value === "baseline_fallback") return "B3/B1 fallback";
+  if (value === "mixed") return "혼합";
+  return "확인 불가";
+}
+
+
+function formatKst(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "시각 확인 불가";
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
 }
 
 

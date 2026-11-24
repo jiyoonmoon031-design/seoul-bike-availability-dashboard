@@ -4,7 +4,6 @@ import pytest
 
 from src.modeling.runtime_inventory import assess_inventory
 
-
 NOW = datetime(2026, 11, 25, 8, 0, tzinfo=timezone(timedelta(hours=9)))
 
 

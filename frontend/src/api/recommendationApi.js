@@ -23,5 +23,11 @@ export async function getRouteRecommendations(
   }
 
   const payload = await response.json();
-  return payload.routes ?? [];
+  return (payload.routes ?? []).map((route) => ({
+    ...route,
+    model_version: payload.model_version ?? null,
+    prediction_base_time: payload.prediction_base_time ?? null,
+    prediction_warnings: payload.prediction_warnings ?? [],
+    route_geometry_source: route.route_geometry_source ?? "straight_line",
+  }));
 }

@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Mapping
 
-
 DEFAULT_MAX_AGE = timedelta(minutes=15)
 DEFAULT_FUTURE_TOLERANCE = timedelta(minutes=2)
 
@@ -107,8 +106,15 @@ def assess_inventory(
     """
     if record is None:
         return RuntimeInventory(
-            station_id, None, None, None, None, "missing_station", False,
-            "MISSING_INVENTORY", "Realtime station inventory is unavailable",
+            station_id,
+            None,
+            None,
+            None,
+            None,
+            "missing_station",
+            False,
+            "MISSING_INVENTORY",
+            "Realtime station inventory is unavailable",
         )
 
     capacity = _number(record.get("registered_capacity", record.get("capacity")))
@@ -118,26 +124,54 @@ def assess_inventory(
 
     if capacity is None or capacity <= 0:
         return RuntimeInventory(
-            station_id, capacity, bikes, None, source, "invalid_capacity", False,
-            "INVALID_CAPACITY", "Registered station capacity is missing or invalid",
+            station_id,
+            capacity,
+            bikes,
+            None,
+            source,
+            "invalid_capacity",
+            False,
+            "INVALID_CAPACITY",
+            "Registered station capacity is missing or invalid",
         )
     if bikes is None or bikes < 0:
         return RuntimeInventory(
-            station_id, capacity, bikes, None, source, "invalid_inventory", False,
-            "INVALID_INVENTORY", "Observed bike inventory is missing or invalid",
+            station_id,
+            capacity,
+            bikes,
+            None,
+            source,
+            "invalid_inventory",
+            False,
+            "INVALID_INVENTORY",
+            "Observed bike inventory is missing or invalid",
         )
 
     raw_collected_at = record.get("inventory_collected_at", record.get("collected_at"))
     collected_at = _timestamp(raw_collected_at)
     if raw_collected_at is not None and collected_at is None:
         return RuntimeInventory(
-            station_id, capacity, bikes, None, source, "invalid_timestamp", False,
-            "INVALID_INVENTORY_TIMESTAMP", "Inventory timestamp is invalid",
+            station_id,
+            capacity,
+            bikes,
+            None,
+            source,
+            "invalid_timestamp",
+            False,
+            "INVALID_INVENTORY_TIMESTAMP",
+            "Inventory timestamp is invalid",
         )
     if require_timestamp and collected_at is None:
         return RuntimeInventory(
-            station_id, capacity, bikes, None, source, "missing_timestamp", False,
-            "MISSING_INVENTORY_TIMESTAMP", "Inventory timestamp is unavailable",
+            station_id,
+            capacity,
+            bikes,
+            None,
+            source,
+            "missing_timestamp",
+            False,
+            "MISSING_INVENTORY_TIMESTAMP",
+            "Inventory timestamp is unavailable",
         )
 
     if reference_time is not None and collected_at is not None:
@@ -146,13 +180,27 @@ def assess_inventory(
         age = reference_time - collected_at.astimezone(reference_time.tzinfo)
         if age > max_age:
             return RuntimeInventory(
-                station_id, capacity, bikes, collected_at, source, "stale", False,
-                "STALE_INVENTORY", "Inventory snapshot is older than the runtime limit",
+                station_id,
+                capacity,
+                bikes,
+                collected_at,
+                source,
+                "stale",
+                False,
+                "STALE_INVENTORY",
+                "Inventory snapshot is older than the runtime limit",
             )
         if age < -future_tolerance:
             return RuntimeInventory(
-                station_id, capacity, bikes, collected_at, source, "future_timestamp", False,
-                "INVALID_INVENTORY_TIMESTAMP", "Inventory timestamp is in the future",
+                station_id,
+                capacity,
+                bikes,
+                collected_at,
+                source,
+                "future_timestamp",
+                False,
+                "INVALID_INVENTORY_TIMESTAMP",
+                "Inventory timestamp is in the future",
             )
 
     status = "overflow" if bikes > capacity else "valid"

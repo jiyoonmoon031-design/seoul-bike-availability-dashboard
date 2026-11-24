@@ -678,11 +678,36 @@ public class RouteRecommendationService {
 
                     // 대여소 도착 예상시간
                     route.walkToOriginMin(),
-                    route.arrivalEtaMin()
+                    route.arrivalEtaMin(),
+
+                    originAi == null
+                            ? null : originAi.predictionSource(),
+                    destinationAi == null
+                            ? null : destinationAi.predictionSource(),
+                    originStatus == null
+                            ? null : originStatus.getCollectedAt(),
+                    destinationStatus == null
+                            ? null : destinationStatus.getCollectedAt(),
+                    overflowBikes(originStatus),
+                    overflowBikes(destinationStatus)
             ));
         }
 
-        return new RouteRecommendationResponse(routes);
+        return new RouteRecommendationResponse(
+                routes,
+                originAiResponse.modelVersion(),
+                originAiResponse.predictionBaseTime(),
+                originAiResponse.predictionWarnings()
+        );
+    }
+
+    private static Integer overflowBikes(StationStatus status) {
+        if (status == null
+                || status.getBikesNow() == null
+                || status.getCapacity() == null) {
+            return null;
+        }
+        return Math.max(status.getBikesNow() - status.getCapacity(), 0);
     }
 
 

@@ -207,6 +207,17 @@ def recommend_stations(
 
         effective_horizon = horizon_info
 
+        prediction_sources = {
+            str(item.get("prediction_source"))
+            for item in horizon_results
+            if item.get("prediction_source")
+        }
+        prediction_source = (
+            next(iter(prediction_sources))
+            if len(prediction_sources) == 1
+            else "mixed" if prediction_sources else "unknown"
+        )
+
         runtime_ceiling = max(capacity, bikes_now)
         bikes_expected = min(max(bikes_now + delta_eta, 0.0), runtime_ceiling)
         docks_expected = max(capacity - bikes_expected, 0.0)
@@ -239,6 +250,7 @@ def recommend_stations(
                 "bikes_expected": round(bikes_expected, 3),
                 "docks_expected": round(docks_expected, 3),
                 "overflow_expected": round(overflow_expected, 3),
+                "prediction_source": prediction_source,
                 "score": round(score, 6),
                 "score_breakdown": {
                     "distance": round(distance_component, 6),

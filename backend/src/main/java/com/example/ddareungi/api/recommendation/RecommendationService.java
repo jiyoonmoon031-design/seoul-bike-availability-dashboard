@@ -14,6 +14,8 @@ import com.example.ddareungi.prediction.dto.PredictionResponse;
 import com.example.ddareungi.prediction.dto.StationPrediction;
 
 import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,6 +30,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class RecommendationService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(RecommendationService.class);
 
     private final NearbyStationService nearbyStationService;
     private final StationStatusService stationStatusService;
@@ -72,18 +77,9 @@ public class RecommendationService {
             );
         }
 
-        // 1. 실시간 상태 정보가 있는 주변 대여소 검색
-        List<NearbyStation> nearbyStations =
-                findRecommendationCandidates(latitude, longitude);
+        long totalStarted = System.nanoTime();
+        long stageStarted = totalStarted;
 
-        if (nearbyStations.isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "No nearby stations with available status data"
-            );
-        }
-
-        // 2. 실시간 대여소 상태 조회
         Map<String, StationStatus> statusMap =
                 stationStatusService.getStationStatuses()
                         .stream()
@@ -92,8 +88,24 @@ public class RecommendationService {
                                 Function.identity(),
                                 (first, second) -> first
                         ));
+        long inventoryMs = elapsedMillis(stageStarted);
 
-        // 3. AI 요청 후보 생성
+        stageStarted = System.nanoTime();
+        List<NearbyStation> nearbyStations =
+                findRecommendationCandidates(
+                        latitude,
+                        longitude,
+                        statusMap
+                );
+        long candidateMs = elapsedMillis(stageStarted);
+
+        if (nearbyStations.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "No nearby stations with available status data"
+            );
+        }
+
         List<AiRecommendationRequest.Candidate> candidates =
                 nearbyStations.stream()
                         .map(station -> {
@@ -116,13 +128,20 @@ public class RecommendationService {
                         })
                         .toList();
 
-        // 4. 예측 결과를 후보에 결합한 뒤 추천 요청
-        return recommendWithCandidates(
+        RecommendationResponse response = recommendWithCandidates(
                 leg,
                 candidates,
                 etaMin,
                 topN
         );
+        log.info(
+                "recommendation_latency inventory_ms={} candidate_ms={} total_ms={} candidates={}",
+                inventoryMs,
+                candidateMs,
+                elapsedMillis(totalStarted),
+                candidates.size()
+        );
+        return response;
     }
 
     // 실시간 상태 정보가 있는 주변 대여소 후보 조회
@@ -139,7 +158,18 @@ public class RecommendationService {
                                 (first, second) -> first
                         ));
 
-        // 800m 이내 검색
+        return findRecommendationCandidates(
+                latitude,
+                longitude,
+                statusMap
+        );
+    }
+
+    private List<NearbyStation> findRecommendationCandidates(
+            double latitude,
+            double longitude,
+            Map<String, StationStatus> statusMap
+    ) {
         List<NearbyStation> stations =
                 nearbyStationService.findNearbyStations(
                         latitude, longitude, 800
@@ -192,8 +222,12 @@ public class RecommendationService {
             );
         }
 
+        long predictionStarted = System.nanoTime();
+        PredictionAttachment attachment =
+                attachPredictionBundle(candidates);
         List<AiRecommendationRequest.Candidate> enrichedCandidates =
-                attachPredictions(candidates);
+                attachment.candidates();
+        long predictionMs = elapsedMillis(predictionStarted);
 
         AiRecommendationRequest request =
                 new AiRecommendationRequest(
@@ -203,8 +237,10 @@ public class RecommendationService {
                         topN
                 );
 
+        long recommendationStarted = System.nanoTime();
         RecommendationResponse response =
                 aiRecommendationClient.recommend(request);
+        long recommendationMs = elapsedMillis(recommendationStarted);
 
         if (response == null) {
             throw new ResponseStatusException(
@@ -213,10 +249,31 @@ public class RecommendationService {
             );
         }
 
-        return response;
+        log.info(
+                "recommendation_ai_latency prediction_ms={} scoring_ms={} candidates={}",
+                predictionMs,
+                recommendationMs,
+                candidates.size()
+        );
+        return new RecommendationResponse(
+                response.leg(),
+                response.etaMin(),
+                response.effectiveHorizon(),
+                response.recommendations(),
+                response.warnings(),
+                attachment.predictionResponse().getModelVersion(),
+                attachment.predictionResponse().getBaseTime(),
+                attachment.predictionResponse().getWarnings()
+        );
     }
 
     List<AiRecommendationRequest.Candidate> attachPredictions(
+            List<AiRecommendationRequest.Candidate> candidates
+    ) {
+        return attachPredictionBundle(candidates).candidates();
+    }
+
+    private PredictionAttachment attachPredictionBundle(
             List<AiRecommendationRequest.Candidate> candidates
     ) {
         List<String> stationIds = candidates.stream()
@@ -309,8 +366,13 @@ public class RecommendationService {
             );
         }
 
-        return enriched;
+        return new PredictionAttachment(enriched, predictionResponse);
     }
+
+    private record PredictionAttachment(
+            List<AiRecommendationRequest.Candidate> candidates,
+            PredictionResponse predictionResponse
+    ) {}
 
     private boolean hasRequiredHorizons(
             List<HorizonResult> horizons
@@ -326,6 +388,10 @@ public class RecommendationService {
                 .collect(Collectors.toSet());
 
         return available.containsAll(PREDICTION_HORIZONS);
+    }
+
+    private static long elapsedMillis(long startedNanos) {
+        return (System.nanoTime() - startedNanos) / 1_000_000L;
     }
 
 }
