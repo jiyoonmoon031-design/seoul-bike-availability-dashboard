@@ -1,3 +1,4 @@
+import { OperatorCopilot } from '../components/operator/OperatorCopilot'
 import {
   keepPreviousData,
   useQuery,
@@ -309,7 +310,12 @@ export function OperatorPage() {
             </article>
           </section>
 
-          <section className="dashboard-grid">
+          <OperatorCopilot
+              key={JSON.stringify(data)}
+              data={data}
+            />
+
+            <section className="dashboard-grid">
             <OperatorMap
               data={{
                 ...data,

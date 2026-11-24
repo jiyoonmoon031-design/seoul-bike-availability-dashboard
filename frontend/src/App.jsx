@@ -1,3 +1,4 @@
+import { requestRouteReasons } from "./api/llm";
 import {
   useEffect,
   useState,
@@ -187,6 +188,7 @@ function App() {
       </section>
 
       <RouteRecommendations
+          key={JSON.stringify(routes)}
         routes={routes}
         loading={loading}
         ready={Boolean(
@@ -203,6 +205,48 @@ function RouteRecommendations({
   loading,
   ready,
 }) {
+  const [aiReasons, setAiReasons] = useState({});
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  const loadAiReasons = async () => {
+    if (aiLoading || !routes.length) return;
+
+    setAiLoading(true);
+    setAiError("");
+
+    try {
+      const response = await requestRouteReasons(routes);
+
+      if (!Array.isArray(response.reasons)) {
+        throw new Error("잘못된 AI 응답입니다.");
+      }
+
+      const reasons = {};
+
+      for (const item of response.reasons) {
+        if (typeof item.text !== "string") {
+          throw new Error("잘못된 AI 설명입니다.");
+        }
+        reasons[item.rank] = item.text;
+      }
+
+      if (!routes.every((r) => reasons[r.rank])) {
+        throw new Error("일부 AI 설명이 누락되었습니다.");
+      }
+
+      setAiReasons(reasons);
+
+    } catch {
+      setAiError(
+        "AI 설명을 불러오지 못했습니다. "
+        + "기존 추천 결과는 계속 이용할 수 있습니다."
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <article className="route-panel">
       <div className="panel-title">
@@ -234,11 +278,40 @@ function RouteRecommendations({
       )}
 
       {!loading && routes.length > 0 && (
+        <div className="route-ai-toolbar">
+          <div>
+            <strong>AI 추천 설명</strong>
+            <p>
+              추천 경로의 가용성과 이동시간을 비교합니다.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={aiLoading}
+            onClick={() => void loadAiReasons()}
+          >
+            {aiLoading
+              ? "AI 분석 중..."
+              : Object.keys(aiReasons).length
+                ? "AI 설명 다시 생성"
+                : "AI 추천 설명 보기"}
+          </button>
+        </div>
+      )}
+
+      {aiError && (
+        <p role="alert" className="copilot-error">
+          {aiError}
+        </p>
+      )}
+
+      {!loading && routes.length > 0 && (
         <ol className="route-list">
           {routes.map((route) => (
             <RouteCard
               key={`${route.origin_station_id}-${route.destination_station_id}`}
               route={route}
+              aiReason={aiReasons[route.rank]}
             />
           ))}
         </ol>
@@ -248,7 +321,7 @@ function RouteRecommendations({
 }
 
 
-function RouteCard({ route }) {
+function RouteCard({ route, aiReason }) {
   return (
     <li className="route-card">
       <div className="route-rank">
@@ -339,6 +412,17 @@ function RouteCard({ route }) {
         <p className="route-reason">
           {route.reason}
         </p>
+
+        {aiReason && (
+          <div className="route-ai-reason">
+            <strong>AI 추천 설명</strong>
+            <p>{aiReason}</p>
+            <small>
+              예측 결과 기반 설명이며
+              실제 대여·반납을 보장하지 않습니다.
+            </small>
+          </div>
+        )}
       </div>
     </li>
   );
