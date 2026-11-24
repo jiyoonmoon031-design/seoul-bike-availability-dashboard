@@ -3,7 +3,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from src.modeling.runtime_fallback import _runtime_b3_frame, apply_runtime_feature_fallback
+from src.modeling.runtime_fallback import (
+    _runtime_b3_frame,
+    apply_runtime_feature_fallback,
+)
 
 
 class FakeBaselines:
@@ -31,18 +34,22 @@ def base_response():
         "base_time": "2026-11-22T19:45:00+09:00",
         "model_version": "week05-random_forest-test",
         "source": "model",
-        "predictions": [{
-            "station_id": "ST-1660",
-            "horizon_results": [],
-            "capacity": 10,
-            "bikes_now": 5,
-        }],
-        "warnings": [{
-            "code": "FEATURE_ROW_NOT_FOUND",
-            "message": "feature row not found for base_time",
-            "station_id": "ST-1660",
-            "horizon_min": None,
-        }],
+        "predictions": [
+            {
+                "station_id": "ST-1660",
+                "horizon_results": [],
+                "capacity": 10,
+                "bikes_now": 5,
+            }
+        ],
+        "warnings": [
+            {
+                "code": "FEATURE_ROW_NOT_FOUND",
+                "message": "feature row not found for base_time",
+                "station_id": "ST-1660",
+                "horizon_min": None,
+            }
+        ],
     }
 
 
@@ -61,12 +68,14 @@ def inventory():
 
 def test_runtime_b3_frame_uses_kst_request_time():
     frame = _runtime_b3_frame(station_id="ST-1660", base_time="2026-11-22T10:45:00Z")
-    assert frame.to_dict("records") == [{
-        "station_id": "ST-1660",
-        "weekday_index": 6,
-        "hour": 19,
-        "minute": 45,
-    }]
+    assert frame.to_dict("records") == [
+        {
+            "station_id": "ST-1660",
+            "weekday_index": 6,
+            "hour": 19,
+            "minute": 45,
+        }
+    ]
 
 
 def test_missing_feature_row_gets_b3_runtime_fallback():
@@ -79,7 +88,9 @@ def test_missing_feature_row_gets_b3_runtime_fallback():
     station = result["predictions"][0]
     horizons = {item["horizon_min"]: item for item in station["horizon_results"]}
     assert set(horizons) == {15, 30, 60}
-    assert all(item["prediction_source"] == "baseline_fallback" for item in horizons.values())
+    assert all(
+        item["prediction_source"] == "baseline_fallback" for item in horizons.values()
+    )
     assert horizons[15]["bikes_expected"] == 4.8
     assert horizons[30]["bikes_expected"] == 4.6
     assert horizons[60]["bikes_expected"] == 4.2
@@ -104,17 +115,76 @@ def test_b1_is_final_fallback_when_b3_fails():
 
 def test_historical_model_result_is_not_overwritten():
     response = base_response()
-    response["predictions"][0]["horizon_results"] = [{
-        "horizon_min": 30,
-        "prediction_source": "model",
-        "delta_net": -0.4,
-        "bikes_expected": 4.6,
-        "docks_expected": 5.4,
-    }]
+    response["predictions"][0]["horizon_results"] = [
+        {
+            "horizon_min": 30,
+            "prediction_source": "model",
+            "delta_net": -0.4,
+            "bikes_expected": 4.6,
+            "docks_expected": 5.4,
+        }
+    ]
     result = apply_runtime_feature_fallback(
         response=response,
         request=request(),
         inventory=inventory(),
         baselines=FakeBaselines(),
     )
-    assert result["predictions"][0]["horizon_results"] == response["predictions"][0]["horizon_results"]
+    assert (
+        result["predictions"][0]["horizon_results"]
+        == response["predictions"][0]["horizon_results"]
+    )
+
+
+def test_runtime_missing_inventory_warning():
+    result = apply_runtime_feature_fallback(
+        response=base_response(),
+        request=request(),
+        inventory={},
+        baselines=FakeBaselines(),
+    )
+
+    assert result["predictions"][0]["horizon_results"] == []
+
+    assert any(
+        warning["code"] == "MISSING_INVENTORY" and warning["station_id"] == "ST-1660"
+        for warning in result["warnings"]
+    )
+
+
+def test_runtime_over_capacity_warning():
+    result = apply_runtime_feature_fallback(
+        response=base_response(),
+        request=request(),
+        inventory={
+            "ST-1660": {
+                "capacity": 10,
+                "bikes_now": 25,
+            }
+        },
+        baselines=FakeBaselines(),
+    )
+
+    assert result["predictions"][0]["horizon_results"] == []
+
+    assert any(
+        warning["code"] == "INVENTORY_OVER_CAPACITY" for warning in result["warnings"]
+    )
+
+
+def test_runtime_invalid_inventory_warning():
+    result = apply_runtime_feature_fallback(
+        response=base_response(),
+        request=request(),
+        inventory={
+            "ST-1660": {
+                "capacity": 10,
+                "bikes_now": -1,
+            }
+        },
+        baselines=FakeBaselines(),
+    )
+
+    assert result["predictions"][0]["horizon_results"] == []
+
+    assert any(warning["code"] == "INVALID_INVENTORY" for warning in result["warnings"])
