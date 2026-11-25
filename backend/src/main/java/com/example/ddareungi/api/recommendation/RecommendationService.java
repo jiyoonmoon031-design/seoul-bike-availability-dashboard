@@ -225,7 +225,10 @@ public class RecommendationService {
                 .distinct()
                 .toList();
 
-        OffsetDateTime baseTime = OffsetDateTime.now(KST)
+        OffsetDateTime now = OffsetDateTime.now(KST);
+
+        OffsetDateTime baseTime = now
+                .withMinute((now.getMinute() / 15) * 15)
                 .withSecond(0)
                 .withNano(0);
 

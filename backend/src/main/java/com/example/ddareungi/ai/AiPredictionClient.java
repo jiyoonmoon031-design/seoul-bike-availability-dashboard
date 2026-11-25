@@ -31,9 +31,36 @@ public class AiPredictionClient implements PredictionProvider {
     @Override
     public PredictionResponse predict(PredictionRequest request) {
 
+        String kstBaseTime = java.time.OffsetDateTime
+                .parse(String.valueOf(request.getBaseTime()))
+                .withOffsetSameInstant(
+                        java.time.ZoneOffset.ofHours(9)
+                )
+                .toString();
+
+        java.util.Map<String, Object> payload =
+                new java.util.LinkedHashMap<>();
+
+        payload.put(
+                "request_id",
+                request.getRequestId()
+        );
+        payload.put(
+                "base_time",
+                kstBaseTime
+        );
+        payload.put(
+                "station_ids",
+                request.getStationIds()
+        );
+        payload.put(
+                "horizons",
+                request.getHorizons()
+        );
+
         return restClient.post()
                 .uri(predictPath)
-                .body(request)
+                .body(payload)
                 .retrieve()
                 .body(PredictionResponse.class);
     }

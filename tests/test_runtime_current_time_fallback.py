@@ -134,3 +134,57 @@ def test_historical_model_result_is_not_overwritten():
         result["predictions"][0]["horizon_results"]
         == response["predictions"][0]["horizon_results"]
     )
+
+
+def test_runtime_missing_inventory_warning():
+    result = apply_runtime_feature_fallback(
+        response=base_response(),
+        request=request(),
+        inventory={},
+        baselines=FakeBaselines(),
+    )
+
+    assert result["predictions"][0]["horizon_results"] == []
+
+    assert any(
+        warning["code"] == "MISSING_INVENTORY" and warning["station_id"] == "ST-1660"
+        for warning in result["warnings"]
+    )
+
+
+def test_runtime_over_capacity_warning():
+    result = apply_runtime_feature_fallback(
+        response=base_response(),
+        request=request(),
+        inventory={
+            "ST-1660": {
+                "capacity": 10,
+                "bikes_now": 25,
+            }
+        },
+        baselines=FakeBaselines(),
+    )
+
+    assert result["predictions"][0]["horizon_results"] == []
+
+    assert any(
+        warning["code"] == "INVENTORY_OVER_CAPACITY" for warning in result["warnings"]
+    )
+
+
+def test_runtime_invalid_inventory_warning():
+    result = apply_runtime_feature_fallback(
+        response=base_response(),
+        request=request(),
+        inventory={
+            "ST-1660": {
+                "capacity": 10,
+                "bikes_now": -1,
+            }
+        },
+        baselines=FakeBaselines(),
+    )
+
+    assert result["predictions"][0]["horizon_results"] == []
+
+    assert any(warning["code"] == "INVALID_INVENTORY" for warning in result["warnings"])

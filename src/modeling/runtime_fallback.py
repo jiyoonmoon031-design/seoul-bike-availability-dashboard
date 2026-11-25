@@ -94,6 +94,38 @@ def apply_runtime_feature_fallback(
 
         current = _valid_inventory(inventory, str(station_id))
         if current is None:
+            raw = inventory.get(str(station_id))
+
+            if raw is None:
+                code = "MISSING_INVENTORY"
+                message = "Realtime station inventory is unavailable"
+            else:
+                code = "INVALID_INVENTORY"
+                message = "Inventory is outside the supported range"
+
+                try:
+                    cap = float(raw["capacity"])
+                    bikes = float(raw["bikes_now"])
+
+                    if (
+                        np.isfinite(cap)
+                        and np.isfinite(bikes)
+                        and cap > 0
+                        and bikes > cap
+                    ):
+                        code = "INVENTORY_OVER_CAPACITY"
+                        message = "Observed bikes exceed registered capacity"
+                except (KeyError, TypeError, ValueError):
+                    pass
+
+            warnings.append(
+                _warning(
+                    code,
+                    message,
+                    station_id=str(station_id),
+                    horizon_min=None,
+                )
+            )
             continue
         capacity, bikes_now = current
 
