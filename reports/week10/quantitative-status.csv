@@ -1,0 +1,17 @@
+area,metric,horizon,value,status,target,interpretation
+model,random_forest_mae,15,0.638876612301,confirmed,,B1 0.623762839144보다 높음
+model,random_forest_mae,30,0.977497177632,confirmed,,B1 0.999658115851보다 낮음
+model,random_forest_mae,60,1.46529530676,confirmed,,B1 1.58125074534보다 낮음
+recommendation,route_pair_minimum_hit_rate,15,0.965452210281,provisional_diagnostic,0.90,목표 충족
+recommendation,route_pair_minimum_hit_rate,30,0.957666265621,provisional_diagnostic,0.90,목표 충족
+recommendation,route_pair_minimum_hit_rate,60,0.945607760220,provisional_diagnostic,0.90,목표 충족
+recommendation,route_pair_stable_hit_rate,15,0.920353030286,provisional_diagnostic,0.90,목표 충족
+recommendation,route_pair_stable_hit_rate,30,0.908236657914,provisional_diagnostic,0.90,목표 충족
+recommendation,route_pair_stable_hit_rate,60,0.891123304153,provisional_diagnostic,0.90,목표 미달
+recommendation,legacy_individual_hit_rate,ALL,,unverified,,동일 고정 요청의 과거 추천 순위 없음
+rebalancing,oracle_shortage_reduction,15,0.239180475615,oracle_upper_bound,0.10,실제 예측 기반 효과 아님
+rebalancing,oracle_shortage_reduction,30,0.239186257141,oracle_upper_bound,0.10,실제 예측 기반 효과 아님
+rebalancing,oracle_shortage_reduction,60,0.239194501954,oracle_upper_bound,0.10,실제 예측 기반 효과 아님
+rebalancing,oracle_risk_station_reduction,15,0.154425913436,oracle_upper_bound,,실제 예측 기반 효과 아님
+rebalancing,oracle_risk_station_reduction,30,0.152380589334,oracle_upper_bound,,실제 예측 기반 효과 아님
+rebalancing,oracle_risk_station_reduction,60,0.152214726174,oracle_upper_bound,,실제 예측 기반 효과 아님
