@@ -22,6 +22,7 @@ from src.modeling.inference import (  # noqa: E402
     validate_prediction_request,
 )
 from src.modeling.model_comparison import FittedBaselines  # noqa: E402
+from src.modeling.runtime_fallback import apply_runtime_feature_fallback  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -170,6 +171,13 @@ def main() -> None:
         feature_frame=frame,
         inventory=inventory,
         model_version=metadata["model_version"],
+        baselines=baselines,
+    )
+
+    response = apply_runtime_feature_fallback(
+        response=response,
+        request=request,
+        inventory=inventory,
         baselines=baselines,
     )
 

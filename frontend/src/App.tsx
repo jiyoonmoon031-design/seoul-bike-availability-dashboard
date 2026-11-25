@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-// @ts-expect-error 기존 이용자 화면은 아직 JavaScript 모듈이다.
 import UserApp from './App.jsx'
 import { OperatorPage } from './pages/OperatorPage'
 
