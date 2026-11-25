@@ -78,9 +78,8 @@ export const handlers = [
 
       const baseTime =
         url.searchParams.get(
-          'base_time',
-        ) ??
-        '2026-10-08T08:00:00+09:00'
+          'basetime',
+        )
 
       const horizon =
         Number(
@@ -92,9 +91,22 @@ export const handlers = [
       const topN =
         Number(
           url.searchParams.get(
-            'top_n',
-          ) ?? 10,
+            'topn',
+          ),
         )
+
+      if (
+        !baseTime ||
+        !Number.isFinite(topN)
+      ) {
+        return HttpResponse.json(
+          {
+            error:
+              'basetime and topn are required',
+          },
+          { status: 400 },
+        )
+      }
 
       await delay(450)
 
