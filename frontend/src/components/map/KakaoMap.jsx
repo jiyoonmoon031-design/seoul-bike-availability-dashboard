@@ -37,7 +37,13 @@ function loadKakaoMap() {
   });
 }
 
-function KakaoMap({ origin, destination, routes }) {
+function KakaoMap({
+  origin,
+  destination,
+  routes,
+  selectedRouteRank,
+  onSelectRoute,
+}) {
   const mapRef = useRef(null);
   const [mapError, setMapError] = useState("");
 
@@ -75,6 +81,7 @@ function KakaoMap({ origin, destination, routes }) {
             name: `${route.rank}위 출발 · ${route.origin_station_name}`,
             markerLabel: `${route.rank}O`,
             markerType: "origin-station",
+            routeRank: route.rank,
           });
           points.push({
             latitude: route.destination_latitude,
@@ -82,6 +89,7 @@ function KakaoMap({ origin, destination, routes }) {
             name: `${route.rank}위 도착 · ${route.destination_station_name}`,
             markerLabel: `${route.rank}D`,
             markerType: "destination-station",
+            routeRank: route.rank,
           });
         });
 
@@ -91,10 +99,18 @@ function KakaoMap({ origin, destination, routes }) {
 
           const marker = document.createElement("button");
           marker.type = "button";
-          marker.className = `map-marker ${point.markerType}`;
+          const selected = point.routeRank === selectedRouteRank;
+          marker.className = `map-marker ${point.markerType}${selected ? " selected-route" : ""}`;
           marker.textContent = String(point.markerLabel);
           marker.title = point.name;
           marker.setAttribute("aria-label", point.name);
+
+          if (point.routeRank) {
+            marker.setAttribute("aria-pressed", String(selected));
+            marker.addEventListener("click", () => {
+              onSelectRoute(point.routeRank);
+            });
+          }
 
           new maps.CustomOverlay({
             map,
@@ -165,7 +181,7 @@ function KakaoMap({ origin, destination, routes }) {
     return () => {
       cancelled = true;
     };
-  }, [origin, destination, routes]);
+  }, [origin, destination, routes, selectedRouteRank, onSelectRoute]);
 
   return (
     <div className="map-shell">

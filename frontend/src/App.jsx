@@ -26,6 +26,8 @@ function App() {
     useState(false);
   const [error, setError] =
     useState("");
+  const [selectedRouteRank, setSelectedRouteRank] =
+    useState(null);
 
   useEffect(() => {
     if (!origin || !destination) {
@@ -40,14 +42,17 @@ function App() {
     )
       .then((nextRoutes) => {
         if (!cancelled) {
-          setRoutes(
-            nextRoutes.slice(0, 3),
+          const bestRoutes = nextRoutes.slice(0, 3);
+          setRoutes(bestRoutes);
+          setSelectedRouteRank(
+            bestRoutes[0]?.rank ?? null,
           );
         }
       })
       .catch((requestError) => {
         if (!cancelled) {
           setRoutes([]);
+          setSelectedRouteRank(null);
           setError(
             requestError instanceof Error
               ? requestError.message
@@ -81,6 +86,7 @@ function App() {
 
     setError("");
     setRoutes([]);
+    setSelectedRouteRank(null);
     setLoading(Boolean(
       nextOrigin && nextDestination,
     ));
@@ -184,7 +190,19 @@ function App() {
           origin={origin}
           destination={destination}
           routes={routes}
+          selectedRouteRank={selectedRouteRank}
+          onSelectRoute={setSelectedRouteRank}
         />
+
+        {selectedRouteRank && (
+          <p
+            className="route-selection-status"
+            role="status"
+            aria-live="polite"
+          >
+            추천 {selectedRouteRank}위 경로를 지도에서 강조했습니다.
+          </p>
+        )}
       </section>
 
       <RouteRecommendations
@@ -194,6 +212,8 @@ function App() {
         ready={Boolean(
           origin && destination,
         )}
+        selectedRouteRank={selectedRouteRank}
+        onSelectRoute={setSelectedRouteRank}
       />
     </main>
   );
@@ -204,6 +224,8 @@ function RouteRecommendations({
   routes,
   loading,
   ready,
+  selectedRouteRank,
+  onSelectRoute,
 }) {
   const [aiReasons, setAiReasons] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
@@ -311,6 +333,8 @@ function RouteRecommendations({
             <RouteCard
               key={`${route.origin_station_id}-${route.destination_station_id}`}
               route={route}
+              selected={route.rank === selectedRouteRank}
+              onSelect={() => onSelectRoute(route.rank)}
               aiReason={aiReasons[route.rank]}
             />
           ))}
@@ -321,15 +345,29 @@ function RouteRecommendations({
 }
 
 
-function RouteCard({ route, aiReason }) {
+function RouteCard({
+  route,
+  selected,
+  onSelect,
+  aiReason,
+}) {
   return (
-    <li className="route-card">
-      <div className="route-rank">
-        <span>BEST</span>
-        <strong>{route.rank}</strong>
-      </div>
+    <li
+      className={`route-card${selected ? " selected" : ""}`}
+    >
+      <button
+        type="button"
+        className="route-select-button"
+        aria-pressed={selected}
+        aria-label={`${route.rank}위 경로 선택: ${route.origin_station_name}에서 ${route.destination_station_name}까지, 총 ${route.total_eta_min}분`}
+        onClick={onSelect}
+      >
+        <div className="route-rank" aria-hidden="true">
+          <span>추천</span>
+          <strong>{route.rank}</strong>
+        </div>
 
-      <div className="route-content">
+        <div className="route-content">
         <div className="route-heading">
           <div>
             <strong>
@@ -423,7 +461,8 @@ function RouteCard({ route, aiReason }) {
             </small>
           </div>
         )}
-      </div>
+        </div>
+      </button>
     </li>
   );
 }

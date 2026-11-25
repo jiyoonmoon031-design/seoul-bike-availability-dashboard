@@ -98,3 +98,40 @@ test('모바일 폭에서 이용자 화면이 넘치지 않는다', async ({
   expect(sizes.scrollWidth)
     .toBeLessThanOrEqual(sizes.clientWidth)
 })
+
+test('긴 대여소명도 390px 화면에서 경로 카드 밖으로 넘치지 않는다', async ({
+  page,
+}) => {
+  await page.setViewportSize({
+    width: 390,
+    height: 844,
+  })
+  await installKakaoMapStub(page)
+  await page.goto('/')
+
+  const originInput = page.getByLabel('출발지 검색어')
+  await originInput.fill('세종대학교')
+  await originInput.press('Enter')
+  await page.getByRole('button', {
+    name: /세종대학교/,
+  }).first().click()
+
+  const destinationInput = page.getByLabel('목적지 검색어')
+  await destinationInput.fill('성수역')
+  await destinationInput.press('Enter')
+  await page.getByRole('button', {
+    name: /성수역/,
+  }).first().click()
+
+  const firstRoute = page.getByRole('button', {
+    name: /1위 경로 선택/,
+  })
+  await expect(firstRoute).toBeVisible()
+
+  const bounds = await firstRoute.evaluate((element) => ({
+    right: element.getBoundingClientRect().right,
+    viewport: document.documentElement.clientWidth,
+  }))
+
+  expect(bounds.right).toBeLessThanOrEqual(bounds.viewport)
+})
