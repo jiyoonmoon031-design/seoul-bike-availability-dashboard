@@ -783,3 +783,11 @@ Issue
 |---|---|---|
 | v0.1 | Draft | Week 01 initial Model ↔ Backend contract |
 | v0.2 | Draft | Backend review 반영: null/cache/warning/feature 책임 및 source 분리 계약 확정 |
+
+## Runtime Integration Supplement
+
+See [Runtime Integration Interface](runtime-integration.md)
+for current-time fallback, runtime inventory warnings,
+recommendation integration and LLM endpoints.
+
+The existing capacity constraints remain unchanged.

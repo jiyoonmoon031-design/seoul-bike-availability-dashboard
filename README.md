@@ -272,3 +272,16 @@ Issue
 ```
 
 장기 유지 브랜치는 `main`, `develop` 두 개만 사용합니다.
+
+## Operator Copilot
+
+운영자 화면의 LLM 계층은 예측·재배치 결정을 변경하지 않고
+결정론적 결과를 설명·진단·질의응답하는 optional layer입니다.
+
+- Briefing
+- Warning/Fallback Diagnosis
+- Operator Q&A
+- OpenAI response/token usage logging
+- 동일 context TTL cache
+
+자세한 내용: [`docs/integration/operator-copilot.md`](docs/integration/operator-copilot.md)

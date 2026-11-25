@@ -26,7 +26,7 @@ export async function fetchOperatorRebalancing(
   const timeoutId =
     window.setTimeout(
       () => controller.abort(),
-      10_000,
+      60_000,
     )
 
   try {
@@ -54,7 +54,7 @@ export async function fetchOperatorRebalancing(
       error.name === 'AbortError'
     ) {
       throw new Error(
-        'Operator API timeout (10s)',
+        'Operator API timeout (60s)',
       )
     }
 

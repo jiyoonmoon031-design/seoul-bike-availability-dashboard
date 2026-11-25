@@ -1,3 +1,4 @@
+import { OperatorCopilot } from '../components/operator/OperatorCopilot'
 import {
   keepPreviousData,
   useQuery,
@@ -35,8 +36,18 @@ type AppliedQuery = {
   topN: number
 }
 
+function getCurrentKstBaseTime() {
+  const interval = 15 * 60 * 1000
+  const rounded =
+    Math.floor(Date.now() / interval) * interval
+
+  return new Date(
+    rounded + 9 * 60 * 60 * 1000
+  ).toISOString().slice(0, 16)
+}
+
 const DEFAULT_BASE_TIME =
-  '2026-10-08T08:00'
+  getCurrentKstBaseTime()
 
 function toApiTime(
   value: string,
@@ -299,7 +310,12 @@ export function OperatorPage() {
             </article>
           </section>
 
-          <section className="dashboard-grid">
+          <OperatorCopilot
+              key={JSON.stringify(data)}
+              data={data}
+            />
+
+            <section className="dashboard-grid">
             <OperatorMap
               data={{
                 ...data,
