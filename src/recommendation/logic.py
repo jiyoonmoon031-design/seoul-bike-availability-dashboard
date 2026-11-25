@@ -186,7 +186,6 @@ def recommend_stations(
             or walk_min is None
             or capacity <= 0
             or bikes_now < 0
-            or bikes_now > capacity
         ):
             warnings.append(f"{station_id}: invalid distance/inventory context skipped")
             continue
@@ -208,11 +207,22 @@ def recommend_stations(
 
         effective_horizon = horizon_info
 
-        bikes_expected = min(
-            max(bikes_now + delta_eta, 0.0),
-            capacity,
+        prediction_sources = {
+            str(item.get("prediction_source"))
+            for item in horizon_results
+            if item.get("prediction_source")
+        }
+        prediction_source = (
+            next(iter(prediction_sources))
+            if len(prediction_sources) == 1
+            else "mixed" if prediction_sources else "unknown"
         )
-        docks_expected = capacity - bikes_expected
+
+        runtime_ceiling = max(capacity, bikes_now)
+        bikes_expected = min(max(bikes_now + delta_eta, 0.0), runtime_ceiling)
+        docks_expected = max(capacity - bikes_expected, 0.0)
+        overflow_now = max(bikes_now - capacity, 0.0)
+        overflow_expected = max(bikes_expected - capacity, 0.0)
 
         available = bikes_expected if leg == "origin" else docks_expected
 
@@ -235,9 +245,12 @@ def recommend_stations(
                 "distance_m": round(distance_m, 3),
                 "walk_min": round(walk_min, 3),
                 "bikes_now": round(bikes_now, 3),
-                "docks_now": round(capacity - bikes_now, 3),
+                "docks_now": round(max(capacity - bikes_now, 0.0), 3),
+                "overflow_now": round(overflow_now, 3),
                 "bikes_expected": round(bikes_expected, 3),
                 "docks_expected": round(docks_expected, 3),
+                "overflow_expected": round(overflow_expected, 3),
+                "prediction_source": prediction_source,
                 "score": round(score, 6),
                 "score_breakdown": {
                     "distance": round(distance_component, 6),

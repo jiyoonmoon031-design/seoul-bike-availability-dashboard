@@ -70,6 +70,27 @@ export const handlers = [
     },
   ),
 
+  http.get('*/api/v1/routes', ({ request }) => {
+    const params = new URL(request.url).searchParams
+    const start = {
+      latitude: Number(params.get('startLat')),
+      longitude: Number(params.get('startLon')),
+    }
+    const end = {
+      latitude: Number(params.get('endLat')),
+      longitude: Number(params.get('endLon')),
+    }
+    const bike = params.get('bike') === 'true'
+
+    return HttpResponse.json({
+      distance_m: 500,
+      eta_min: bike ? 2 : 8,
+      method: bike ? 'route_api' : 'straight_line',
+      path: bike ? [start, { latitude: start.latitude, longitude: end.longitude }, end]
+        : [start, end],
+    })
+  }),
+
   http.get(
     '/api/v1/operator/rebalancing',
     async ({ request }) => {

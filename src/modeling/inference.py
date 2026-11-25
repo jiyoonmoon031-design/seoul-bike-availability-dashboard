@@ -14,6 +14,7 @@ import pyarrow.dataset as ds
 
 from src.modeling.feature_engineering import HORIZONS
 from src.modeling.model_comparison import FittedBaselines, FittedCandidate
+from src.modeling.runtime_inventory import RuntimeInventory, assess_inventory
 
 KST = ZoneInfo("Asia/Seoul")
 SUPPORTED_HORIZONS = tuple(int(value) for value in HORIZONS)
@@ -231,6 +232,8 @@ def load_inventory(
         result[station_id] = {
             "capacity": record["capacity"],
             "bikes_now": record["bikes_now"],
+            "collected_at": record.get("collected_at"),
+            "source": record.get("source"),
         }
 
     return result
@@ -425,7 +428,8 @@ def build_prediction_response(
 
     valid_station_ids: list[str] = []
     valid_rows: dict[str, pd.DataFrame] = {}
-    valid_inventory: dict[str, tuple[float, float]] = {}
+    valid_inventory: dict[str, RuntimeInventory] = {}
+    reference_time = pd.Timestamp(request["base_time"]).to_pydatetime()
 
     for station_id in request["station_ids"]:
         if frame.empty:
@@ -468,91 +472,25 @@ def build_prediction_response(
             )
             continue
 
-        current = inventory.get(station_id)
-
-        if current is None:
+        assessed = assess_inventory(
+            station_id,
+            inventory.get(station_id),
+            reference_time=reference_time,
+        )
+        if assessed.warning_code:
             warnings.append(
                 _warning(
-                    "MISSING_INVENTORY",
-                    "current inventory is unavailable.",
+                    assessed.warning_code,
+                    assessed.warning_message or "Inventory warning",
                     station_id=station_id,
                 )
             )
-            continue
-
-        raw_capacity = current.get("capacity")
-        raw_bikes_now = current.get("bikes_now")
-
-        if raw_capacity is None:
-            warnings.append(
-                _warning(
-                    "MISSING_CAPACITY",
-                    "station capacity is unavailable.",
-                    station_id=station_id,
-                )
-            )
-            continue
-
-        if raw_bikes_now is None:
-            warnings.append(
-                _warning(
-                    "MISSING_INVENTORY",
-                    "current bike inventory is unavailable.",
-                    station_id=station_id,
-                )
-            )
-            continue
-
-        try:
-            capacity = float(raw_capacity)
-        except (TypeError, ValueError):
-            warnings.append(
-                _warning(
-                    "MISSING_CAPACITY",
-                    "station capacity is invalid.",
-                    station_id=station_id,
-                )
-            )
-            continue
-
-        try:
-            bikes_now = float(raw_bikes_now)
-        except (TypeError, ValueError):
-            warnings.append(
-                _warning(
-                    "MISSING_INVENTORY",
-                    "current bike inventory is invalid.",
-                    station_id=station_id,
-                )
-            )
-            continue
-
-        if not np.isfinite(capacity) or capacity <= 0:
-            warnings.append(
-                _warning(
-                    "MISSING_CAPACITY",
-                    "station capacity is outside the valid range.",
-                    station_id=station_id,
-                )
-            )
-            continue
-
-        if not np.isfinite(bikes_now) or bikes_now < 0 or bikes_now > capacity:
-            warnings.append(
-                _warning(
-                    "MISSING_INVENTORY",
-                    ("current bike inventory is outside " "the valid range."),
-                    station_id=station_id,
-                )
-            )
+        if not assessed.usable:
             continue
 
         valid_station_ids.append(station_id)
         valid_rows[station_id] = matching.iloc[[0]].copy()
-        valid_inventory[station_id] = (
-            capacity,
-            bikes_now,
-        )
+        valid_inventory[station_id] = assessed
 
     prediction_lookup: dict[
         str,
@@ -629,8 +567,15 @@ def build_prediction_response(
             except (TypeError, ValueError):
                 pass
 
+            assessed = assess_inventory(
+                station_id,
+                current,
+                reference_time=reference_time,
+            )
+            entry.update(assessed.provenance())
+
         if station_id in prediction_lookup:
-            capacity, bikes_now = valid_inventory[station_id]
+            assessed = valid_inventory[station_id]
 
             results = []
 
@@ -640,23 +585,14 @@ def build_prediction_response(
 
                 delta_net, prediction_source = prediction_lookup[station_id][horizon]
 
-                bikes_expected = float(
-                    np.clip(
-                        bikes_now + delta_net,
-                        0.0,
-                        capacity,
-                    )
-                )
-
-                docks_expected = capacity - bikes_expected
+                projection = assessed.project(delta_net)
 
                 results.append(
                     {
                         "horizon_min": horizon,
                         "prediction_source": prediction_source,
                         "delta_net": delta_net,
-                        "bikes_expected": bikes_expected,
-                        "docks_expected": docks_expected,
+                        **projection,
                     }
                 )
 

@@ -1,10 +1,12 @@
 import { requestRouteReasons } from "./api/llm";
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
 import {
+  getRouteGeometry,
   getRouteRecommendations,
 } from "./api/recommendationApi";
 
@@ -22,6 +24,8 @@ function App() {
     useState(null);
   const [routes, setRoutes] =
     useState([]);
+  const [geometryByRank, setGeometryByRank] =
+    useState({});
   const [loading, setLoading] =
     useState(false);
   const [error, setError] =
@@ -32,21 +36,27 @@ function App() {
       return undefined;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
+    const { signal } = controller;
 
     getRouteRecommendations(
       origin,
       destination,
+      signal,
     )
       .then((nextRoutes) => {
-        if (!cancelled) {
-          setRoutes(
-            nextRoutes.slice(0, 3),
-          );
+        if (!signal.aborted) {
+          const bestRoutes = nextRoutes.slice(0, 3);
+          setRoutes(bestRoutes);
+          setLoading(false);
+          return getRouteGeometry(origin, destination, bestRoutes, signal)
+            .then((geometry) => {
+              if (!signal.aborted) setGeometryByRank(geometry);
+            });
         }
       })
       .catch((requestError) => {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setRoutes([]);
           setError(
             requestError instanceof Error
@@ -56,13 +66,13 @@ function App() {
         }
       })
       .finally(() => {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setLoading(false);
         }
       });
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [origin, destination]);
 
@@ -81,6 +91,7 @@ function App() {
 
     setError("");
     setRoutes([]);
+    setGeometryByRank({});
     setLoading(Boolean(
       nextOrigin && nextDestination,
     ));
@@ -177,19 +188,22 @@ function App() {
         </div>
 
         <p className="empty-copy">
-          점선은 추천 대여소 간 직선 연결이며 실제 도로 경로가 아닙니다.
+          실선은 TMAP 보행 경로입니다. 경로를 불러올 수 없는 구간은 직선 점선으로 표시합니다.
+          자전거 구간도 보행 경로를 참고하므로 주행 가능 여부를 확인하세요.
         </p>
 
         <KakaoMap
           origin={origin}
           destination={destination}
           routes={routes}
+          geometryByRank={geometryByRank}
         />
       </section>
 
       <RouteRecommendations
-          key={JSON.stringify(routes)}
+        key={JSON.stringify(routes)}
         routes={routes}
+        geometryByRank={geometryByRank}
         loading={loading}
         ready={Boolean(
           origin && destination,
@@ -202,15 +216,20 @@ function App() {
 
 function RouteRecommendations({
   routes,
+  geometryByRank,
   loading,
   ready,
 }) {
   const [aiReasons, setAiReasons] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const aiRequestId = useRef(0);
 
   const loadAiReasons = async () => {
     if (aiLoading || !routes.length) return;
+
+    const requestId = aiRequestId.current + 1;
+    aiRequestId.current = requestId;
 
     setAiLoading(true);
     setAiError("");
@@ -235,15 +254,21 @@ function RouteRecommendations({
         throw new Error("일부 AI 설명이 누락되었습니다.");
       }
 
-      setAiReasons(reasons);
+      if (aiRequestId.current === requestId) {
+        setAiReasons(reasons);
+      }
 
     } catch {
-      setAiError(
-        "AI 설명을 불러오지 못했습니다. "
-        + "기존 추천 결과는 계속 이용할 수 있습니다."
-      );
+      if (aiRequestId.current === requestId) {
+        setAiError(
+          "AI 설명을 불러오지 못했습니다. "
+          + "기존 추천 결과는 계속 이용할 수 있습니다."
+        );
+      }
     } finally {
-      setAiLoading(false);
+      if (aiRequestId.current === requestId) {
+        setAiLoading(false);
+      }
     }
   };
 
@@ -311,6 +336,7 @@ function RouteRecommendations({
             <RouteCard
               key={`${route.origin_station_id}-${route.destination_station_id}`}
               route={route}
+              legs={geometryByRank[route.rank]}
               aiReason={aiReasons[route.rank]}
             />
           ))}
@@ -321,7 +347,7 @@ function RouteRecommendations({
 }
 
 
-function RouteCard({ route, aiReason }) {
+function RouteCard({ route, legs, aiReason }) {
   return (
     <li className="route-card">
       <div className="route-rank">
@@ -409,6 +435,39 @@ function RouteCard({ route, aiReason }) {
           </span>
         </div>
 
+        <div className="route-provenance" aria-label="예측 데이터 출처">
+          <strong>예측 출처</strong>
+          <span>
+            출발 {formatPredictionSource(route.origin_prediction_source)}
+          </span>
+          <span>
+            도착 {formatPredictionSource(route.destination_prediction_source)}
+          </span>
+          {route.model_version && (
+            <small>모델 {route.model_version}</small>
+          )}
+          {route.origin_inventory_collected_at && (
+            <small>
+              재고 수집 {formatKst(route.origin_inventory_collected_at)}
+            </small>
+          )}
+          {!legs && <small>지도 경로 불러오는 중</small>}
+          {legs?.some((leg) => leg.method === "route_api") && (
+            <small>TMAP 경로 표시</small>
+          )}
+          {legs?.some((leg) => leg.method === "straight_line") && (
+            <small className="route-warning">
+              경로를 불러올 수 없는 구간은 직선 연결로 표시합니다.
+            </small>
+          )}
+          {(Number(route.origin_overflow_bikes ?? 0) > 0 ||
+            Number(route.destination_overflow_bikes ?? 0) > 0) && (
+            <small className="route-warning">
+              등록 거치대 수를 초과한 실시간 재고가 포함되었습니다.
+            </small>
+          )}
+        </div>
+
         <p className="route-reason">
           {route.reason}
         </p>
@@ -431,6 +490,25 @@ function RouteCard({ route, aiReason }) {
 
 function formatScore(value) {
   return Number(value ?? 0).toFixed(2);
+}
+
+
+function formatPredictionSource(value) {
+  if (value === "model") return "Random Forest";
+  if (value === "baseline_fallback") return "B3/B1 fallback";
+  if (value === "mixed") return "혼합";
+  return "확인 불가";
+}
+
+
+function formatKst(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "시각 확인 불가";
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
 }
 
 

@@ -2,6 +2,8 @@
 
 이 디렉터리는 시스템 계층 간 데이터 계약의 기준 문서를 저장합니다.
 
+현재 백엔드·AI 연동은 [API 사용 가이드](api.md) 및 [백엔드 OpenAPI](../openapi.json)를 참고하세요.
+
 ## 관리 대상
 
 - Model → Backend

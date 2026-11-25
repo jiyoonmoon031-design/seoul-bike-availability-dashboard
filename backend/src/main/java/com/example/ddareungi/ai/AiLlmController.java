@@ -2,7 +2,7 @@ package com.example.ddareungi.ai;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
@@ -15,11 +15,10 @@ public class AiLlmController {
     private final AiLlmClient aiLlmClient;
 
     public AiLlmController(
-            RestClient.Builder builder,
-            @Value("${ai.server.url}") String baseUrl,
+            @Qualifier("aiRestClient") RestClient aiRestClient,
             AiLlmClient aiLlmClient
     ) {
-        this.restClient = builder.baseUrl(baseUrl).build();
+        this.restClient = aiRestClient;
         this.aiLlmClient = aiLlmClient;
     }
 

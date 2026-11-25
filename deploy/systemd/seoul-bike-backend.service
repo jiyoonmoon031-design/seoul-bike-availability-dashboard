@@ -1,0 +1,23 @@
+[Unit]
+Description=Seoul Bike Spring backend
+After=network-online.target mysql.service seoul-bike-ai.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=seoulbike
+Group=seoulbike
+WorkingDirectory=/opt/seoul-bike/current/backend
+EnvironmentFile=/etc/seoul-bike/backend.env
+ExecStart=/usr/bin/java -jar /opt/seoul-bike/current/backend/app/ddareungi.jar --server.address=127.0.0.1 --server.port=8080
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+SuccessExitStatus=143
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/log/seoul-bike /opt/seoul-bike/shared
+
+[Install]
+WantedBy=multi-user.target

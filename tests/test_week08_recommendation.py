@@ -213,3 +213,18 @@ def test_missing_horizon_skips_with_warning():
 
     assert result.response["recommendations"] == []
     assert len(result.warnings) == 1
+
+
+def test_over_capacity_station_remains_usable_for_origin_and_has_no_docks():
+    result = recommend_stations(
+        [candidate("OVER", capacity=10, bikes=13, deltas=(-1, -1, -1))],
+        leg="origin",
+        eta_min=15,
+        config=config(),
+    )
+    station = result.response["recommendations"][0]
+    assert station["bikes_expected"] == 12
+    assert station["docks_now"] == 0
+    assert station["docks_expected"] == 0
+    assert station["overflow_now"] == 3
+    assert station["overflow_expected"] == 2

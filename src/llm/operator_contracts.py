@@ -47,13 +47,15 @@ class MoveMatch(StrictModel):
 class OperatorContext(StrictModel):
     base_time: str
     horizon_min: int = Field(ge=0)
-    shortage_top: list[ShortageStation] = Field(default_factory=list)
-    surplus_top: list[SurplusStation] = Field(default_factory=list)
-    move_matches: list[MoveMatch] = Field(default_factory=list)
-    warnings: list[OperatorWarning] = Field(default_factory=list)
+    shortage_top: list[ShortageStation] = Field(default_factory=list, max_length=100)
+    surplus_top: list[SurplusStation] = Field(default_factory=list, max_length=100)
+    move_matches: list[MoveMatch] = Field(default_factory=list, max_length=100)
+    warnings: list[OperatorWarning] = Field(default_factory=list, max_length=200)
     prediction_summary: dict[str, Any] = Field(default_factory=dict)
     health: dict[str, Any] = Field(default_factory=dict)
-    horizon_snapshots: list[dict[str, Any]] = Field(default_factory=list)
+    horizon_snapshots: list[dict[str, Any]] = Field(
+        default_factory=list, max_length=200
+    )
 
 
 class OperatorBriefingRequest(StrictModel):

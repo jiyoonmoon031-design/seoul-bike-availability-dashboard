@@ -23,8 +23,8 @@ class OperatorMove(StrictModel):
 class OperatorBriefingPayload(StrictModel):
     base_time: str
     horizon_min: int
-    shortage_top: list[OperatorShortage]
-    move_matches: list[OperatorMove]
+    shortage_top: list[OperatorShortage] = Field(max_length=100)
+    move_matches: list[OperatorMove] = Field(max_length=100)
 
 
 class UserCandidate(StrictModel):
@@ -41,4 +41,4 @@ class UserRecommendationPayload(StrictModel):
         "destination",
     ]
     eta_min: float = Field(ge=0)
-    candidates: list[UserCandidate]
+    candidates: list[UserCandidate] = Field(min_length=1, max_length=20)

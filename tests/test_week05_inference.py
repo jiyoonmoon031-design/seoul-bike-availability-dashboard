@@ -115,6 +115,7 @@ def test_prediction_response_contract_and_clipping():
     assert results[60]["bikes_expected"] == pytest.approx(20.0)
 
     assert results[60]["docks_expected"] == pytest.approx(0.0)
+    assert results[60]["overflow_expected"] == pytest.approx(0.0)
 
     missing = response["predictions"][1]
 

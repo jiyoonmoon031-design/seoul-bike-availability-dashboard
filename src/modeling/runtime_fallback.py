@@ -6,6 +6,8 @@ from typing import Any, Mapping
 import numpy as np
 import pandas as pd
 
+from src.modeling.runtime_inventory import assess_inventory
+
 KST = "Asia/Seoul"
 
 
@@ -35,28 +37,6 @@ def _warning(
         "station_id": station_id,
         "horizon_min": horizon_min,
     }
-
-
-def _valid_inventory(
-    inventory: Mapping[str, Mapping[str, Any]], station_id: str
-) -> tuple[float, float] | None:
-    current = inventory.get(station_id)
-    if current is None:
-        return None
-    try:
-        capacity = float(current["capacity"])
-        bikes_now = float(current["bikes_now"])
-    except (KeyError, TypeError, ValueError):
-        return None
-    if (
-        not np.isfinite(capacity)
-        or not np.isfinite(bikes_now)
-        or capacity <= 0
-        or bikes_now < 0
-        or bikes_now > capacity
-    ):
-        return None
-    return capacity, bikes_now
 
 
 def apply_runtime_feature_fallback(
@@ -92,42 +72,24 @@ def apply_runtime_feature_fallback(
         if station.get("horizon_results"):
             continue
 
-        current = _valid_inventory(inventory, str(station_id))
-        if current is None:
-            raw = inventory.get(str(station_id))
-
-            if raw is None:
-                code = "MISSING_INVENTORY"
-                message = "Realtime station inventory is unavailable"
-            else:
-                code = "INVALID_INVENTORY"
-                message = "Inventory is outside the supported range"
-
-                try:
-                    cap = float(raw["capacity"])
-                    bikes = float(raw["bikes_now"])
-
-                    if (
-                        np.isfinite(cap)
-                        and np.isfinite(bikes)
-                        and cap > 0
-                        and bikes > cap
-                    ):
-                        code = "INVENTORY_OVER_CAPACITY"
-                        message = "Observed bikes exceed registered capacity"
-                except (KeyError, TypeError, ValueError):
-                    pass
-
+        current = assess_inventory(
+            str(station_id),
+            inventory.get(str(station_id)),
+            reference_time=pd.Timestamp(base_time).to_pydatetime(),
+        )
+        if current.warning_code:
             warnings.append(
                 _warning(
-                    code,
-                    message,
+                    current.warning_code,
+                    current.warning_message or "Inventory warning",
                     station_id=str(station_id),
                     horizon_min=None,
                 )
             )
+        if not current.usable:
             continue
-        capacity, bikes_now = current
+
+        station.update(current.provenance())
 
         runtime_frame = _runtime_b3_frame(
             station_id=str(station_id),
@@ -154,16 +116,12 @@ def apply_runtime_feature_fallback(
                 delta_net = 0.0
                 fallback_method = "b1_persistence"
 
-            bikes_expected = float(np.clip(bikes_now + delta_net, 0.0, capacity))
-            docks_expected = float(capacity - bikes_expected)
-
             horizon_results.append(
                 {
                     "horizon_min": horizon,
                     "prediction_source": "baseline_fallback",
                     "delta_net": delta_net,
-                    "bikes_expected": bikes_expected,
-                    "docks_expected": docks_expected,
+                    **current.project(delta_net),
                 }
             )
 
