@@ -68,7 +68,7 @@ public class OperatorService {
 
         List<Station> stations =
                 stationRepository.findByDistrictIn(
-                        List.of("광진구", "성동구")
+                        List.of("광진구")
                 );
 
         List<String> stationIds = stations.stream()
@@ -135,7 +135,7 @@ public class OperatorService {
         // 대여소 ID를 이름으로 변환하기 위한 조회
         Map<String, String> stationNames =
                 stationRepository.findByDistrictIn(
-                        List.of("광진구", "성동구")
+                        List.of("광진구")
                 ).stream().collect(Collectors.toMap(
                         Station::getStationId,
                         Station::getStationName,

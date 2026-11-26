@@ -78,7 +78,7 @@ public class NearbyStationService {
     ) {
 
         TravelTimeResponse travelTime =
-                travelTimeService.estimateTravelTime(
+                travelTimeService.estimateByStraightLine(
                         latitude,
                         longitude,
                         station.getLatitude(),
