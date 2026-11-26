@@ -55,7 +55,7 @@ public class RouteRecommendationService {
             int walkToDestinationMin
     ) {
         TravelTimeResponse bikeTravel =
-                travelTimeService.estimateTravelTime(
+                travelTimeService.estimateByStraightLine(
                         originStationLat,
                         originStationLon,
                         destinationStationLat,
